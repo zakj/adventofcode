@@ -39,12 +39,10 @@ string code (2 + 5 + 10 + 6 = 23) minus the total number of characters in
 memory for string values (0 + 3 + 7 + 1 = 11) is 23 - 11 = 12.
 */
 
-import {readFileSync} from 'fs';
-import path from 'path';
 import {Observable} from 'rx';
+import {inputFrom} from '..';
 
-const input = readFileSync(path.join(__dirname, 'input.txt')).toString();
-
+const input = inputFrom(__dirname);
 const word$ = Observable.from(input.trim().split('\n'))
 
 word$

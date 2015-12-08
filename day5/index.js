@@ -26,12 +26,10 @@ For example:
 How many strings are nice?
 */
 
-import {readFileSync} from 'fs';
-import path from 'path';
 import {Observable} from 'rx';
+import {inputFrom} from '..';
 
-const input = readFileSync(path.join(__dirname, 'input.txt')).toString();
-
+const input = inputFrom(__dirname);
 const naughtyStrings = ['ab', 'cd', 'pq', 'xy'];
 
 Observable.from(input.trim().split('\n'))

@@ -21,11 +21,10 @@ All numbers in the elves' list are in feet. How many total square feet of
 wrapping paper should they order?
 */
 
-import {readFileSync} from 'fs';
-import path from 'path';
 import {Observable} from 'rx';
+import {inputFrom} from '..';
 
-const input = readFileSync(path.join(__dirname, 'input.txt')).toString();
+const input = inputFrom(__dirname);
 const dimensions$ = Observable.from(input.trim().split('\n'))
   .map(s => s.split('x').map(x => parseInt(x, 10)));
 

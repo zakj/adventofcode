@@ -33,11 +33,10 @@ For example:
 To what floor do the instructions take Santa?
 */
 
-import {readFileSync} from 'fs';
-import path from 'path';
 import {Observable} from 'rx';
+import {inputFrom} from '..';
 
-const input = readFileSync(path.join(__dirname, 'input.txt')).toString();
+const input = inputFrom(__dirname);
 
 const values = {
   '(': 1,

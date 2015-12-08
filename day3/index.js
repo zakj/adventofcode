@@ -23,11 +23,10 @@ For example:
   houses.
 */
 
-import {readFileSync} from 'fs';
-import path from 'path';
 import {Observable} from 'rx';
+import {inputFrom} from '..';
 
-const input = readFileSync(path.join(__dirname, 'input.txt')).toString();
+const input = inputFrom(__dirname);
 
 // convert moves into coords
 // distinct coords
