@@ -1,5 +1,8 @@
 {
   "private": true,
+  "scripts": {
+    "start": "babel-node"
+  },
   "babel": {
     "presets": [
       "es2015"
