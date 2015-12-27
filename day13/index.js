@@ -6,14 +6,13 @@ const INPUT = inputFrom(__dirname);
 
 const RULE_RE = /(\w+) would (gain|lose) (\d+) happiness units by sitting next to (\w+)\./;
 
-let guests = {};
-for (let line of INPUT.trim().split('\n')) {
-  const [, subject, gainLose, units, object] = line.match(RULE_RE);
-  guests[subject] = guests[subject] || {};
-  guests[subject][object] = gainLose === 'lose' ? -units : +units;
-}
-guests = Immutable.fromJS(guests).entrySeq()
-  .map(([name, scores]) => ({name, scores}))
+const guests = Immutable.Seq(INPUT.trim().split('\n'))
+  .map(RULE_RE.exec.bind(RULE_RE))
+  .map(([, subject, gainLose, units, object]) => ({subject, object, units: gainLose === 'lose' ? -units : +units}))
+  .groupBy(v => v.subject)
+  .map(list => list.map(row => [row.object, row.units]))
+  .entrySeq()
+  .map(([name, scores]) => Immutable.Map({name, scores: Immutable.Map(scores)}))
   .toList();
 
 Immutable.List.prototype.pairwise = function () {
@@ -30,22 +29,16 @@ function scoreTable(arrangement) {
 console.log(Math.max(...permute(guests.toArray()).map(p => scoreTable(p))));
 
 
-// Ugly ugly hacks, bad data structures, and can't call Math.max with this many
-// spread permutations without blowing the stack.
-const me = {
-  name: 'Zak',
-  scores: Immutable.Map(guests.map(({name}) => [name, 0]).fromEntrySeq()),
-};
-guests = guests
-  .map(obj => {
-    obj.scores = obj.scores.set('Zak', 0);
-    return obj;
-  })
-  .push(me);
+const guestsAndMe = guests
+  .map(g => g.setIn(['scores', 'Zak'], 0))
+  .push(Immutable.Map({
+    name: 'Zak',
+    scores: Immutable.Map(guests.map(g => [g.get('name'), 0])),
+  }));
 
-const scores = permute(guests.toArray()).map(p => scoreTable(p));
-let max = 0;
-for (let score of scores) {
-  max = Math.max(max, score);
-}
-console.log(max);
+// Too many permutations to pass to Math.max via spread.
+console.log(
+  Immutable.Seq(permute(guestsAndMe.toArray()))
+    .map(p => scoreTable(p))
+    .max()
+);
