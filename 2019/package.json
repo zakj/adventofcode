@@ -1,0 +1,13 @@
+{
+  "name": "adventofcode-2019",
+  "private": true,
+  "prettier": "@zakj/prettier-config",
+  "dependencies": {
+    "typescript": "^3.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.14",
+    "@zakj/prettier-config": "/Users/zakj/src/prettier-config",
+    "ts-node": "^8.5.4"
+  }
+}
