@@ -1,12 +1,15 @@
+export type Program = number[];
+
 enum OperationType {
   Add = 1,
-  Multiply,
-  Input,
-  Output,
-  JumpIf,
-  JumpElse,
-  LessThan,
-  Equals,
+  Multiply = 2,
+  Input = 3,
+  Output = 4,
+  JumpIf = 5,
+  JumpElse = 6,
+  LessThan = 7,
+  Equals = 8,
+  AdjustRelativeBase = 9,
   Exit = 99,
 }
 
@@ -14,9 +17,10 @@ interface Operation {
   paramCount: number;
 }
 
-enum ParameterMode {
+enum ParamMode {
   Position = 0,
   Immediate = 1,
+  Relative = 2,
 }
 
 const OPERATIONS: { [key in OperationType]: Operation } = {
@@ -28,58 +32,100 @@ const OPERATIONS: { [key in OperationType]: Operation } = {
   [OperationType.JumpElse]: { paramCount: 2 },
   [OperationType.LessThan]: { paramCount: 3 },
   [OperationType.Equals]: { paramCount: 3 },
+  [OperationType.AdjustRelativeBase]: { paramCount: 1 },
   [OperationType.Exit]: { paramCount: 0 },
 };
 
-export type Program = number[];
+class ParamManager {
+  private modes: ParamMode[];
+
+  constructor(
+    private readonly memory: Program,
+    private readonly relativeBase: number,
+    modes: number,
+    private readonly values: number[]
+  ) {
+    this.modes = modes
+      .toString()
+      .split('')
+      .map(t => Number(t))
+      .reverse();
+    while (this.modes.length < values.length)
+      this.modes.push(ParamMode.Position);
+  }
+
+  private extendMemory(length: number): void {
+    const previousLength = this.memory.length;
+    this.memory.length = length;
+    this.memory.fill(0, previousLength);
+  }
+
+  private index(mode: ParamMode, value: number): number {
+    if (![ParamMode.Position, ParamMode.Relative].includes(mode)) {
+      throw new Error(`unexpected parameter mode ${mode}`);
+    }
+    const index = value + (mode === ParamMode.Relative ? this.relativeBase : 0);
+    if (index < 0) throw new Error('negative memory index');
+    if (index > this.memory.length) this.extendMemory(index + 1);
+    return index;
+  }
+
+  get(i: number): number {
+    const mode = this.modes[i];
+    const value = this.values[i];
+    if (mode === ParamMode.Immediate) return value;
+    return this.memory[this.index(mode, value)];
+  }
+
+  set(i: number, value: number): void {
+    this.memory[this.index(this.modes[i], this.values[i])] = value;
+  }
+}
 
 export default function intcode(
   instructions: Program,
   inputs: number[] = []
 ): number[] {
   const memory = instructions.slice();
+  let relativeBase = 0;
   let ptr = 0;
   const outputs: number[] = [];
   while (ptr < memory.length) {
     const opcode: OperationType = memory[ptr] % 100;
-    const paramModes: ParameterMode[] = Math.floor(memory[ptr] / 100)
-      .toString()
-      .split('')
-      .map(t => Number(t))
-      .reverse();
-    ptr++;
-
+    const paramModes: number = Math.floor(memory[ptr] / 100);
     const op = OPERATIONS[opcode];
     if (!op) throw new Error(`unknown opcode ${opcode} at index ${ptr}`);
-
-    const params = memory.slice(ptr, ptr + op.paramCount);
-    while (paramModes.length < op.paramCount)
-      paramModes.push(ParameterMode.Position);
+    ptr++;
+    const params = new ParamManager(
+      memory,
+      relativeBase,
+      paramModes,
+      memory.slice(ptr, ptr + op.paramCount)
+    );
     ptr += op.paramCount;
 
-    const resolveParam = (i: number) =>
-      paramModes[i] === ParameterMode.Position ? memory[params[i]] : params[i];
-
     if (opcode === OperationType.Add) {
-      memory[params[2]] = resolveParam(0) + resolveParam(1);
+      params.set(2, params.get(0) + params.get(1));
     } else if (opcode === OperationType.Multiply) {
-      memory[params[2]] = resolveParam(0) * resolveParam(1);
+      params.set(2, params.get(0) * params.get(1));
     } else if (opcode === OperationType.Input) {
       if (!inputs.length)
         throw new Error(`insufficient inputs at index ${ptr}`);
-      memory[params[0]] = inputs.shift() as number; // TODO assert array length isn't enough?
+      params.set(0, inputs.shift()!);
     } else if (opcode === OperationType.Output) {
-      outputs.push(resolveParam(0));
+      outputs.push(params.get(0));
     } else if (opcode === OperationType.JumpIf) {
-      if (resolveParam(0) !== 0) ptr = resolveParam(1);
+      if (params.get(0) !== 0) ptr = params.get(1);
     } else if (opcode === OperationType.JumpElse) {
-      if (resolveParam(0) === 0) ptr = resolveParam(1);
+      if (params.get(0) === 0) ptr = params.get(1);
     } else if (opcode === OperationType.LessThan) {
-      memory[params[2]] = resolveParam(0) < resolveParam(1) ? 1 : 0;
+      params.set(2, params.get(0) < params.get(1) ? 1 : 0);
     } else if (opcode === OperationType.Equals) {
-      memory[params[2]] = resolveParam(0) === resolveParam(1) ? 1 : 0;
-    } else if (opcode === OperationType.Exit) break;
+      params.set(2, params.get(0) === params.get(1) ? 1 : 0);
+    } else if (opcode === OperationType.AdjustRelativeBase) {
+      relativeBase += params.get(0);
+    } else if (opcode === OperationType.Exit) return outputs;
   }
 
-  return outputs;
+  throw new Error('end of program without exit code');
 }
