@@ -63,3 +63,12 @@ export function* permutations<T>(arr: T[]): Generator<T[]> {
     }
   }
 }
+
+export function roundRobin<T>(outer: T[][]): T[] {
+  const rv: T[][] = [];
+  outer.forEach(arr => arr.forEach((x, i) => {
+    rv[i] = rv[i] || []
+    rv[i].push(x);
+  }))
+  return ([] as T[]).concat(...rv);
+}
