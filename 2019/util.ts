@@ -1,6 +1,14 @@
 import fs from 'fs';
 import { resolve } from 'path';
 
+export function* combinations<T>(arr: T[]): Generator<[T, T]> {
+  for (let i = 0; i < arr.length; ++i) {
+    for (let j = i + 1; j < arr.length; ++j) {
+      yield [arr[i], arr[j]];
+    }
+  }
+}
+
 export function defaultDict<T>(initial: () => T) {
   return new Proxy<{[key: string]: T}>(
     {},
@@ -11,6 +19,10 @@ export function defaultDict<T>(initial: () => T) {
       },
     }
   );
+}
+
+export function gcd(a: number, b: number): number {
+  return !b ? a : gcd(b, a % b);
 }
 
 export function loadDay(n: number): string[] {
