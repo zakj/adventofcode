@@ -14,16 +14,35 @@ E)J
 J)K
 K)L`.split('\n');
 
+// function totalOrbits(orbitMap: string[]) {
+//   const directOrbits = defaultDict(() => new Set());
+//   orbitMap
+//     .map(x => x.split(')'))
+//     .forEach(([orbitee, orbiter]) => {
+//       directOrbits[orbitee].add(orbiter)
+//     });
+//   const tree = {};
+//   Object.entries(directOrbits).forEach(([parent, children]) => {
+//   })
+// }
+
 function totalOrbits(orbitMap: string[]) {
-  const directOrbits = defaultDict(() => new Set());
+  const orbits: {[obj: string]: string} = {};
   orbitMap
     .map(x => x.split(')'))
     .forEach(([orbitee, orbiter]) => {
-      directOrbits[orbitee].add(orbiter)
+      orbits[orbiter] = orbitee;
     });
-  const tree = {};
-  Object.entries(directOrbits).forEach(([parent, children]) => {
-  })
+  let count = 0;
+  Object.entries(orbits).forEach(([orbiter, orbitee]) => {
+    count++;
+    while (orbits[orbitee]) {
+      orbitee = orbits[orbitee];
+      count++
+    }
+  });
+  return count;
 }
 
 console.log(totalOrbits(TESTDATA), 42);
+console.log(totalOrbits(data));

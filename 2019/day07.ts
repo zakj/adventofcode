@@ -7,8 +7,8 @@ const data = loadIntcode(7);
 function amplifier(program: Program, phaseSettings: number[]) {
   let signal = 0;
   phaseSettings.forEach(phaseSetting => {
-    const output = intcode(program, [phaseSetting, signal])
-    signal = output[0];
+    const gen = intcode(program, [phaseSetting, signal])
+    signal = gen.next().value as number;
   })
   return signal;
 }
@@ -33,4 +33,7 @@ function findHighestOutputWithFeedback(program: Program) {
 
 console.log(findHighestOutput(data));
 
-const testData = (s: string) => s.split(',').map(Number)  // XXX
+
+function applyFunction(f: (x: number) => number, x: number): number {
+  return f(x);
+}

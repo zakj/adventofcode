@@ -82,14 +82,13 @@ class ParamManager {
   }
 }
 
-export default function intcode(
+export default function* intcode(
   instructions: Program,
   inputs: number[] = []
-): number[] {
+): Generator<number | undefined, void, number | undefined> {
   const memory = instructions.slice();
   let relativeBase = 0;
   let ptr = 0;
-  const outputs: number[] = [];
   while (ptr < memory.length) {
     const opcode: OperationType = memory[ptr] % 100;
     const paramModes: number = Math.floor(memory[ptr] / 100);
@@ -109,11 +108,12 @@ export default function intcode(
     } else if (opcode === OperationType.Multiply) {
       params.set(2, params.get(0) * params.get(1));
     } else if (opcode === OperationType.Input) {
-      if (!inputs.length)
-        throw new Error(`insufficient inputs at index ${ptr}`);
-      params.set(0, inputs.shift()!);
+      let input;
+      if (inputs.length) input = inputs.shift();
+      else input = yield;
+      params.set(0, input!);
     } else if (opcode === OperationType.Output) {
-      outputs.push(params.get(0));
+      yield params.get(0);
     } else if (opcode === OperationType.JumpIf) {
       if (params.get(0) !== 0) ptr = params.get(1);
     } else if (opcode === OperationType.JumpElse) {
@@ -124,7 +124,7 @@ export default function intcode(
       params.set(2, params.get(0) === params.get(1) ? 1 : 0);
     } else if (opcode === OperationType.AdjustRelativeBase) {
       relativeBase += params.get(0);
-    } else if (opcode === OperationType.Exit) return outputs;
+    } else if (opcode === OperationType.Exit) return;
   }
 
   throw new Error('end of program without exit code');
