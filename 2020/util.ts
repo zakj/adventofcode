@@ -18,10 +18,14 @@ const assertHandler: ProxyHandler<typeof assert> = {
 
 export const example: typeof assert = new Proxy(assert, assertHandler);
 
-export function loadDay(n: number): string[] {
+export function loadDay(n: number): string {
   const paddedDay = `0${n}`.slice(-2);
   const path = resolve(__dirname, 'input', `day${paddedDay}.txt`);
-  return fs.readFileSync(path).toString().trim().split('\n');
+  return fs.readFileSync(path).toString().trim();
+}
+
+export function loadDayLines(n: number): string[] {
+  return loadDay(n).split('\n');
 }
 
 export const product = (xs: number[]): number => xs.reduce((acc, x) => acc * x);

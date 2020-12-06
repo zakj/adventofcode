@@ -1,4 +1,4 @@
-import { example, loadDay, product } from './util';
+import { example, loadDayLines, product } from './util';
 
 enum Tile {
   Open,
@@ -71,7 +71,7 @@ example.equal(
   product(part2Slopes.map((s) => exampleMap.countTilesForSlope(s, Tile.Tree)))
 );
 
-const map = new Map(loadDay(3));
+const map = new Map(loadDayLines(3));
 console.log({
   1: map.countTilesForSlope({ right: 3, down: 1 }, Tile.Tree),
   2: product(part2Slopes.map((s) => map.countTilesForSlope(s, Tile.Tree))),

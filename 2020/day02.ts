@@ -1,4 +1,4 @@
-import { example, loadDay } from './util';
+import { example, loadDayLines } from './util';
 
 const exampleData = ['1-3 a: abcde', '1-3 b: cdefg', '2-9 c: ccccccccc'].map(parseData);
 example.equal(2, countValidPasswords1(exampleData));
@@ -47,7 +47,7 @@ function countValidPasswords2(passwords: PolicyAndPassword[]): number {
   }, 0);
 }
 
-const data = loadDay(2).map(parseData);
+const data = loadDayLines(2).map(parseData);
 console.log({
   1: countValidPasswords1(data),
   2: countValidPasswords2(data),

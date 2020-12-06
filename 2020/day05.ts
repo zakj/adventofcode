@@ -1,4 +1,4 @@
-import { example, loadDay } from './util';
+import { example, loadDayLines } from './util';
 
 function findSeatId(boardingPass: string): number {
   let minRow = 0;
@@ -38,7 +38,7 @@ const examples: [string, number][] = [
 ];
 examples.forEach((e) => example.equal(e[1], findSeatId(e[0])));
 
-const seatIds = loadDay(5).map(findSeatId);
+const seatIds = loadDayLines(5).map(findSeatId);
 console.log({
   1: Math.max(...seatIds),
   2: findMissing(seatIds),

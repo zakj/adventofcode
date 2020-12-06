@@ -1,4 +1,4 @@
-import { example, loadDay, product } from './util';
+import { example, loadDayLines, product } from './util';
 
 example.deepEqual(
   [1721, 299],
@@ -34,7 +34,7 @@ function find3ElementsWithSum(target: number, data: number[]): ThreeNumbers {
   return results;
 }
 
-const data = loadDay(1).map(Number);
+const data = loadDayLines(1).map(Number);
 
 console.log({
   1: product(find2ElementsWithSum(2020, data)),

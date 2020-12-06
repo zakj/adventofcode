@@ -11,21 +11,14 @@ type Passport = {
   cid?: string;
 };
 
-function parsePassports(lines: string[]): Passport[] {
-  let passport: Passport = {};
-  const passports = lines.reduce((acc, line) => {
-    if (line.trim() === '') {
-      acc.push(passport);
-      passport = {};
-    } else {
-      line.split(' ').forEach((field) => {
-        const [key, value] = field.split(':');
-        passport[key] = value;
-      });
-    }
-    return acc;
-  }, []);
-  return [...passports, passport];
+function parsePassports(s: string): Passport[] {
+  return s.split('\n\n').map((passport) => {
+    return passport.split(/\s+/).reduce((acc, field) => {
+      const [key, value] = field.split(':');
+      acc[key] = value;
+      return acc;
+    }, {});
+  });
 }
 
 function containsRequiredFields(passport: Passport): boolean {
@@ -88,9 +81,7 @@ hgt:179cm
 
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in
-`
-    .trim()
-    .split('\n')
+`.trim()
 );
 
 example.equal(2, exampleData.filter(containsRequiredFields).length);
