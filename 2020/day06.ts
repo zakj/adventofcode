@@ -1,26 +1,5 @@
 import { example, loadDay, sum } from './util';
 
-const exampleGroups = `
-abc
-
-a
-b
-c
-
-ab
-ac
-
-a
-a
-a
-a
-
-b
-`.trim().split('\n\n');
-
-example.equal(11, sum(exampleGroups.map(uniqueCharacters)))
-example.equal(6, sum(exampleGroups.map(commonCharacters)))
-
 function uniqueCharacters(s: string): number {
   return new Set(s.replace(/\s+/gm, '')).size;
 }
@@ -32,6 +11,10 @@ function commonCharacters(group: string): number {
     return acc;
   }, 0)
 }
+
+const exampleGroups = loadDay(6, 'example').split('\n\n');
+example.equal(11, sum(exampleGroups.map(uniqueCharacters)))
+example.equal(6, sum(exampleGroups.map(commonCharacters)))
 
 const groups = loadDay(6).split('\n\n');
 console.log({

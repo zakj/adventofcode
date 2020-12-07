@@ -37,23 +37,6 @@ class Map {
   }
 }
 
-const exampleMap = new Map(
-  `
-..##.......
-#...#...#..
-.#....#..#.
-..#.#...#.#
-.#...##..#.
-..#.##.....
-.#.#.#....#
-.#........#
-#.##...#...
-#...##....#
-.#..#...#.#`
-    .trim()
-    .split('\n')
-);
-
 const part2Slopes = [
   { right: 1, down: 1 },
   { right: 3, down: 1 },
@@ -62,6 +45,7 @@ const part2Slopes = [
   { right: 1, down: 2 },
 ];
 
+const exampleMap = new Map(loadDayLines(3, 'example'));
 example.equal(
   7,
   exampleMap.countTilesForSlope({ right: 3, down: 1 }, Tile.Tree)
