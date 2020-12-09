@@ -1,5 +1,4 @@
-import { access } from 'fs/promises';
-import { example, loadDayLines } from './util';
+import { example, loadDayLines, Maybe, Nothing } from './util';
 
 enum Operator {
   Acc,
@@ -18,7 +17,7 @@ type Pointer = number;
 type State = {
   acc: Accumulator;
   ptr: Pointer;
-}
+};
 
 function parseInstructions(lines: string[]): Instruction[] {
   const operators = {
@@ -32,45 +31,8 @@ function parseInstructions(lines: string[]): Instruction[] {
   });
 }
 
-function accumulatorValueBeforeLoop(instructions: Instruction[]): number {
-  let accumulator = 0;
-  let pointer = 0;
-  const visited = new Set();
-  while (true) {
-    if (visited.has(pointer)) break;
-    visited.add(pointer);
-    const instr = instructions[pointer]
-    switch (instr.op) {
-      case Operator.Nop:
-        pointer++;
-        break;
-      case Operator.Acc:
-        accumulator += instr.offset;
-        pointer++;
-        break;
-      case Operator.Jmp:
-        pointer += instr.offset;
-        break;
-    }
-  }
-  return accumulator;
-}
-
-function willItLoop(instructions: Instruction[]): [boolean, State[]] {
-  let state: State = { acc: 0, ptr: 0 };
-  const history: State[] = [state];
-  const visited = new Set();
-  while (true) {
-    if (visited.has(state.ptr) || state.ptr >= instructions.length) break;
-    visited.add(state.ptr);
-    state = operate(instructions[state.ptr], state);
-    history.push(state);
-  }
-  return [visited.has(state.ptr), history];
-}
-
 function operate(instr: Instruction, currentState: State): State {
-  const state = {...currentState};
+  const state = { ...currentState };
   switch (instr.op) {
     case Operator.Nop:
       state.ptr++;
@@ -86,29 +48,48 @@ function operate(instr: Instruction, currentState: State): State {
   return state;
 }
 
+function accumulatorValueBeforeLoop(instructions: Instruction[]): number {
+  let state: State = { acc: 0, ptr: 0 };
+  const visited = new Set();
+  while (true) {
+    if (visited.has(state.ptr)) return state.acc;
+    visited.add(state.ptr);
+    state = operate(instructions[state.ptr], state);
+  }
+}
+
+function finalAccumulator(instructions: Instruction[]): Maybe<Accumulator> {
+  let state: State = { acc: 0, ptr: 0 };
+  const visited = new Set();
+  while (true) {
+    if (visited.has(state.ptr)) return Nothing;
+    if (state.ptr >= instructions.length) return state.acc;
+    visited.add(state.ptr);
+    state = operate(instructions[state.ptr], state);
+  }
+}
+
 function findAccumulatorAfterNonLoopingChange(instructions: Instruction[]): Accumulator {
   const swaps = {
     [Operator.Jmp]: Operator.Nop,
     [Operator.Nop]: Operator.Jmp,
-  }
-  let result;
-  instructions.find((instr, i) => {
+  };
+  for (let i = 0; i < instructions.length; ++i) {
+    const instr = instructions[i];
     if (instr.op in swaps) {
       const modifiedInstructions = [...instructions];
-      modifiedInstructions[i] = {op: swaps[instr.op], offset: instr.offset};
-      const [looped, history] = willItLoop(modifiedInstructions);
-      if (!looped) {
-        result = history[history.length - 1].acc; 
-        return true
+      modifiedInstructions[i] = { op: swaps[instr.op], offset: instr.offset };
+      const result = finalAccumulator(modifiedInstructions);
+      if (result !== Nothing) {
+        return result;
       }
     }
-  })
-  return result;
+  }
 }
 
 const exampleInstructions = parseInstructions(loadDayLines(8, 'example'));
-example.equal(5, accumulatorValueBeforeLoop(exampleInstructions))
-example.equal(8, findAccumulatorAfterNonLoopingChange(exampleInstructions))
+example.equal(5, accumulatorValueBeforeLoop(exampleInstructions));
+example.equal(8, findAccumulatorAfterNonLoopingChange(exampleInstructions));
 
 const instructions = parseInstructions(loadDayLines(8));
 console.log({

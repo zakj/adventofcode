@@ -28,6 +28,9 @@ export function loadDayLines(n: number, prefix?: string): string[] {
   return loadDay(n, prefix).split('\n');
 }
 
+export type Maybe<T> = T | typeof Nothing
+export const Nothing = Symbol('Nothing');
+
 export const product = (xs: number[]): number => xs.reduce((acc, x) => acc * x);
 
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x);
