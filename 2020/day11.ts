@@ -30,7 +30,7 @@ function parseGrid(lines: string[]): Grid {
   };
 }
 
-function runSeatingRound(grid: Grid): Grid {
+function runSeatingRoundPart1(grid: Grid): Grid {
   const next: Grid = {
     width: grid.width,
     height: grid.height,
@@ -66,6 +66,61 @@ function neighbors(grid: Grid, i: number): PositionType[] {
     .map((p) => grid.layout[pointToIndex(grid, p)]);
 }
 
+function runSeatingRoundPart2(grid: Grid): Grid {
+  const next: Grid = {
+    width: grid.width,
+    height: grid.height,
+    layout: [...grid.layout],
+  };
+  grid.layout.forEach((type, i) => {
+    const occupiedVisibleSeats = countVisibleSeats(grid, i);
+    if (type === PositionType.EmptySeat && occupiedVisibleSeats === 0) {
+      next.layout[i] = PositionType.OccupiedSeat;
+    }
+    if (type === PositionType.OccupiedSeat && occupiedVisibleSeats >= 5) {
+      next.layout[i] = PositionType.EmptySeat;
+    }
+  });
+  return next;
+
+}
+
+function* line(grid, from: Point, direction: {x: number, y: number}): Generator<PositionType> {
+  const current = {x: from.x, y: from.y}
+  while (true) {
+    current.x += direction.x;
+    current.y += direction.y;
+    if (isWithinBounds(grid, current)) yield grid.layout[pointToIndex(grid, current)];
+    else break;
+  }
+}
+
+function countVisibleSeats(grid: Grid, i: number): number {
+  const from = indexToPoint(grid, i);
+  const directions = [
+    {x: -1, y: 0},
+    {x: 1, y: 0},
+    {x: 0, y: -1},
+    {x: -1, y: -1},
+    {x: 1, y: -1},
+    {x: 0, y: 1},
+    {x: -1, y: 1},
+    {x: 1, y: 1},
+  ]
+  return directions.reduce((seats, dir) => {
+    for (const type of line(grid, from, dir)) {
+      if (type === PositionType.EmptySeat) {
+        break;
+      }
+      if (type === PositionType.OccupiedSeat) {
+        seats++;
+        break;
+      }
+    }
+    return seats;
+  }, 0)
+}
+
 function indexToPoint(grid: Grid, i: number): Point {
   return {
     x: i % grid.width,
@@ -86,11 +141,11 @@ function isWithinBounds(grid: Grid, point: Point): boolean {
   );
 }
 
-function stabilize(grid: Grid): Grid {
+function stabilize(grid: Grid, round: (grid: Grid) => Grid): Grid {
   let prev: Grid;
   do {
     prev = grid;
-    grid = runSeatingRound(grid);
+    grid = round(grid);
   } while (JSON.stringify(prev.layout) !== JSON.stringify(grid.layout));
   return grid;
 }
@@ -98,12 +153,19 @@ function stabilize(grid: Grid): Grid {
 const exampleGrid = parseGrid(loadDayLines(11, 'example'));
 example.equal(
   37,
-  stabilize(exampleGrid).layout.filter((t) => t === PositionType.OccupiedSeat)
+  stabilize(exampleGrid, runSeatingRoundPart1).layout.filter((t) => t === PositionType.OccupiedSeat)
+    .length
+);
+example.equal(
+  26,
+  stabilize(exampleGrid, runSeatingRoundPart2).layout.filter((t) => t === PositionType.OccupiedSeat)
     .length
 );
 
 const grid = parseGrid(loadDayLines(11));
 console.log({
-  1: stabilize(grid).layout.filter((t) => t === PositionType.OccupiedSeat)
+  1: stabilize(grid, runSeatingRoundPart1).layout.filter((t) => t === PositionType.OccupiedSeat)
+    .length,
+  2: stabilize(grid, runSeatingRoundPart2).layout.filter((t) => t === PositionType.OccupiedSeat)
     .length,
 });
