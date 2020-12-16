@@ -8,7 +8,7 @@ export function answers(...fns: (() => any)[]): void {
     green: 32,
     grey: 90,
   };
-  const color = (c, text) => `\x1b[${colors[c]}m${text}\x1b[89m`;
+  const color = (c, text) => `\x1b[${colors[c]}m${text}\x1b[0m`;
 
   fns.forEach((fn, i) => {
     const start = performance.now();
@@ -18,11 +18,11 @@ export function answers(...fns: (() => any)[]): void {
       durationMs > 1000
         ? `${(durationMs / 1000).toFixed(3)}s`
         : `${durationMs.toFixed(3)}m`;
-    const width = process.stdout.columns - duration.length - 6;
+    const width = process.stdout.columns - duration.length - 4;
     console.log(
       `${i + 1}:`,
       color('green', result.toString().padEnd(width)),
-      color('grey', `(${duration})`)
+      color('grey', duration)
     );
   });
 }
