@@ -5,7 +5,7 @@ const isOperator = (c: string): boolean => ['+', '*'].includes(c);
 
 type Token = number | '*' | '+' | Token[];
 
-function tokenize(s: string, evaluate: (s: string) => number): Token[] {
+function tokenize(s: string): Token[] {
   let buffer = '';
   let openParens = 0;
   let stack = [];
@@ -33,7 +33,7 @@ function tokenize(s: string, evaluate: (s: string) => number): Token[] {
       if (openParens) {
         buffer += c;
       } else {
-        stack.push(evaluate(buffer));
+        stack.push(tokenize(buffer));
         buffer = '';
       }
     }
@@ -43,54 +43,47 @@ function tokenize(s: string, evaluate: (s: string) => number): Token[] {
   return stack;
 }
 
-function evaluate(s: string): number {
-  let stack = tokenize(s, evaluate);
-  let result = stack.shift() as number;
-  for (let i = 0; i < stack.length; i += 2) {
-    const op = stack[i];
-    const val = stack[i + 1] as number;
+function evaluate(tokens: Token[], priorityOperator?: '+' | '*'): number {
+  tokens = tokens.map(t => Array.isArray(t) ? evaluate(t, priorityOperator) : t);
+
+  if (priorityOperator) {
+    let i: number;
+    while ((i = tokens.findIndex((x) => x === priorityOperator)) !== -1) {
+      const a = tokens[i - 1] as number
+      const b = tokens[i + 1] as number
+      tokens.splice(i - 1, 3, priorityOperator === "+" ? a + b : a * b)
+    }
+  }
+
+  let result = tokens.shift() as number;
+  for (let i = 0; i < tokens.length; i += 2) {
+    const op = tokens[i];
+    const val = tokens[i + 1] as number;
     if (op === '+') result += val;
     if (op === '*') result *= val;
   }
-
   return result;
 }
 
-function evaluatePrecedence(s: string): number {
-  let stack = tokenize(s, evaluatePrecedence);
+const part1 = (s: string): number => evaluate(tokenize(s));
+const part2 = (s: string): number => evaluate(tokenize(s), '+');
 
-  let i;
-  while ((i = stack.findIndex(x => x === '+')) !== -1) {
-    const sum = (stack[i - 1] as number) + (stack[i + 1] as number);
-    stack = [].concat(stack.slice(0, i - 1), sum, stack.slice(i + 2))
-  }
-
-  let result = stack.shift() as number;
-  for (let i = 0; i < stack.length; i += 2) {
-    const op = stack[i];
-    const val = stack[i + 1] as number;
-    if (op === '*') result *= val;
-  }
-  return result;
-}
-
-example.equal(evaluate('2 * 3 + (4 * 5)'), 26);
-example.equal(evaluate('5 + (8 * 3 + 9 + 3 * 4 * 3)'), 437);
-example.equal(evaluate('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 12240);
+example.equal(part1('2 * 3 + (4 * 5)'), 26);
+example.equal(part1('5 + (8 * 3 + 9 + 3 * 4 * 3)'), 437);
+example.equal(part1('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 12240);
 example.equal(
-  evaluate('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'),
+  part1('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'),
   13632
 );
 
-example.equal(evaluatePrecedence('1 + (2 * 3) + (4 * (5 + 6))'), 51)
-example.equal(evaluatePrecedence('2 * 3 + (4 * 5)'), 46)
-example.equal(evaluatePrecedence('5 + (8 * 3 + 9 + 3 * 4 * 3)'), 1445)
-example.equal(evaluatePrecedence('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 669060)
-example.equal(evaluatePrecedence('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'), 23340)
-
+example.equal(part2('1 + (2 * 3) + (4 * (5 + 6))'), 51)
+example.equal(part2('2 * 3 + (4 * 5)'), 46)
+example.equal(part2('5 + (8 * 3 + 9 + 3 * 4 * 3)'), 1445)
+example.equal(part2('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 669060)
+example.equal(part2('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'), 23340)
 
 const expressions = loadDayLines(18);
 answers(
-  () => sum(expressions.map(evaluate)),
-  () => sum(expressions.map(evaluatePrecedence)),
+  () => sum(expressions.map(part1)),
+  () => sum(expressions.map(part2)),
 );
