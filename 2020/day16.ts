@@ -1,4 +1,4 @@
-import { answers, example, loadDay, product, sum } from './util';
+import { answers, example, loadDay, product, range, sum } from './util';
 
 type Field = {
   name: string;
@@ -12,12 +12,6 @@ type Data = {
   yourTicket: Ticket;
   otherTickets: Ticket[];
 };
-
-function range(start: number, stop: number): number[] {
-  const xs = [];
-  for (let i = start; i < stop; ++i) xs.push(i);
-  return xs;
-}
 
 function union<T>(a: Set<T>, b: Set<T>): Set<T> {
   const rv = new Set(a);
