@@ -41,6 +41,13 @@ const assertHandler: ProxyHandler<typeof assert> = {
   },
 };
 
+export function cartesianProduct<T>(...arrays: T[][]): T[][] {
+  return arrays.reduce(
+    (a, b) => a.flatMap((x) => b.map((y) => [x, y].flat())),
+    [[]]
+  );
+}
+
 export const example: typeof assert = new Proxy(assert, assertHandler);
 
 export function loadDay(n: number, prefix: string = 'day'): string {
