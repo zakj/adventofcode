@@ -1,89 +1,70 @@
 import { answers, example, loadDayLines, sum } from './util';
 
-const isDigit = (c: string): boolean => /\d/.test(c);
-const isOperator = (c: string): boolean => ['+', '*'].includes(c);
+type Operator = '*' | '+';
+type Token = number | Operator;
 
-type Token = number | '*' | '+' | Token[];
+const isDigit = (s: string): boolean => /^\d$/.test(s);
+const isOperator = (s: string): s is Operator => ['+', '*'].includes(s);
 
-function tokenize(s: string): Token[] {
-  let buffer = '';
-  let openParens = 0;
-  let stack = [];
-
-  [...s.replaceAll(/\s+/g, '')].forEach((c) => {
-    if (isDigit(c)) {
-      buffer += c;
-    } else if (!openParens && buffer) {
-      stack.push(Number(buffer));
-      buffer = '';
-    }
-
-    if (isOperator(c)) {
-      if (openParens) buffer += c;
-      else stack.push(c);
-    }
-
-    if (c === '(') {
-      if (openParens) buffer += c;
-      openParens++;
-    }
-
-    if (c === ')') {
-      openParens--;
-      if (openParens) {
-        buffer += c;
-      } else {
-        stack.push(tokenize(buffer));
-        buffer = '';
+function shuntingYard(s: string, precedence = { '*': 0, '+': 0 }): Token[] {
+  const output: Token[] = [];
+  const opStack: (Operator | '(')[] = [];
+  s.match(/(\d+|[*+()])/g).forEach((token) => {
+    if (isDigit(token)) {
+      output.push(Number(token));
+    } else if (isOperator(token)) {
+      while (
+        opStack.length &&
+        isOperator(opStack[opStack.length - 1]) &&
+        precedence[opStack[opStack.length - 1]] >= precedence[token]
+      ) {
+        output.push(opStack.pop() as Operator);
       }
+      opStack.push(token);
+    } else if (token === '(') {
+      opStack.push(token);
+    } else if (token === ')') {
+      let op: Operator | '(';
+      while ((op = opStack.pop()) !== '(') output.push(op);
+      if (op !== '(') throw new Error('mismatched parens');
     }
   });
-  if (buffer) stack.push(Number(buffer));
-
-  return stack;
+  while (opStack.length) output.push(opStack.pop() as Operator);
+  return output;
 }
 
-function evaluate(tokens: Token[], priorityOperator?: '+' | '*'): number {
-  tokens = tokens.map(t => Array.isArray(t) ? evaluate(t, priorityOperator) : t);
-
-  if (priorityOperator) {
-    let i: number;
-    while ((i = tokens.findIndex((x) => x === priorityOperator)) !== -1) {
-      const a = tokens[i - 1] as number
-      const b = tokens[i + 1] as number
-      tokens.splice(i - 1, 3, priorityOperator === "+" ? a + b : a * b)
+function rpn(tokens: Token[]): number {
+  const stack: number[] = [];
+  while (tokens.length > 0) {
+    const t = tokens.shift();
+    if (typeof t === 'number') {
+      stack.push(t);
+    } else {
+      const [b, a] = [stack.pop(), stack.pop()];
+      if (t === '+') stack.push(a + b);
+      if (t === '*') stack.push(a * b);
     }
   }
-
-  let result = tokens.shift() as number;
-  for (let i = 0; i < tokens.length; i += 2) {
-    const op = tokens[i];
-    const val = tokens[i + 1] as number;
-    if (op === '+') result += val;
-    if (op === '*') result *= val;
-  }
-  return result;
+  if (stack.length !== 1) throw new Error();
+  return stack.pop();
 }
 
-const part1 = (s: string): number => evaluate(tokenize(s));
-const part2 = (s: string): number => evaluate(tokenize(s), '+');
+const part1 = (s: string): number => rpn(shuntingYard(s));
+const part2 = (s: string): number => rpn(shuntingYard(s, { '+': 1, '*': 0 }));
 
 example.equal(part1('2 * 3 + (4 * 5)'), 26);
 example.equal(part1('5 + (8 * 3 + 9 + 3 * 4 * 3)'), 437);
 example.equal(part1('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 12240);
-example.equal(
-  part1('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'),
-  13632
-);
+example.equal(part1('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'), 13632);
 
-example.equal(part2('1 + (2 * 3) + (4 * (5 + 6))'), 51)
-example.equal(part2('2 * 3 + (4 * 5)'), 46)
-example.equal(part2('5 + (8 * 3 + 9 + 3 * 4 * 3)'), 1445)
-example.equal(part2('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 669060)
-example.equal(part2('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'), 23340)
+example.equal(part2('1 + (2 * 3) + (4 * (5 + 6))'), 51);
+example.equal(part2('2 * 3 + (4 * 5)'), 46);
+example.equal(part2('5 + (8 * 3 + 9 + 3 * 4 * 3)'), 1445);
+example.equal(part2('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 669060);
+example.equal(part2('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'), 23340);
 
 const expressions = loadDayLines(18);
 answers(
   () => sum(expressions.map(part1)),
-  () => sum(expressions.map(part2)),
+  () => sum(expressions.map(part2))
 );
