@@ -68,7 +68,7 @@ const assertHandler: ProxyHandler<typeof assert> = {
   get: function (target, prop, receiver) {
     const obj = Reflect.get(target, prop, receiver);
     if (typeof obj !== 'function') return obj;
-    return function (...args) {
+    return function (...args: Parameters<typeof obj>) {
       try {
         obj(...args);
       } catch (e) {
