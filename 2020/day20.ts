@@ -1,13 +1,12 @@
-import { answers, example, loadDay, product } from './util';
+import { answers, example, load, product } from './util';
 
 type Tile = {
   id: number;
   edges: number[];
 };
 
-function parseTiles(s: string): Tile[] {
-  return s.split('\n\n').map((s) => {
-    const lines = s.split('\n');
+function parseTiles(tiles: string[][]): Tile[] {
+  return tiles.map((lines) => {
     const id = Number(lines.shift().match(/\d+/)[0]);
     const width = lines[0].length;
     const edges = [
@@ -45,10 +44,10 @@ function findCorners(tiles: Tile[]) {
   );
 }
 
-const exampleTiles = parseTiles(loadDay(20, 'example'));
+const exampleTiles = parseTiles(load(20, 'ex').paragraphs);
 example.equal(20899048083289, product(findCorners(exampleTiles).map(t => t.id)))
 
-const tiles = parseTiles(loadDay(20))
+const tiles = parseTiles(load(20).paragraphs)
 answers(
   () => product(findCorners(tiles).map(t => t.id))
 )

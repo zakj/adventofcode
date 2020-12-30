@@ -1,17 +1,18 @@
-import { answers, example, loadDayLines } from './util';
-
+import { answers, example } from './util';
 
 function spokenNumber(input: number[], n: number): number {
-  const lastSaid: {[k: number]: number[]} = {};
+  const lastSaid: { [k: number]: number[] } = {};
   input.forEach((x, i) => {
-    lastSaid[x] ||= []
-    lastSaid[x].push(i)
-  })
+    lastSaid[x] ||= [];
+    lastSaid[x].push(i);
+  });
   let last = input[input.length - 1];
   for (let i = input.length; i < n; ++i) {
     let speak = 0;
     if (lastSaid[last].length > 1) {
-      speak = lastSaid[last][lastSaid[last].length - 1] - lastSaid[last][lastSaid[last].length - 2];
+      speak =
+        lastSaid[last][lastSaid[last].length - 1] -
+        lastSaid[last][lastSaid[last].length - 2];
     }
     lastSaid[speak] ||= [];
     lastSaid[speak].push(i);
@@ -29,6 +30,6 @@ example.equal(438, spokenNumber([3, 2, 1], 2020));
 example.equal(1836, spokenNumber([3, 1, 2], 2020));
 
 answers(
-  () => spokenNumber([18,8,0,5,4,1,20], 2020),
-  () => spokenNumber([18,8,0,5,4,1,20], 30000000),
-)
+  () => spokenNumber([18, 8, 0, 5, 4, 1, 20], 2020),
+  () => spokenNumber([18, 8, 0, 5, 4, 1, 20], 30000000)
+);

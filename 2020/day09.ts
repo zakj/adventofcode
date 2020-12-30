@@ -1,4 +1,4 @@
-import { example, loadDayLines, sum } from './util';
+import { answers, example, load, sum } from './util';
 
 function isSumOfTwoElements(needle: number, haystack: number[]): boolean {
   for (let i = 0; i < haystack.length; ++i) {
@@ -24,13 +24,13 @@ function contiguousSum(needle: number, haystack: number[]): number {
   }
 }
 
-const exampleData = loadDayLines(9, 'example').map(Number);
+const exampleData = load(9, 'ex').numbers;
 example.equal(127, firstFailingNumber(exampleData, 5));
 example.equal(62, contiguousSum(127, exampleData));
 
-const data = loadDayLines(9).map(Number);
+const data = load(9).numbers;
 const part1 = firstFailingNumber(data, 25);
-console.log({
-  1: part1,
-  2: contiguousSum(part1, data),
-});
+answers(
+  () => part1,
+  () => contiguousSum(part1, data)
+);

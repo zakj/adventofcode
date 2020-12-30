@@ -1,4 +1,4 @@
-import { example, loadDay } from './util';
+import { answers, example, load } from './util';
 
 type Passport = {
   byr?: string;
@@ -11,9 +11,9 @@ type Passport = {
   cid?: string;
 };
 
-function parsePassports(s: string): Passport[] {
-  return s.split('\n\n').map((passport) => {
-    return passport.split(/\s+/).reduce((acc, field) => {
+function parsePassports(passports: string[][]): Passport[] {
+  return passports.map((passport) => {
+    return passport.join(' ').split(/\s+/).reduce((acc, field) => {
       const [key, value] = field.split(':');
       acc[key] = value;
       return acc;
@@ -66,12 +66,11 @@ function isValid(passport: Passport): boolean {
   return true;
 }
 
-const exampleData = parsePassports(loadDay(4, 'example'));
+const exampleData = parsePassports(load(4, 'ex').paragraphs);
 example.equal(2, exampleData.filter(containsRequiredFields).length);
 
-// { '1': 228, '2': 175 }
-const passports = parsePassports(loadDay(4));
-console.log({
-  1: passports.filter(containsRequiredFields).length,
-  2: passports.filter(isValid).length,
-});
+const passports = parsePassports(load(4).paragraphs);
+answers(
+  () => passports.filter(containsRequiredFields).length,
+  () => passports.filter(isValid).length,
+)

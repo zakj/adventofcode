@@ -1,13 +1,4 @@
-import { example, loadDayLines, product } from './util';
-
-example.deepEqual(
-  [1721, 299],
-  find2ElementsWithSum(2020, [1721, 979, 366, 299, 675, 1456])
-);
-example.deepEqual(
-  [979, 366, 675],
-  find3ElementsWithSum(2020, [1721, 979, 366, 299, 675, 1456])
-);
+import { answers, example, load, product } from './util';
 
 type TwoNumbers = [number, number];
 type ThreeNumbers = [number, number, number];
@@ -34,9 +25,17 @@ function find3ElementsWithSum(target: number, data: number[]): ThreeNumbers {
   return results;
 }
 
-const data = loadDayLines(1).map(Number);
+example.deepEqual(
+  [1721, 299],
+  find2ElementsWithSum(2020, [1721, 979, 366, 299, 675, 1456])
+);
+example.deepEqual(
+  [979, 366, 675],
+  find3ElementsWithSum(2020, [1721, 979, 366, 299, 675, 1456])
+);
 
-console.log({
-  1: product(find2ElementsWithSum(2020, data)),
-  2: product(find3ElementsWithSum(2020, data)),
-});
+const data = load(1).numbers;
+answers(
+  () => product(find2ElementsWithSum(2020, data)),
+  () => product(find3ElementsWithSum(2020, data))
+);

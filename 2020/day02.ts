@@ -1,8 +1,4 @@
-import { example, loadDayLines } from './util';
-
-const exampleData = ['1-3 a: abcde', '1-3 b: cdefg', '2-9 c: ccccccccc'].map(parseData);
-example.equal(2, countValidPasswords1(exampleData));
-example.equal(1, countValidPasswords2(exampleData));
+import { answers, example, load } from './util';
 
 type Policy = {
   n1: number;
@@ -47,8 +43,14 @@ function countValidPasswords2(passwords: PolicyAndPassword[]): number {
   }, 0);
 }
 
-const data = loadDayLines(2).map(parseData);
-console.log({
-  1: countValidPasswords1(data),
-  2: countValidPasswords2(data),
-});
+const exampleData = ['1-3 a: abcde', '1-3 b: cdefg', '2-9 c: ccccccccc'].map(
+  parseData
+);
+example.equal(2, countValidPasswords1(exampleData));
+example.equal(1, countValidPasswords2(exampleData));
+
+const data = load(2).lines.map(parseData);
+answers(
+  () => countValidPasswords1(data),
+  () => countValidPasswords2(data)
+);

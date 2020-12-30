@@ -1,4 +1,4 @@
-import { example, loadDayLines } from './util';
+import { answers, example, load } from './util';
 
 type Instruction = {
   action: string;
@@ -6,9 +6,9 @@ type Instruction = {
 };
 
 type Point = {
-  x: number,
-  y: number,
-}
+  x: number;
+  y: number;
+};
 
 function parseInstructions(lines: string[]): Instruction[] {
   return lines.map((line) => ({
@@ -18,15 +18,15 @@ function parseInstructions(lines: string[]): Instruction[] {
 }
 
 function executePartOne(instructions: Instruction[]): Point {
-  const pos: Point = {x: 0, y: 0};
+  const pos: Point = { x: 0, y: 0 };
   const headingDirection = {
-    0: {x: 1, y: 0},
-    90: {x: 0, y: 1},
-    180: {x: -1, y: 0},
-    270: {x: 0, y: -1},
-  }
+    0: { x: 1, y: 0 },
+    90: { x: 0, y: 1 },
+    180: { x: -1, y: 0 },
+    270: { x: 0, y: -1 },
+  };
   let heading = 0;
-  instructions.forEach(instr => {
+  instructions.forEach((instr) => {
     switch (instr.action) {
       case 'N':
         pos.y -= instr.value;
@@ -53,14 +53,14 @@ function executePartOne(instructions: Instruction[]): Point {
         pos.y += instr.value * direction.y;
         break;
     }
-  })
+  });
   return pos;
 }
 
 function executePartTwo(instructions: Instruction[]): Point {
-  const pos: Point = {x: 0, y: 0};
-  const waypointDelta = {x: 10, y: 1};
-  instructions.forEach(instr => {
+  const pos: Point = { x: 0, y: 0 };
+  const waypointDelta = { x: 10, y: 1 };
+  instructions.forEach((instr) => {
     switch (instr.action) {
       case 'N':
         waypointDelta.y += instr.value;
@@ -77,26 +77,44 @@ function executePartTwo(instructions: Instruction[]): Point {
       case 'L':
         switch (instr.value) {
           case 90:
-            [waypointDelta.x, waypointDelta.y] = [-waypointDelta.y, waypointDelta.x]
+            [waypointDelta.x, waypointDelta.y] = [
+              -waypointDelta.y,
+              waypointDelta.x,
+            ];
             break;
           case 180:
-            [waypointDelta.x, waypointDelta.y] = [-waypointDelta.x, -waypointDelta.y]
+            [waypointDelta.x, waypointDelta.y] = [
+              -waypointDelta.x,
+              -waypointDelta.y,
+            ];
             break;
           case 270:
-            [waypointDelta.x, waypointDelta.y] = [waypointDelta.y, -waypointDelta.x]
+            [waypointDelta.x, waypointDelta.y] = [
+              waypointDelta.y,
+              -waypointDelta.x,
+            ];
             break;
         }
         break;
       case 'R':
         switch (instr.value) {
           case 90:
-            [waypointDelta.x, waypointDelta.y] = [waypointDelta.y, -waypointDelta.x]
+            [waypointDelta.x, waypointDelta.y] = [
+              waypointDelta.y,
+              -waypointDelta.x,
+            ];
             break;
           case 180:
-            [waypointDelta.x, waypointDelta.y] = [-waypointDelta.x, -waypointDelta.y]
+            [waypointDelta.x, waypointDelta.y] = [
+              -waypointDelta.x,
+              -waypointDelta.y,
+            ];
             break;
           case 270:
-            [waypointDelta.x, waypointDelta.y] = [-waypointDelta.y, waypointDelta.x]
+            [waypointDelta.x, waypointDelta.y] = [
+              -waypointDelta.y,
+              waypointDelta.x,
+            ];
             break;
         }
         break;
@@ -105,7 +123,7 @@ function executePartTwo(instructions: Instruction[]): Point {
         pos.y += waypointDelta.y * instr.value;
         break;
     }
-  })
+  });
   return pos;
 }
 
@@ -113,13 +131,13 @@ function manhattanDistance(point: Point): number {
   return Math.abs(point.x) + Math.abs(point.y);
 }
 
-const exampleInstructions = parseInstructions(loadDayLines(12, 'example'));
+const exampleInstructions = parseInstructions(load(12, 'ex').lines);
 const exampleOneEnd = executePartOne(exampleInstructions);
 example.equal(25, manhattanDistance(executePartOne(exampleInstructions)));
 example.equal(286, manhattanDistance(executePartTwo(exampleInstructions)));
 
-const instructions = parseInstructions(loadDayLines(12));
-console.log({
-  1: manhattanDistance(executePartOne(instructions)),
-  2: manhattanDistance(executePartTwo(instructions)),
-})
+const instructions = parseInstructions(load(12).lines);
+answers(
+  () => manhattanDistance(executePartOne(instructions)),
+  () => manhattanDistance(executePartTwo(instructions))
+);

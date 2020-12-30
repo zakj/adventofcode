@@ -1,4 +1,4 @@
-import { example, loadDayLines } from './util';
+import { answers, example, load } from './util';
 
 function joltageJumps(adapters: number[]): { [key: number]: number } {
   adapters = [0].concat(adapters);
@@ -43,7 +43,7 @@ function countValidPaths(adapters: number[]): number {
   return result * pathsPerContiguousNumber[contiguousCount];
 }
 
-const exampleAdapters = loadDayLines(10, 'example').map(Number);
+const exampleAdapters = load(10, 'ex').numbers;
 const exampleDiffs = joltageJumps(exampleAdapters);
 example.deepEqual([22, 10], [exampleDiffs[1], exampleDiffs[3]]);
 example.equal(
@@ -52,9 +52,11 @@ example.equal(
 );
 example.equal(19208, countValidPaths(exampleAdapters));
 
-const adapters = loadDayLines(10).map(Number);
-const diffs = joltageJumps(adapters);
-console.log({
-  1: diffs[1] * diffs[3],
-  2: countValidPaths(adapters),
-});
+const adapters = load(10).numbers;
+answers(
+  () => {
+    const diffs = joltageJumps(adapters);
+    return diffs[1] * diffs[3];
+  },
+  () => countValidPaths(adapters),
+);

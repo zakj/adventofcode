@@ -43,4 +43,4 @@ example.equal(14897079, encryptionKey(examplePubKeys));
 const pubKeys = [10604480, 4126658];
 answers(
   () => encryptionKey(pubKeys)
-)
+);

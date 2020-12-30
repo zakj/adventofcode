@@ -1,4 +1,4 @@
-import { answers, example, loadDay, product, range, sum } from './util';
+import { answers, example, load, product, range, sum } from './util';
 
 type Field = {
   name: string;
@@ -23,10 +23,10 @@ function unionAll<T>(sets: Set<T>[]): Set<T> {
   return sets.reduce((acc, s) => union(acc, s), new Set());
 }
 
-function parse(s: string): Data {
-  const [fieldStr, yourTicketStr, otherTicketsStr] = s.split('\n\n');
+function parse(chunks: string[][]): Data {
+  const [fieldLines, yourTicketLines, otherTicketsLines] = chunks;
   return {
-    fields: fieldStr.split('\n').map((f) => {
+    fields: fieldLines.map((f) => {
       const [name, rulesStr] = f.split(': ');
       const values = [];
       rulesStr.split(' or ').forEach((rule) => {
@@ -35,9 +35,8 @@ function parse(s: string): Data {
       });
       return { name, values: new Set(values) };
     }),
-    yourTicket: yourTicketStr.split('\n')[1].split(',').map(Number),
-    otherTickets: otherTicketsStr
-      .split('\n')
+    yourTicket: yourTicketLines[1].split(',').map(Number),
+    otherTickets: otherTicketsLines
       .slice(1)
       .map((t) => t.split(',').map(Number)),
   };
@@ -94,15 +93,15 @@ function fieldIndexes(data: Data): { [k: string]: number } {
   );
 }
 
-const exampleData1 = parse(loadDay(16, 'example1'));
+const exampleData1 = parse(load(16, 'ex1').paragraphs);
 example.equal(
   71,
   sum(invalidValues(exampleData1.fields, exampleData1.otherTickets))
 );
-const exampleData2 = parse(loadDay(16, 'example2'));
+const exampleData2 = parse(load(16, 'ex2').paragraphs);
 example.deepEqual({ class: 1, row: 0, seat: 2 }, fieldIndexes(exampleData2));
 
-const data = parse(loadDay(16));
+const data = parse(load(16).paragraphs);
 answers(
   () => sum(invalidValues(data.fields, data.otherTickets)),
   () => {

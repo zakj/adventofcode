@@ -1,4 +1,4 @@
-import { answers, example, loadDayLines } from './util';
+import { answers, example, load } from './util';
 
 type Food = {
   ingredients: Set<string>;
@@ -75,7 +75,7 @@ function part2(foods: Food[]): string {
   return keys.map((k) => allergens.get(k)).join(',');
 }
 
-const exampleFoods = parseFoods(loadDayLines(21, 'example'));
+const exampleFoods = parseFoods(load(21, 'ex').lines);
 example.deepEqual(
   new Set(['kfcds', 'nhms', 'sbzzf', 'trh']),
   safeFoods(exampleFoods)
@@ -83,7 +83,7 @@ example.deepEqual(
 example.equal(5, part1(exampleFoods));
 example.equal('mxmxvkd,sqjhc,fvjkl', part2(exampleFoods));
 
-const foods = parseFoods(loadDayLines(21));
+const foods = parseFoods(load(21).lines);
 answers(
   () => part1(foods),
   () => part2(foods)

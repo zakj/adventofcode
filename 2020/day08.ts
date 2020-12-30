@@ -1,4 +1,4 @@
-import { example, loadDayLines, Maybe, Nothing } from './util';
+import { answers, example, load, Maybe, Nothing } from './util';
 
 enum Operator {
   Acc,
@@ -69,7 +69,9 @@ function finalAccumulator(instructions: Instruction[]): Maybe<Accumulator> {
   }
 }
 
-function findAccumulatorAfterNonLoopingChange(instructions: Instruction[]): Accumulator {
+function findAccumulatorAfterNonLoopingChange(
+  instructions: Instruction[]
+): Accumulator {
   const swaps = {
     [Operator.Jmp]: Operator.Nop,
     [Operator.Nop]: Operator.Jmp,
@@ -87,12 +89,12 @@ function findAccumulatorAfterNonLoopingChange(instructions: Instruction[]): Accu
   }
 }
 
-const exampleInstructions = parseInstructions(loadDayLines(8, 'example'));
+const exampleInstructions = parseInstructions(load(8, 'ex').lines);
 example.equal(5, accumulatorValueBeforeLoop(exampleInstructions));
 example.equal(8, findAccumulatorAfterNonLoopingChange(exampleInstructions));
 
-const instructions = parseInstructions(loadDayLines(8));
-console.log({
-  1: accumulatorValueBeforeLoop(instructions),
-  2: findAccumulatorAfterNonLoopingChange(instructions),
-});
+const instructions = parseInstructions(load(8).lines);
+answers(
+  () => accumulatorValueBeforeLoop(instructions),
+  () => findAccumulatorAfterNonLoopingChange(instructions)
+);

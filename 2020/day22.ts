@@ -1,11 +1,9 @@
-import { answers, example, loadDay, sum } from './util';
+import { answers, example, load, sum } from './util';
 
 type Hand = number[];
 
-function parseGame(s: string): Hand[] {
-  return s
-    .split('\n\n')
-    .map((player) => player.split('\n').slice(1).map(Number));
+function parseGame(games: string[][]): Hand[] {
+  return games.map((player) => player.slice(1).map(Number));
 }
 
 function play(hands: Hand[]): Hand[] {
@@ -48,11 +46,11 @@ function playRecursive(hands: Hand[]): [number, number] {
   return [score(p1), score(p2)];
 }
 
-const exampleGame = parseGame(loadDay(22, 'example'));
+const exampleGame = parseGame(load(22, 'ex').paragraphs);
 example.equal(306, Math.max(...play(exampleGame).map(score)));
 example.equal(291, Math.max(...playRecursive(exampleGame)));
 
-const game = parseGame(loadDay(22));
+const game = parseGame(load(22).paragraphs);
 answers(
   () => Math.max(...play(game).map(score)),
   () => Math.max(...playRecursive(game))

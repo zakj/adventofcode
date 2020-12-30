@@ -1,4 +1,4 @@
-import { example, loadDayLines } from './util';
+import { answers, example, load } from './util';
 
 enum PositionType {
   Floor = '.',
@@ -82,15 +82,19 @@ function runSeatingRoundPart2(grid: Grid): Grid {
     }
   });
   return next;
-
 }
 
-function* line(grid, from: Point, direction: {x: number, y: number}): Generator<PositionType> {
-  const current = {x: from.x, y: from.y}
+function* line(
+  grid,
+  from: Point,
+  direction: { x: number; y: number }
+): Generator<PositionType> {
+  const current = { x: from.x, y: from.y };
   while (true) {
     current.x += direction.x;
     current.y += direction.y;
-    if (isWithinBounds(grid, current)) yield grid.layout[pointToIndex(grid, current)];
+    if (isWithinBounds(grid, current))
+      yield grid.layout[pointToIndex(grid, current)];
     else break;
   }
 }
@@ -98,15 +102,15 @@ function* line(grid, from: Point, direction: {x: number, y: number}): Generator<
 function countVisibleSeats(grid: Grid, i: number): number {
   const from = indexToPoint(grid, i);
   const directions = [
-    {x: -1, y: 0},
-    {x: 1, y: 0},
-    {x: 0, y: -1},
-    {x: -1, y: -1},
-    {x: 1, y: -1},
-    {x: 0, y: 1},
-    {x: -1, y: 1},
-    {x: 1, y: 1},
-  ]
+    { x: -1, y: 0 },
+    { x: 1, y: 0 },
+    { x: 0, y: -1 },
+    { x: -1, y: -1 },
+    { x: 1, y: -1 },
+    { x: 0, y: 1 },
+    { x: -1, y: 1 },
+    { x: 1, y: 1 },
+  ];
   return directions.reduce((seats, dir) => {
     for (const type of line(grid, from, dir)) {
       if (type === PositionType.EmptySeat) {
@@ -118,7 +122,7 @@ function countVisibleSeats(grid: Grid, i: number): number {
       }
     }
     return seats;
-  }, 0)
+  }, 0);
 }
 
 function indexToPoint(grid: Grid, i: number): Point {
@@ -150,22 +154,28 @@ function stabilize(grid: Grid, round: (grid: Grid) => Grid): Grid {
   return grid;
 }
 
-const exampleGrid = parseGrid(loadDayLines(11, 'example'));
+const exampleGrid = parseGrid(load(11, 'ex').lines);
 example.equal(
   37,
-  stabilize(exampleGrid, runSeatingRoundPart1).layout.filter((t) => t === PositionType.OccupiedSeat)
-    .length
+  stabilize(exampleGrid, runSeatingRoundPart1).layout.filter(
+    (t) => t === PositionType.OccupiedSeat
+  ).length
 );
 example.equal(
   26,
-  stabilize(exampleGrid, runSeatingRoundPart2).layout.filter((t) => t === PositionType.OccupiedSeat)
-    .length
+  stabilize(exampleGrid, runSeatingRoundPart2).layout.filter(
+    (t) => t === PositionType.OccupiedSeat
+  ).length
 );
 
-const grid = parseGrid(loadDayLines(11));
-console.log({
-  1: stabilize(grid, runSeatingRoundPart1).layout.filter((t) => t === PositionType.OccupiedSeat)
-    .length,
-  2: stabilize(grid, runSeatingRoundPart2).layout.filter((t) => t === PositionType.OccupiedSeat)
-    .length,
-});
+const grid = parseGrid(load(11).lines);
+answers(
+  () =>
+    stabilize(grid, runSeatingRoundPart1).layout.filter(
+      (t) => t === PositionType.OccupiedSeat
+    ).length,
+  () =>
+    stabilize(grid, runSeatingRoundPart2).layout.filter(
+      (t) => t === PositionType.OccupiedSeat
+    ).length
+);

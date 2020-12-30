@@ -1,4 +1,4 @@
-import { answers, example, loadDayLines, sum } from './util';
+import { answers, example, load, sum } from './util';
 
 type Operator = '*' | '+';
 type Token = number | Operator;
@@ -63,7 +63,7 @@ example.equal(part2('5 + (8 * 3 + 9 + 3 * 4 * 3)'), 1445);
 example.equal(part2('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 669060);
 example.equal(part2('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'), 23340);
 
-const expressions = loadDayLines(18);
+const expressions = load(18).lines;
 answers(
   () => sum(expressions.map(part1)),
   () => sum(expressions.map(part2))
