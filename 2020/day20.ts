@@ -8,18 +8,22 @@ enum Edge {
 }
 
 class Tile {
-  edges: string[];
-  edgeHashes: number[];
+  constructor(public id: number, public image: string[][]) {}
 
-  constructor(public id: number, public image: string[][]) {
-    const width = image[0].length;
-    this.edges = [
-      image[0].join(''),
-      image.map((row) => row[width - 1]).join(''),
-      image[image.length - 1].join(''),
-      image.map((row) => row[0]).join(''),
+  get edges() {
+    const width = this.image[0].length;
+    return [
+      this.image[0].join(''),
+      this.image.map((row) => row[width - 1]).join(''),
+      this.image[this.image.length - 1].join(''),
+      this.image.map((row) => row[0]).join(''),
     ];
-    this.edgeHashes = this.edges.map(lineToNumber);
+  }
+
+  get interior() {
+    return this.image
+      .slice(1, this.image.length - 1)
+      .map((s) => s.slice(1, s.length - 1));
   }
 
   toString() {
@@ -37,28 +41,22 @@ function parseTiles(tiles: string[][]): Tile[] {
   });
 }
 
-function lineToNumber(s: string): number {
-  const fwd = s.replaceAll('#', '1').replaceAll('.', '0');
-  const rev = [...fwd].reverse().join('');
-  return Math.min(Number('0b' + fwd), Number('0b' + rev));
-}
-
-function edgeHashMap(tiles: Tile[]): Map<number, Tile[]> {
-  const rv = new Map<number, Tile[]>();
+function makeEdgeMap(tiles: Tile[]): Map<string, Tile[]> {
+  const rv = new Map<string, Tile[]>();
   tiles.forEach((t) => {
-    t.edgeHashes.forEach((e) => {
+    t.edges.forEach((e) => {
       rv.set(e, rv.has(e) ? [...rv.get(e), t] : [t]);
+      const reversed = [...e].reverse().join('');
+      rv.set(reversed, rv.has(reversed) ? [...rv.get(reversed), t] : [t]);
     });
   });
   return rv;
 }
 
 function findCorners(tiles: Tile[]): Tile[] {
-  const corners = [];
-  const edgeMap = edgeHashMap(tiles);
+  const edgeMap = makeEdgeMap(tiles);
   return tiles.filter(
-    (tile) =>
-      tile.edgeHashes.filter((e) => edgeMap.get(e).length == 1).length === 2
+    (t) => t.edges.filter((e) => edgeMap.get(e).length == 1).length === 2
   );
 }
 
@@ -78,11 +76,9 @@ function flip(tile: Tile): Tile {
 }
 
 function* orientations(start: Tile): Generator<Tile> {
-  if (!start) throw new Error('wattttt');
   for (let tile of [start, flip(start)]) {
     yield tile;
     for (let i = 0; i < 3; ++i) {
-      if (!tile) throw new Error('wat');
       tile = rotate(tile);
       yield tile;
     }
@@ -97,66 +93,56 @@ function orient(tile: Tile, edges: Partial<Record<Edge, string>>): Tile {
 
 function assembleImage(tiles: Tile[]): Tile {
   const corners = findCorners(tiles);
-  const edgeMap = edgeHashMap(tiles);
-  const size = Math.sqrt(tiles.length);
+  const edgeMap = makeEdgeMap(tiles);
 
-  let start = corners[0];
-  const startEdgeHashes = start.edgeHashes.filter(
-    (h) => edgeMap.get(h).length === 2
-  );
-  // XXX consolidate with orient? abandon edgeHashes?
-  start = [...orientations(start)].find((t) => {
+  const startEdges = corners[0].edges
+    .filter((e) => edgeMap.get(e).length === 2)
+    .map((e) => [e, [...e].reverse().join('')])
+    .flat();
+  const start = [...orientations(corners[0])].find((t) => {
     return (
-      startEdgeHashes.includes(t.edgeHashes[Edge.E]) &&
-      startEdgeHashes.includes(t.edgeHashes[Edge.S])
+      startEdges.includes(t.edges[Edge.E]) &&
+      startEdges.includes(t.edges[Edge.S])
     );
   });
 
   const image = [[start]];
   const imageRow = 0;
-
+  const size = Math.sqrt(tiles.length);
   const placed = new Set([start.id]);
   for (let row = 0; row < size; ++row) {
     for (let col = 0; col < size; ++col) {
-      if (row === 0 && col === 0) continue;
-      let prevTile: Tile;
+      let prevTile: Tile, prevDir: Edge, prevEdge: string;
       if (col === 0) {
+        if (row === 0) continue; // start
         prevTile = image[row - 1][0];
-        let tile = edgeMap
-          .get(prevTile.edgeHashes[Edge.S])
-          .filter((t) => !placed.has(t.id))[0];
-        tile = orient(tile, { [Edge.N]: prevTile.edges[Edge.S] });
-        image.push([tile]);
-        placed.add(tile.id);
+        prevDir = Edge.N;
+        prevEdge = prevTile.edges[Edge.S];
+        image[row] = [];
       } else {
         prevTile = image[row][col - 1];
-        let tile = edgeMap
-          .get(prevTile.edgeHashes[Edge.E])
-          .filter((t) => !placed.has(t.id))[0];
-        tile = orient(tile, { [Edge.W]: prevTile.edges[Edge.E] });
-        image[row].push(tile);
-        placed.add(tile.id);
+        prevDir = Edge.W;
+        prevEdge = prevTile.edges[Edge.E];
       }
+      let tile = edgeMap.get(prevEdge).find((t) => !placed.has(t.id));
+      tile = orient(tile, { [prevDir]: prevEdge });
+      image[row].push(tile);
+      placed.add(tile.id);
     }
   }
 
-  // XXX uggh must be a better way
-  const out = [];
-  image.forEach((tileRow) => {
-    for (let i = 1; i < tileRow[0].image.length - 1; ++i) {
-      let row = [];
-      tileRow.forEach((tile) => {
-        row = row.concat(tile.image[i].slice(1, tile.image[i].length - 1));
-      });
-      out.push(row);
-    }
-  });
-  return new Tile(0, out);
+  const fullImage = image
+    .map((row) =>
+      range(0, row[0].interior.length).map((i) =>
+        [].concat(row.map((t) => t.interior[i])).flat()
+      )
+    )
+    .flat();
+  return new Tile(0, fullImage);
 }
 
 function markMonsters(start: Tile): Tile {
   const monster = [
-    // 20x3
     '..................#.',
     '#....##....##....###',
     '.#..#..#..#..#..#...',
