@@ -65,6 +65,7 @@ function minManaToWin(
     applyEffects();
     if (boss.hp < 1) return manaUsed;
 
+    if (spell.mana > player.mana || (spell.effect && effectTimer.has(spell.effect))) return 0;
     player.mana -= spell.mana;
     manaUsed += spell.mana;
     if (spell.damage) boss.hp -= spell.damage;
@@ -79,10 +80,6 @@ function minManaToWin(
   }
 
   const wins = spells
-    .filter(
-      (s) =>
-        s.mana <= player.mana && (!s.effect || !effectTimer.has(s.effect))
-    )
     .map((s) => minManaToWin(player, boss, hardMode, s, effectTimer))
     .filter((mana) => mana > 0);
   if (wins.length) {
