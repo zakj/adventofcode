@@ -14,6 +14,20 @@ type Spell = {
   effect?: Effect;
 };
 
+type State = {
+  hp: number;
+  mana: number;
+  bossHp: number;
+  bossDamage: number;
+  manaUsed: number;
+  effectTimer: Map<Effect, number>,
+  hardMode: boolean;
+}
+
+type SharedState = {
+  minFound: number;
+}
+
 const spells = [
   { mana: 53, damage: 4 },
   { mana: 73, damage: 2, heal: 2 },
@@ -22,76 +36,73 @@ const spells = [
   { mana: 229, effect: { turns: 5, mana: 101 } },
 ];
 
-type Character = {
-  hp: number;
-};
-type Player = Character & {
-  mana: number;
-};
-type Boss = Character & {
-  damage: number;
-};
-
 function minManaToWin(
-  player: Player,
-  boss: Boss,
-  hardMode: boolean = false,
+  state: State,
+  sharedState: SharedState,
   spell?: Spell,
-  effectTimer?: Map<Effect, number>
 ): number {
-  player = { ...player };
-  boss = { ...boss };
-  effectTimer = new Map<Effect, number>(effectTimer);
-  let manaUsed = 0;
+  state = { ...state };
+  state.effectTimer = new Map<Effect, number>(state.effectTimer);
+
+  const win = (n: number) => sharedState.minFound = Math.min(sharedState.minFound, n)
 
   function applyEffects() {
     let playerArmor = 0;
-    for (let [effect, turns] of effectTimer.entries()) {
+    for (let [effect, turns] of state.effectTimer.entries()) {
       if (effect.armor) playerArmor = effect.armor;
-      if (effect.damage) boss.hp -= effect.damage;
-      if (effect.mana) player.mana += effect.mana;
+      if (effect.damage) state.bossHp -= effect.damage;
+      if (effect.mana) state.mana += effect.mana;
       turns--;
-      if (turns < 1) effectTimer.delete(effect);
-      else effectTimer.set(effect, turns);
+      if (turns < 1) state.effectTimer.delete(effect);
+      else state.effectTimer.set(effect, turns);
     }
     return playerArmor;
   }
 
   if (spell) {
-    if (hardMode) {
-      player.hp--;
-      if (player.hp < 1) return 0;
+    if (state.hardMode) {
+      state.hp--;
+      if (state.hp < 1) return 0;
     }
     applyEffects();
-    if (boss.hp < 1) return manaUsed;
+    if (state.bossHp < 1) return win(state.manaUsed);
 
-    if (spell.mana > player.mana || (spell.effect && effectTimer.has(spell.effect))) return 0;
-    player.mana -= spell.mana;
-    manaUsed += spell.mana;
-    if (spell.damage) boss.hp -= spell.damage;
-    if (spell.heal) player.hp += spell.heal;
-    if (spell.effect) effectTimer.set(spell.effect, spell.effect.turns);
-    if (boss.hp < 1) return manaUsed;
+    if (spell.mana > state.mana || (spell.effect && state.effectTimer.has(spell.effect))) return 0;
+    state.mana -= spell.mana;
+    state.manaUsed += spell.mana;
+    if (spell.damage) state.bossHp -= spell.damage;
+    if (spell.heal) state.hp += spell.heal;
+    if (spell.effect) state.effectTimer.set(spell.effect, spell.effect.turns);
+    if (state.bossHp < 1) return win(state.manaUsed);
 
     const playerArmor = applyEffects();
-    if (boss.hp < 1) return manaUsed;
-    player.hp -= Math.max(1, boss.damage - playerArmor);
-    if (player.hp < 1) return 0;
+    if (state.bossHp < 1) return win(state.manaUsed);
+    state.hp -= Math.max(1, state.bossDamage - playerArmor);
+    if (state.hp < 1) return 0;
   }
 
   const wins = spells
-    .map((s) => minManaToWin(player, boss, hardMode, s, effectTimer))
+    .filter((s) => s.mana + state.manaUsed < sharedState.minFound)
+    .map((s) => minManaToWin(state, sharedState, s))
     .filter((mana) => mana > 0);
   if (wins.length) {
     const minMana = (min, mana) => (mana < min ? mana : min);
-    return wins.reduce(minMana) + manaUsed;
+    return win(wins.reduce(minMana));
   }
   return 0;
 }
 
-const player: Player = { hp: 50, mana: 500 };
-const boss: Boss = { hp: 51, damage: 9 };
+const initialState: State = {
+  hp: 50,
+  mana: 500,
+  bossHp: 51,
+  bossDamage: 9,
+  manaUsed: 0,
+  effectTimer: new Map<Effect, number>(),
+  hardMode: false,
+}
+
 answers(
-  () => minManaToWin(player, boss),
-  () => minManaToWin(player, boss, true)
+  () => minManaToWin(initialState, {minFound: Infinity}),
+  () => minManaToWin({...initialState, hardMode: true}, {minFound: Infinity})
 );
