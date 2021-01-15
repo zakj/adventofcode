@@ -6,6 +6,22 @@ export function chunks<T>(arr: T[], chunkSize: number): T[][] {
   return output;
 }
 
+export class Counter<T> {
+  private counts: Map<T, number>;
+
+  constructor(xs: T[]) {
+    this.counts = xs.reduce((counts, x) => {
+      if (!counts.has(x)) counts.set(x, 0);
+      counts.set(x, counts.get(x) + 1);
+      return counts;
+    }, new Map<T, number>());
+  }
+
+  entries() {
+    return this.counts.entries();
+  }
+}
+
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
 
 export function range(start: number, stop: number): number[] {
