@@ -20,6 +20,10 @@ export class Counter<T> {
   entries() {
     return this.counts.entries();
   }
+
+  get mostCommon(): [T, number][] {
+    return [...this.entries()].sort(([_a, a], [_b, b]) => b - a);
+  }
 }
 
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
