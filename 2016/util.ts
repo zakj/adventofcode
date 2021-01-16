@@ -26,6 +26,7 @@ export class Counter<T> {
   }
 }
 
+export const product = (xs: number[]): number => xs.reduce((acc, x) => acc * x);
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
 
 export function range(start: number, stop: number): number[] {
