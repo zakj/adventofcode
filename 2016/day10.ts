@@ -1,15 +1,5 @@
 import { answers, example, load } from './advent';
-import { product } from './util';
-
-class DefaultDict<K, V> extends Map<K, V> {
-  constructor(private init: () => V) {
-    super();
-  }
-  get(key: K): V {
-    if (!super.has(key)) super.set(key, this.init());
-    return super.get(key);
-  }
-}
+import { DefaultDict, product } from './util';
 
 type ValueInstruction = {
   type: 'value';

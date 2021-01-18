@@ -26,6 +26,16 @@ export class Counter<T> {
   }
 }
 
+export class DefaultDict<K, V> extends Map<K, V> {
+  constructor(private init: () => V) {
+    super();
+  }
+  get(key: K): V {
+    if (!super.has(key)) super.set(key, this.init());
+    return super.get(key);
+  }
+}
+
 export const product = (xs: number[]): number => xs.reduce((acc, x) => acc * x);
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
 
