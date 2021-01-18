@@ -6,6 +6,14 @@ export function chunks<T>(arr: T[], chunkSize: number): T[][] {
   return output;
 }
 
+export function* combinations<T>(arr: T[]): Generator<[T, T]> {
+  for (let i = 0; i < arr.length; ++i) {
+    for (let j = i + 1; j < arr.length; ++j) {
+      yield [arr[i], arr[j]];
+    }
+  }
+}
+
 export class Counter<T> {
   private counts: Map<T, number>;
 
