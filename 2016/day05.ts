@@ -1,8 +1,5 @@
-import crypto from 'crypto';
 import { answers, example } from './advent';
-
-const md5 = (s: string): string =>
-  crypto.createHash('md5').update(s).digest('hex');
+import { md5 } from './util';
 
 function passwordForId(id: string): string {
   const password = [];

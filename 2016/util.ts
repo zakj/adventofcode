@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export function chunks<T>(arr: T[], chunkSize: number): T[][] {
   const output = [];
   for (let i = 0; i < arr.length; i += chunkSize) {
@@ -43,6 +45,9 @@ export class DefaultDict<K, V> extends Map<K, V> {
     return super.get(key);
   }
 }
+
+export const md5 = (s: string): string =>
+  crypto.createHash('md5').update(s).digest('hex');
 
 export const product = (xs: number[]): number => xs.reduce((acc, x) => acc * x);
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
