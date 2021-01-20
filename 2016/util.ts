@@ -49,6 +49,12 @@ export class DefaultDict<K, V> extends Map<K, V> {
 export const md5 = (s: string): string =>
   crypto.createHash('md5').update(s).digest('hex');
 
+export function pairs<T>(arr: T[]): T[][] {
+  const a = arr.slice(0, -1);
+  const b = arr.slice(1);
+  return a.map((x, i) => [x, b[i]]);
+}
+
 export const product = (xs: number[]): number => xs.reduce((acc, x) => acc * x);
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
 
