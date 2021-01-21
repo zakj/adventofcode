@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+# Takes a filename; runs the file if it is a "solution" file, else runs the
+# most-recently-changed solution file.
+CHANGED="$1"
+if [ "${CHANGED:0:3}" != "day" ]; then
+  CHANGED=$(ls -tr day*.ts | tail -n 1)
+fi
+echo -- "$CHANGED"
+npm run --silent ts-node "$CHANGED"
+echo
