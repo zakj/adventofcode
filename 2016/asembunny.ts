@@ -2,6 +2,7 @@ import { DefaultDict, range } from './util';
 
 type Register = 'a' | 'b' | 'c' | 'd';
 type Value = number;
+type Signal = number;
 
 type Cpy = {
   type: 'cpy';
@@ -25,8 +26,12 @@ type Tgl = {
   type: 'tgl';
   arg1: Value | Register;
 };
+type Out = {
+  type: 'out';
+  arg1: Register;
+};
 
-type Instruction = Cpy | Inc | Dec | Jnz | Tgl;
+type Instruction = Cpy | Inc | Dec | Jnz | Tgl | Out;
 type Registers = Map<Register, number>;
 
 const isValue = (v: Value | Register): v is Value => typeof v === 'number';
@@ -62,14 +67,16 @@ export function parse(lines: string[]): Instruction[] {
         };
       case 'tgl':
         return { type, arg1: valueOrRegister(args[0]) };
+      case 'out':
+        return { type, arg1: asRegister(args[0]) };
     }
   });
 }
 
-export function execute(
+export function* executeSignals(
   instructions: Instruction[],
   regInit: [Register, Value][] = []
-): Registers {
+): Generator<Signal, Registers> {
   const registers = new DefaultDict<Register, Value>(() => 0);
   regInit.forEach(([reg, val]) => registers.set(reg, val));
   let i = 0;
@@ -124,9 +131,29 @@ export function execute(
         }
         ++i;
         break;
+      case 'out':
+        yield registers.get(instr.arg1);
+        ++i;
+        break;
     }
   }
   return registers;
+}
+
+export function execute(
+  instructions: Instruction[],
+  regInit: [Register, Value][] = [],
+  maxIterations: number = 1
+): Registers {
+  let iterations = 0;
+  let rv: IteratorResult<number, Registers>;
+  const it = executeSignals(instructions, regInit);
+  for (let i = 0; i < maxIterations; ++i) {
+    rv = it.next();
+    if (rv.done) break;
+  }
+  if (!rv.done) throw new Error('reached maxIterations');
+  return rv.value;
 }
 
 function optimize(
