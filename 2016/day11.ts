@@ -1,18 +1,10 @@
 import { answers, example, load } from './advent';
-import { combinations, range } from './util';
+import { chunks, combinations, DefaultDict, PriorityQueue, sum } from './util';
 
-type Component = string;
-type Floors = Component[][];
-type State = {
-  elevatorAt: number;
-  floors: Floors;
-};
-type Move = {
-  components: Component[];
-  to: number;
-};
+// first digit: elevator floor. then pairs of generator/microchip floor locations.
+type State = string;
 
-function parse(lines: string[]): Floors {
+function parse(lines: string[]): State {
   const re = new RegExp(
     `(?<element>\\w+)` +
       `(?:` +
@@ -20,118 +12,97 @@ function parse(lines: string[]): Floors {
       `)`,
     'g'
   );
-  return lines.map((line) =>
-    [...line.matchAll(re)]
-      .map((m) => m.groups.element[0] + (m.groups.microchip ? 'm' : 'g'))
-      .map((s) => s.toUpperCase())
-  );
-}
-
-const getElement = (c: Component): string => c[0];
-const getType = (c: Component): string => c[1];
-const isGenerator = (c: Component): boolean => getType(c) === 'G';
-const isMicrochip = (c: Component): boolean => getType(c) === 'M';
-
-function isSafe({ floors }: State): boolean {
-  return floors.every((floor) => {
-    const generators = new Set(floor.filter(isGenerator).map(getElement));
-    return (
-      generators.size === 0 ||
-      floor
-        .filter(isMicrochip)
-        .map(getElement)
-        .every((chip) => generators.has(chip))
-    );
-  });
-}
-
-function applyMove({ floors, elevatorAt }: State, move: Move): State {
-  floors = floors.map((f) => [...f]);
-  floors[elevatorAt] = floors[elevatorAt].filter(
-    (c) => !move.components.includes(c)
-  );
-  floors[move.to] = floors[move.to].concat(move.components);
-  return { floors, elevatorAt: move.to };
-}
-
-function hashify({ floors, elevatorAt }: State): string {
-  return JSON.stringify({
-    elevatorAt,
-    floors: floors.map((f) => f.sort()),
-  });
-}
-
-function stringState({ floors, elevatorAt }: State): string {
-  const components = floors.flat();
-  components.sort();
-  return range(floors.length - 1, -1)
-    .map((i) => {
-      const floor = floors[i];
-      return [`F${i + 1} ${elevatorAt === i ? 'E' : '.'} `]
-        .concat(components.map((c) => (floor.includes(c) ? c : '. ')))
-        .join(' ');
-    })
-    .join('\n');
-}
-
-function minPath(start: State): State[] {
-  const q: { state: State; path: State[] }[] = [{ state: start, path: [] }];
-  const visited = new Set<string>();
-
-  while (q.length) {
-    const { state, path } = q.shift();
-    const { floors, elevatorAt } = state;
-    if (floors.slice(0, floors.length - 1).flat().length === 0) {
-      return path.concat(state);
+  const elements = new DefaultDict<string, number[]>(() => []);
+  lines.forEach((line, i) => {
+    const matches = line.matchAll(re);
+    for (const match of matches) {
+      elements.get(match.groups.element)[match.groups.microchip ? 1 : 0] =
+        i + 1;
     }
+  });
+  return [...elements.values()].map((x) => x.join('')).join('');
+}
 
-    const floor = floors[elevatorAt];
-    const floorOptions = [elevatorAt + 1, elevatorAt - 1].filter(
-      (i) =>
-        i >= 0 &&
-        i < floors.length &&
-        (i === 0 || floors.slice(0, i).flat().length > 0)
-    );
-    const componentOptions = [].concat(
-      [...combinations(floor)],
-      floor.map((c) => [c])
-    );
-    const moveOptions = floorOptions.flatMap((to) =>
-      componentOptions.map((components) => ({ components, to }))
-    );
+function isSafe(state: State): boolean {
+  // A microchip is safe if it is paired with its generator
+  //   OR there are no generators on its floor.
+  const [floor, ...locations] = state.split('').map(Number);
+  const generatorFloors = new Set(locations.filter((_, i) => i % 2 === 0));
+  return chunks(locations, 2).every(
+    ([g, m]) => g === m || !generatorFloors.has(m)
+  );
+}
 
+function heuristic(state: State): number {
+  const [floor, ...locations] = state.split('').map(Number);
+  return sum(locations.map((x) => 4 - x)) / 2 + floor - Math.min(...locations);
+}
+
+function minPath(
+  start: State,
+  goal?: State,
+  bottomFloor = 1,
+  topFloor = 4
+): number {
+  if (!goal) goal = start.replaceAll(/./g, topFloor.toString());
+  // const cameFrom = new Map<State, State>();
+  const stepsToReach = new DefaultDict<State, number>(() => Infinity);
+  stepsToReach.set(start, 0);
+  const cost = (state: State) => stepsToReach.get(state) + heuristic(state);
+  const q = new PriorityQueue(cost, [start]);
+  while (q.length) {
+    const cur = q.shift();
+    if (cur === goal) return stepsToReach.get(cur);
+    const [floor, ...locations] = cur.split('').map(Number);
+    const lowestComponent = Math.min(...locations);
+    const indexes = [];
+    for (let i = 0; i < locations.length; ++i) {
+      if (locations[i] === floor) indexes.push(i);
+    }
+    const moves = [].concat(
+      [...combinations(indexes)],
+      indexes.map((i) => [i])
+    );
     let movedTwoUp = false;
     let movedOneDown = false;
-    moveOptions
-      .map((move) => {
-        const newState = applyMove(state, move);
-        const hash = hashify(newState);
-        return { move, newState, hash };
-      })
-      .filter(({ move, newState, hash }) => {
-        if (visited.has(hash)) return false;
-        visited.add(hash);
-        if (!isSafe(newState)) return false;
-        if (move.to > elevatorAt) {
-          if (move.components.length === 2) movedTwoUp = true;
-          else if (movedTwoUp) return false;
-        } else {
-          if (move.components.length === 1) movedOneDown = true;
-          else if (movedOneDown) return false;
-        }
-        return true;
-      })
-      .forEach(({ newState, hash }) => {
-        visited.add(hash);
-        q.push({ state: newState, path: path.concat(state) });
-      });
+    for (const dir of [1, -1]) {
+      const nextFloor = floor + dir;
+      if (
+        nextFloor < bottomFloor ||
+        nextFloor > topFloor ||
+        nextFloor < lowestComponent
+      )
+        continue;
+      for (const move of moves) {
+        // Focus on keeping elements higher up.
+        if (movedTwoUp && dir === 1 && move.length === 1) continue;
+        if (movedOneDown && dir === -1 && move.length === 2) continue;
+
+        let nextLocations = [...locations];
+        for (const i of move) nextLocations[i] = nextFloor;
+        // Which element is which is irrelevant.
+        nextLocations = chunks(nextLocations, 2).sort().flat();
+
+        const next = [].concat(nextFloor, nextLocations).join('');
+        const nextSteps = stepsToReach.get(cur) + 1;
+        if (!(nextSteps < stepsToReach.get(next) && isSafe(next))) continue;
+        if (dir === 1 && move.length === 2) movedTwoUp = true;
+        if (dir === -1 && move.length === 1) movedOneDown = true;
+        // cameFrom.set(next, cur);
+        stepsToReach.set(next, nextSteps);
+        q.add(next);
+      }
+    }
   }
+  throw new Error();
 }
 
-const exampleFloors = parse(load(11, 'ex').lines);
-example.equal(minPath({ floors: exampleFloors, elevatorAt: 0 }).length - 1, 11);
+const exampleState = '1' + parse(load(11, 'ex').lines);
+example.equal(minPath(exampleState), 11);
 
-const floors = parse(load(11).lines);
+const state = '1' + parse(load(11).lines);
+const state2 = state + '1111';
 answers(
-  () => minPath({ floors, elevatorAt: 0 }).length - 1,
+  () => minPath(state),
+  () => minPath(state2)
 );
