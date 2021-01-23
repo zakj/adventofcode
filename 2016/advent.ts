@@ -56,11 +56,11 @@ export function answers(...fns: (() => any)[]): void {
         ? `${(durationMs / 1000).toFixed(3)}s`
         : `${durationMs.toFixed(3)}m`;
     const indexStr = `${i + 1}: `;
-    process.stdout.write(indexStr)
-    process.stdout.cursorTo(process.stdout.columns - duration.length)
-    process.stdout.write(color('grey', duration))
-    process.stdout.cursorTo(indexStr.length)
-    console.log(color('green', result.toString()));
+    process.stdout.write(indexStr);
+    process.stdout.cursorTo(process.stdout.columns - duration.length);
+    process.stdout.write(color('grey', duration));
+    process.stdout.cursorTo(indexStr.length);
+    console.log(color('green', result?.toString()));
   });
 }
 
