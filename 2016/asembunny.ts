@@ -1,4 +1,4 @@
-import { DefaultDict, range } from './util';
+import { DefaultDict, range } from '../util';
 
 type Register = 'a' | 'b' | 'c' | 'd';
 type Value = number;

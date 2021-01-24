@@ -1,4 +1,4 @@
-import { answers, example, load } from './advent';
+import { answers, example, load } from '../advent';
 
 type Disc = { positions: number; time0: number };
 

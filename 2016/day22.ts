@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { combinations } from './util';
+import { answers, example, load } from '../advent';
+import { combinations } from '../util';
 
 type Node = {
   x: number;

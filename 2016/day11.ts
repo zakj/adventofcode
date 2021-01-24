@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { chunks, combinations, DefaultDict, PriorityQueue, sum } from './util';
+import { answers, example, load } from '../advent';
+import { chunks, combinations, DefaultDict, PriorityQueue, sum } from '../util';
 
 // first digit: elevator floor. then pairs of generator/microchip floor locations.
 type State = string;

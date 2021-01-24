@@ -1,5 +1,5 @@
-import { answers, example } from './advent';
-import { chunks } from './util';
+import { answers, example } from '../advent';
+import { chunks } from '../util';
 
 function curve(a: string): string {
   const b = [...a]

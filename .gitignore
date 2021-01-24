@@ -1,4 +1,5 @@
 .DS_Store
 .aoc.ts
 node_modules
+.session
 .vscode

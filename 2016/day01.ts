@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { range } from './util';
+import { answers, example, load } from '../advent';
+import { range } from '../util';
 
 type Point = {
   x: number;

@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { range, sum } from './util';
+import { answers, example, load } from '../advent';
+import { range, sum } from '../util';
 
 function nextRow(row: string) {
   return range(0, row.length)

@@ -1,4 +1,4 @@
-import { answers, example, load } from './advent';
+import { answers, example, load } from '../advent';
 
 type Operation = (s: string, reverse?: boolean) => string;
 

@@ -1,5 +1,5 @@
-import { answers, example } from './advent';
-import { range } from './util';
+import { answers, example } from '../advent';
+import { range } from '../util';
 
 type Elf = {
   num: number;

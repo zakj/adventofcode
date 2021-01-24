@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { combinations, permutations } from './util';
+import { answers, example, load } from '../advent';
+import { combinations, permutations } from '../util';
 
 type Point = { x: number; y: number };
 type PointHash = string;

@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { Counter, sum } from './util';
+import { answers, example, load } from '../advent';
+import { Counter, sum } from '../util';
 
 type Room = {
   name: string;

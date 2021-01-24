@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { DefaultDict, product } from './util';
+import { answers, example, load } from '../advent';
+import { DefaultDict, product } from '../util';
 
 type ValueInstruction = {
   type: 'value';

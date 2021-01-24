@@ -1,5 +1,5 @@
-import { answers, example } from './advent';
-import { md5 } from './util';
+import { answers, example } from '../advent';
+import { md5 } from '../util';
 
 function passwordForId(id: string): string {
   const password = [];

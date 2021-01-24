@@ -1,6 +1,6 @@
-import { answers, load } from './advent';
+import { answers, load } from '../advent';
+import { chunks } from '../util';
 import { executeSignals, parse } from './asembunny';
-import { chunks } from './util';
 
 function nextN<T>(it: Iterator<T>, n: number): T[] {
   const rv = [];

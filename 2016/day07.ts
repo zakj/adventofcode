@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { range } from './util';
+import { answers, example, load } from '../advent';
+import { range } from '../util';
 
 const isAbba = (s: string): boolean => /(.)(?!\1)(.)\2\1/.test(s);
 

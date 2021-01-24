@@ -1,4 +1,4 @@
-import { answers, example, load } from './advent';
+import { answers, example, load } from '../advent';
 import { execute, parse } from './asembunny';
 
 const exampleInstructions = parse(load(23, 'ex').lines);

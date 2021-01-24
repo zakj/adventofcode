@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { dirname, resolve, sep } from 'path';
 import { performance } from 'perf_hooks';
 
 type Input = {
@@ -10,22 +10,24 @@ type Input = {
   paragraphs: string[][];
 };
 
-function downloadInput(day: number, path: string): void {
-  const aoc = require('./.aoc');
+function downloadInput(year: number, day: number, path: string): void {
+  const session = readFileSync(resolve(__dirname, '.session')).toString();
   execSync(
-    `curl -s -b 'session=${aoc.session}' -o '${path}' https://adventofcode.com/${aoc.year}/day/${day}/input`
+    `curl -s -b 'session=${session}' -o '${path}' https://adventofcode.com/${year}/day/${day}/input`
   );
 }
 
 export function load(day: number, suffix: string = ''): Input {
+  const yearDir = dirname(require.main.filename);
+  const year = Number(yearDir.split(sep).pop());
   const paddedDay = `0${day}`.slice(-2);
-  const path = resolve(__dirname, 'input', `${paddedDay}${suffix}.txt`);
+  const path = resolve(yearDir, 'input', `${paddedDay}${suffix}.txt`);
   let text: string;
   try {
     text = readFileSync(path).toString().trim();
   } catch (e) {
     if (e.code === 'ENOENT' && !suffix) {
-      downloadInput(day, path);
+      downloadInput(year, day, path);
       text = readFileSync(path).toString().trim();
     } else {
       console.error(e.message);
@@ -54,7 +56,7 @@ export function answers(...fns: (() => any)[]): void {
     const duration =
       durationMs > 1000
         ? `${(durationMs / 1000).toFixed(3)}s`
-        : `${durationMs.toFixed(3)}m`;
+        : `${durationMs.toFixed(3)}ms`;
     const indexStr = `${i + 1}: `;
     process.stdout.write(indexStr);
     process.stdout.cursorTo(process.stdout.columns - duration.length);

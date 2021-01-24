@@ -1,4 +1,4 @@
-import { answers, example, load } from './advent';
+import { answers, example, load } from '../advent';
 
 function decompress(s: string): string {
   const output = [];

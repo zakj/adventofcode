@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { sum, zip } from './util';
+import { answers, example, load } from '../advent';
+import { sum, zip } from '../util';
 
 type RectInstruction = {
   type: 'rect';

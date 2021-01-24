@@ -1,4 +1,4 @@
-import { answers, example, load } from './advent';
+import { answers, example, load } from '../advent';
 
 const keypadGrid = [
   ['1', '2', '3'],

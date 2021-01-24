@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { Counter, zip } from './util';
+import { answers, example, load } from '../advent';
+import { Counter, zip } from '../util';
 
 function errorCorrect(signals: string[]): string {
   return zip(...signals.map((x) => x.split('')))
