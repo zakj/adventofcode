@@ -1,4 +1,4 @@
-export * from './advent';
+export * from '../advent';
 
 export type Maybe<T> = T | typeof Nothing;
 export const Nothing = Symbol('Nothing');
