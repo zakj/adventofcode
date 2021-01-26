@@ -1,5 +1,12 @@
 import crypto from 'crypto';
 
+export function cartesianProduct<T>(...arrays: T[][]): T[][] {
+  return arrays.reduce(
+    (acc, arr) => acc.flatMap((xs) => arr.map((x) => [...xs, x])),
+    [[]]
+  );
+}
+
 export function chunks<T>(arr: T[], chunkSize: number): T[][] {
   const output = [];
   for (let i = 0; i < arr.length; i += chunkSize) {

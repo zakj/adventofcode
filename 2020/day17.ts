@@ -1,5 +1,5 @@
 import { answers, example, load } from '../advent';
-import { sum } from '../util';
+import { cartesianProduct, sum } from '../util';
 
 type Bound = [number, number];
 
@@ -65,15 +65,14 @@ function set(grid: Grid, key: number[], active: boolean): void {
   else grid.setInactive(key);
 }
 
-const cartesianProduct = (...arrays: number[][]): number[][] =>
-  arrays.reduce((a, b) => a.flatMap((x) => b.map((y) => [x, y].flat())), [[]]);
+// Faster than the n-ary zip in util
 const zip = <T, U>(a: T[], b: U[]): [T, U][] => a.map((k, i) => [k, b[i]]);
 
 const deltaCache: Record<number, number[][]> = {};
 function countActiveNeighbors(grid: Grid, point: number[]): number {
   let deltas = deltaCache[point.length];
   if (!deltas) {
-    const toCombine = [];
+    const toCombine: number[][] = [];
     for (let i = 0; i < point.length; ++i) toCombine.push([-1, 0, 1]);
     deltas = deltaCache[point.length] = cartesianProduct(
       ...toCombine
@@ -134,6 +133,7 @@ example.equal(112, rounds(round3d, parse(exampleInput), 6).size);
 example.equal(848, rounds(round4d, parse(exampleInput, 4), 6).size);
 
 const input = load(17).lines;
+answers.expect(426, 1892);
 answers(
   () => rounds(round3d, parse(input), 6).size,
   () => rounds(round4d, parse(input, 4), 6).size
