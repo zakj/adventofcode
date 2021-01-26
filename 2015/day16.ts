@@ -1,4 +1,4 @@
-import { answers, load } from './advent';
+import { answers, load } from '../advent';
 
 const tickerTape = new Map(
   Object.entries({
@@ -46,13 +46,15 @@ function findAunt2(aunts: Aunt[]): Aunt {
   return aunts.find((aunt) =>
     [...aunt.properties.entries()].every(([k, v]) => {
       if (['cats', 'trees'].includes(k)) return tickerTape.get(k) < v;
-      else if (['pomeranians', 'goldfish'].includes(k)) return tickerTape.get(k) > v;
+      else if (['pomeranians', 'goldfish'].includes(k))
+        return tickerTape.get(k) > v;
       else return tickerTape.get(k) === v;
     })
   );
 }
 
 const aunts = parse(load(16).lines);
+answers.expect(103, 405);
 answers(
   () => findAunt1(aunts).i,
   () => findAunt2(aunts).i

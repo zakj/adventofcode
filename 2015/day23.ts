@@ -1,4 +1,4 @@
-import { answers, load } from "./advent";
+import { answers, load } from '../advent';
 
 type Registers = {
   a: bigint;
@@ -12,28 +12,30 @@ type Instruction = {
 };
 
 function parse(lines: string[]): Instruction[] {
-  return lines.map(line => {
-    const [type, ...rest] = line.split(' ')
+  return lines.map((line) => {
+    const [type, ...rest] = line.split(' ');
     let reg, offset;
     let arg = rest.shift();
     if (['a', 'b'].includes(arg[0])) {
       reg = arg[0] as Instruction['reg'];
-    }
-    else {
-      offset = Number(arg)
+    } else {
+      offset = Number(arg);
     }
     if (rest.length) {
-      offset = Number(rest.shift())
+      offset = Number(rest.shift());
     }
     return {
       type: type as Instruction['type'],
       reg: reg,
       offset,
     };
-  })
+  });
 }
 
-function compute(instructions: Instruction[], registerA: bigint = 0n): Registers {
+function compute(
+  instructions: Instruction[],
+  registerA: bigint = 0n
+): Registers {
   const registers: Registers = { a: registerA, b: 0n };
   let ctr: number = 0;
   while (ctr < instructions.length) {
@@ -55,7 +57,7 @@ function compute(instructions: Instruction[], registerA: bigint = 0n): Registers
         ctr += instr.offset;
         break;
       case 'jie':
-        const reg = registers[instr.reg].toString().split('');  // ugh js
+        const reg = registers[instr.reg].toString().split(''); // ugh js
         if (Number(reg[reg.length - 1]) % 2 === 0) ctr += instr.offset;
         else ctr++;
         break;
@@ -68,8 +70,9 @@ function compute(instructions: Instruction[], registerA: bigint = 0n): Registers
   return registers;
 }
 
-const instructions = parse(load(23).lines)
+const instructions = parse(load(23).lines);
+answers.expect(255n, 334n);
 answers(
   () => compute(instructions).b,
   () => compute(instructions, 1n).b
-)
+);

@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { product, range, sum } from './util';
+import { answers, example, load } from '../advent';
+import { product, range, sum } from '../util';
 
 class Cookie {
   constructor(private ingredients: Ingredient[], private tsps: number[]) {}
@@ -81,6 +81,7 @@ example.equal(
 );
 
 const ingredients = parse(load(15).lines);
+answers.expect(222870, 117936);
 answers(
   () => highestScore(allCookies(ingredients)),
   () => highestScore(allCookies(ingredients).filter((c) => c.calories === 500))

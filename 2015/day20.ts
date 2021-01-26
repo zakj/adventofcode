@@ -1,11 +1,19 @@
-import { answers } from "./advent";
+import { answers } from '../advent';
 
-function visitHouses(target: number, elfMultiplier: number, elfVisits: number = Infinity) {
+function visitHouses(
+  target: number,
+  elfMultiplier: number,
+  elfVisits: number = Infinity
+) {
   const houseLen = Math.round(target / elfMultiplier);
   const houses = new Array(houseLen).fill(0);
   for (let elf = 1; elf < houseLen; ++elf) {
     let visits = 0;
-    for (let house = elf; house < houseLen && visits < elfVisits; house += elf) {
+    for (
+      let house = elf;
+      house < houseLen && visits < elfVisits;
+      house += elf
+    ) {
       houses[house] += elf * elfMultiplier;
       visits++;
     }
@@ -14,7 +22,8 @@ function visitHouses(target: number, elfMultiplier: number, elfVisits: number = 
 }
 
 const TARGET = 36000000;
+answers.expect(831600, 884520);
 answers(
   () => visitHouses(TARGET, 10),
   () => visitHouses(TARGET, 11, 50)
-)
+);

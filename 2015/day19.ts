@@ -1,6 +1,6 @@
-import { answers, example, load } from "./advent";
+import { answers, example, load } from '../advent';
 
-type Rule = {src: string, dst: string};
+type Rule = { src: string; dst: string };
 
 function parse(chunks: string[][]): [Rule[], string] {
   return [
@@ -35,7 +35,8 @@ const [exampleRules, exampleMolecule] = parse(load(19, 'ex').paragraphs);
 example.equal(molecules(exampleRules, exampleMolecule).size, 7);
 
 const [rules, molecule] = parse(load(19).paragraphs);
+answers.expect(535, 212);
 answers(
   () => molecules(rules, molecule).size,
   () => fabricate('e', molecule)
-)
+);

@@ -1,4 +1,4 @@
-import { answers } from './advent';
+import { answers } from '../advent';
 
 type Effect = {
   turns: number;
@@ -20,13 +20,13 @@ type State = {
   bossHp: number;
   bossDamage: number;
   manaUsed: number;
-  effectTimer: Map<Effect, number>,
+  effectTimer: Map<Effect, number>;
   hardMode: boolean;
-}
+};
 
 type SharedState = {
   minFound: number;
-}
+};
 
 const spells = [
   { mana: 53, damage: 4 },
@@ -39,12 +39,13 @@ const spells = [
 function minManaToWin(
   state: State,
   sharedState: SharedState,
-  spell?: Spell,
+  spell?: Spell
 ): number {
   state = { ...state };
   state.effectTimer = new Map<Effect, number>(state.effectTimer);
 
-  const win = (n: number) => sharedState.minFound = Math.min(sharedState.minFound, n)
+  const win = (n: number) =>
+    (sharedState.minFound = Math.min(sharedState.minFound, n));
 
   function applyEffects() {
     let playerArmor = 0;
@@ -67,7 +68,11 @@ function minManaToWin(
     applyEffects();
     if (state.bossHp < 1) return win(state.manaUsed);
 
-    if (spell.mana > state.mana || (spell.effect && state.effectTimer.has(spell.effect))) return 0;
+    if (
+      spell.mana > state.mana ||
+      (spell.effect && state.effectTimer.has(spell.effect))
+    )
+      return 0;
     state.mana -= spell.mana;
     state.manaUsed += spell.mana;
     if (spell.damage) state.bossHp -= spell.damage;
@@ -100,9 +105,11 @@ const initialState: State = {
   manaUsed: 0,
   effectTimer: new Map<Effect, number>(),
   hardMode: false,
-}
+};
 
+answers.expect(900, 1216);
 answers(
-  () => minManaToWin(initialState, {minFound: Infinity}),
-  () => minManaToWin({...initialState, hardMode: true}, {minFound: Infinity})
+  () => minManaToWin(initialState, { minFound: Infinity }),
+  () =>
+    minManaToWin({ ...initialState, hardMode: true }, { minFound: Infinity })
 );

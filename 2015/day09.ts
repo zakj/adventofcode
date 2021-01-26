@@ -1,5 +1,5 @@
-import { answers, example, load } from './advent';
-import { pairs, permutations } from './util';
+import { answers, example, load } from '../advent';
+import { pairs, permutations } from '../util';
 
 type Graph = {
   cities: Set<City>;
@@ -36,6 +36,7 @@ example.equal(605, Math.min(...allPaths(exampleRules)));
 example.equal(982, Math.max(...allPaths(exampleRules)));
 
 const rules = parse(load(9).lines);
+answers.expect(141, 736);
 answers(
   () => Math.min(...allPaths(rules)),
   () => Math.max(...allPaths(rules))

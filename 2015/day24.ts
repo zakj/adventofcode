@@ -1,5 +1,5 @@
-import { answers, load } from './advent';
-import { product, sum } from './util';
+import { answers, load } from '../advent';
+import { product, sum } from '../util';
 
 function findSums(target: number, xs: number[]): number[][] {
   if (xs.length === 0) return [];
@@ -28,6 +28,7 @@ function smallestGroup(target: number, packages: number[]): number {
 }
 
 const packages = load(24).numbers;
+answers.expect(11266889531, 77387711);
 answers(
   () => smallestGroup(sum(packages) / 3, packages),
   () => smallestGroup(sum(packages) / 4, packages)

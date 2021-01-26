@@ -1,5 +1,5 @@
-import { answers } from './advent';
-import { combinations, sum } from './util';
+import { answers } from '../advent';
+import { combinations, sum } from '../util';
 
 type Item = {
   name: number;
@@ -79,6 +79,7 @@ function allOptions(weapons: Item[], armors: Item[], rings: Item[]) {
 
 const playerHp = 100;
 const makeBoss = () => new Character(109, 8, 2);
+answers.expect(111, 188);
 answers(
   () => {
     const options = allOptions(weapons, armors, rings);
@@ -90,8 +91,9 @@ answers(
   () => {
     const options = allOptions(weapons, armors, rings);
     options.sort((a, b) => b.cost - a.cost);
-    return options.find((opt) =>
-      !playerWins(new Character(playerHp, opt.damage, opt.armor), makeBoss())
+    return options.find(
+      (opt) =>
+        !playerWins(new Character(playerHp, opt.damage, opt.armor), makeBoss())
     ).cost;
   }
 );
