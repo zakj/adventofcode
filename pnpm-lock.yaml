@@ -1,0 +1,12 @@
+devDependencies:
+  '@zakj/prettier-config': 1.0.0
+lockfileVersion: 5.2
+packages:
+  /@zakj/prettier-config/1.0.0:
+    dev: true
+    peerDependencies:
+      prettier: '>= 1.19'
+    resolution:
+      integrity: sha512-49oGjq9oLA+jENi8/HzA01TP0BQgbepkyRDZPkBZWaAn4RpmWbgsZX69+D1SLDh0ECOtBRva8H2v/k7b0uNQbQ==
+specifiers:
+  '@zakj/prettier-config': ^1.0.0
