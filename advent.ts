@@ -5,6 +5,7 @@ import { dirname, resolve, sep } from 'path';
 import { performance } from 'perf_hooks';
 
 type Input = {
+  raw: string;
   lines: string[];
   numbers: number[];
   paragraphs: string[][];
@@ -35,20 +36,28 @@ export function load(day: number, suffix: string = ''): Input {
     }
   }
   return {
-    lines: text.split('\n'),
-    numbers: text.split('\n').map(Number),
-    paragraphs: text.split('\n\n').map((p) => p.split('\n')),
+    raw: text,
+    get lines() {
+      return text.split('\n');
+    },
+    get numbers() {
+      return text.split('\n').map(Number);
+    },
+    get paragraphs() {
+      return text.split('\n\n').map((p) => p.split('\n'));
+    },
   };
 }
 
 export function answers(...fns: (() => any)[]): void {
-  const colors = {
-    green: 32,
-    grey: 90,
+  const c = (n: number) => (text: string) => `\x1b[${n}m${text}\x1b[0m`;
+  const color = {
+    red: c(31),
+    green: c(32),
+    grey: c(90),
   };
-  const color = (c: keyof typeof colors, text: string) =>
-    `\x1b[${colors[c]}m${text}\x1b[0m`;
 
+  let success = true;
   fns.forEach((fn, i) => {
     const start = performance.now();
     const result = fn();
@@ -60,11 +69,26 @@ export function answers(...fns: (() => any)[]): void {
     const indexStr = `${i + 1}: `;
     process.stdout.write(indexStr);
     process.stdout.cursorTo(process.stdout.columns - duration.length);
-    process.stdout.write(color('grey', duration));
+    process.stdout.write(color.grey(duration));
     process.stdout.cursorTo(indexStr.length);
-    console.log(color('green', result?.toString()));
+
+    const expected = expectedAnswers[i];
+    if (typeof expected === 'undefined' || expected === result) {
+      console.log(color.green(result?.toString()));
+    } else {
+      success = false;
+      console.log(
+        color.red(result?.toString()),
+        color.grey('!=='),
+        color.green(expected)
+      );
+    }
   });
+  if (!success) process.exit(1);
 }
+
+const expectedAnswers: any[] = [];
+answers.expect = (...args: any[]) => expectedAnswers.push(...args);
 
 const assertHandler: ProxyHandler<typeof assert> = {
   get: function (target, prop, receiver) {
