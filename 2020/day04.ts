@@ -1,4 +1,4 @@
-import { answers, example, load } from './util';
+import { answers, example, load } from '../advent';
 
 type Passport = {
   byr?: string;
@@ -13,11 +13,14 @@ type Passport = {
 
 function parsePassports(passports: string[][]): Passport[] {
   return passports.map((passport) => {
-    return passport.join(' ').split(/\s+/).reduce((acc, field) => {
-      const [key, value] = field.split(':');
-      acc[key] = value;
-      return acc;
-    }, {});
+    return passport
+      .join(' ')
+      .split(/\s+/)
+      .reduce((acc, field) => {
+        const [key, value] = field.split(':');
+        acc[key] = value;
+        return acc;
+      }, {});
   });
 }
 
@@ -72,5 +75,5 @@ example.equal(2, exampleData.filter(containsRequiredFields).length);
 const passports = parsePassports(load(4).paragraphs);
 answers(
   () => passports.filter(containsRequiredFields).length,
-  () => passports.filter(isValid).length,
-)
+  () => passports.filter(isValid).length
+);

@@ -1,4 +1,4 @@
-import { answers, example } from './util';
+import { answers, example } from '../advent';
 
 const INITIAL_SUBJECT = 7;
 
@@ -41,6 +41,4 @@ example.equal(examplePubKeys[1], transformSubject(7, 11));
 example.equal(14897079, encryptionKey(examplePubKeys));
 
 const pubKeys = [10604480, 4126658];
-answers(
-  () => encryptionKey(pubKeys)
-);
+answers(() => encryptionKey(pubKeys));

@@ -1,4 +1,4 @@
-import { answers, example, load } from './util';
+import { answers, example, load } from '../advent';
 
 function findSeatId(boardingPass: string): number {
   let minRow = 0;

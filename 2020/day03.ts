@@ -1,4 +1,5 @@
-import { answers, example, load, product } from './util';
+import { answers, example, load } from '../advent';
+import { product } from '../util';
 
 enum Tile {
   Open,

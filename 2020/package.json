@@ -2,7 +2,7 @@
   "name": "adventofcode-2020",
   "private": true,
   "scripts": {
-    "start": "onchange -k 'day*.ts' -- sh -c 'echo -- {{file}} && npm run --silent ts-node {{file}} && echo'",
+    "start": "../bin/watch",
     "ts-node": "ts-node"
   },
   "prettier": "@zakj/prettier-config",

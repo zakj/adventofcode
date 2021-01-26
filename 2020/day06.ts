@@ -1,4 +1,5 @@
-import { answers, example, load, sum } from './util';
+import { answers, example, load } from '../advent';
+import { sum } from '../util';
 
 function uniqueCharacters(s: string[]): number {
   return new Set(s.join('').replace(/\s+/gm, '')).size;

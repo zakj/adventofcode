@@ -1,4 +1,4 @@
-import { answers, example, load, Maybe, Nothing } from './util';
+import { answers, example, load } from '../advent';
 
 enum Operator {
   Acc,
@@ -18,6 +18,9 @@ type State = {
   acc: Accumulator;
   ptr: Pointer;
 };
+
+export type Maybe<T> = T | typeof Nothing;
+export const Nothing = Symbol('Nothing');
 
 function parseInstructions(lines: string[]): Instruction[] {
   const operators = {

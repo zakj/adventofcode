@@ -1,4 +1,5 @@
-import { answers, example, load, product } from './util';
+import { answers, example, load } from '../advent';
+import { product } from '../util';
 
 type TwoNumbers = [number, number];
 type ThreeNumbers = [number, number, number];

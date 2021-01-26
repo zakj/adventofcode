@@ -1,50 +1,49 @@
-import { answers, example, load } from './util';
+import { answers, example, load } from '../advent';
 
 type SetMask = {
-  action: 'mask',
-  mask: string,
-}
+  action: 'mask';
+  mask: string;
+};
 
 type SetMem = {
-  action: 'mem',
-  address: number,
-  value: number,
-}
+  action: 'mem';
+  address: number;
+  value: number;
+};
 
-type Instruction = SetMask | SetMem
+type Instruction = SetMask | SetMem;
 type Program = Instruction[];
 
 function parseProgram(lines: string[]): Program {
-  return lines.map(line => {
-    const [action, value] = line.split(' = ')
+  return lines.map((line) => {
+    const [action, value] = line.split(' = ');
     if (action === 'mask') {
       return {
         action: 'mask',
         mask: value,
-      }
+      };
     }
     if (action.slice(0, 3) === 'mem') {
       return {
         action: 'mem',
         address: Number(action.match(/\d+/)?.[0]),
         value: Number(value),
-      }
+      };
     }
     throw new Error();
-  })
+  });
 }
 
 function sumOfMemoryValuesV1(program: Program): number {
   let mask: string;
   const mem: number[] = [];
-  program.forEach(instr => {
+  program.forEach((instr) => {
     if (instr.action === 'mask') {
       mask = instr.mask;
+    } else {
+      mem[instr.address] = applyMask(instr.value, mask);
     }
-    else {
-      mem[instr.address] = applyMask(instr.value, mask)
-    }
-  })
+  });
   // TODO how to make util.sum work for number | bigint cleanly?
   return mem.reduce((a, b) => a + b);
 }
@@ -58,27 +57,26 @@ function applyMask(value: number, mask: string): number {
 function sumOfMemoryValuesV2(program: Program): number {
   let mask: string;
   const mem = new Map<number, number>();
-  program.forEach(instr => {
+  program.forEach((instr) => {
     if (instr.action === 'mask') {
       mask = instr.mask;
-    }
-    else {
+    } else {
       for (let m of floatingMasks(mask)) {
-        if (applyMask(instr.address, m) <= 0) throw new Error
+        if (applyMask(instr.address, m) <= 0) throw new Error();
         mem.set(applyMask(instr.address, m), instr.value);
       }
     }
-  })
-  return [...mem.values()].reduce((a, b) => a + b);  // TODO
+  });
+  return [...mem.values()].reduce((a, b) => a + b); // TODO
 }
 
-function *floatingMasks(mask: string): Generator<string> {
+function* floatingMasks(mask: string): Generator<string> {
   if (!mask) {
-    yield ''
-    return
+    yield '';
+    return;
   }
 
-  const [head, tail] = [mask[0], mask.slice(1)]
+  const [head, tail] = [mask[0], mask.slice(1)];
   for (let m of floatingMasks(tail)) {
     switch (head) {
       case '0':
@@ -95,14 +93,14 @@ function *floatingMasks(mask: string): Generator<string> {
   }
 }
 
-let exampleProgram = parseProgram(load(14, 'ex1').lines)
-example.equal(165, sumOfMemoryValuesV1(exampleProgram))
-exampleProgram = parseProgram(load(14, 'ex2').lines)
-example.equal(208, sumOfMemoryValuesV2(exampleProgram))
+let exampleProgram = parseProgram(load(14, 'ex1').lines);
+example.equal(165, sumOfMemoryValuesV1(exampleProgram));
+exampleProgram = parseProgram(load(14, 'ex2').lines);
+example.equal(208, sumOfMemoryValuesV2(exampleProgram));
 
 // 105471513358 too low
-const program = parseProgram(load(14).lines)
+const program = parseProgram(load(14).lines);
 answers(
   () => sumOfMemoryValuesV1(program),
-  () => sumOfMemoryValuesV2(program),
-)
+  () => sumOfMemoryValuesV2(program)
+);

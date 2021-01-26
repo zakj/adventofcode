@@ -1,4 +1,5 @@
-import { answers, example, load, sum } from './util';
+import { answers, example, load } from '../advent';
+import { sum } from '../util';
 
 function isSumOfTwoElements(needle: number, haystack: number[]): boolean {
   for (let i = 0; i < haystack.length; ++i) {

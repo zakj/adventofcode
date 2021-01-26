@@ -1,0 +1,1 @@
+onchange -f change -k '*.ts' '../*.ts' -- ../bin/run-changed '{{file}}'

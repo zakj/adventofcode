@@ -1,4 +1,5 @@
-import { answers, example, load, product, range, sum } from './util';
+import { answers, example, load } from '../advent';
+import { product, range, sum } from '../util';
 
 enum Edge {
   N = 0,

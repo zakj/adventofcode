@@ -1,4 +1,5 @@
-import { answers, example, range } from './util';
+import { answers, example } from '../advent';
+import { range } from '../util';
 
 class Node<T> {
   value: T;

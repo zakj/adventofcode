@@ -2,7 +2,7 @@
   "name": "adventofcode-2016",
   "private": true,
   "scripts": {
-    "start": "onchange -k '*.ts' -- bin/watch '{{file}}'",
+    "start": "../bin/watch",
     "ts-node": "ts-node"
   },
   "prettier": "@zakj/prettier-config",

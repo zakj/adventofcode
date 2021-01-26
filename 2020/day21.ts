@@ -1,4 +1,4 @@
-import { answers, example, load } from './util';
+import { answers, example, load } from '../advent';
 
 type Food = {
   ingredients: Set<string>;

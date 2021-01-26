@@ -1,4 +1,4 @@
-import { answers, example, load } from './util';
+import { answers, example, load } from '../advent';
 
 enum PositionType {
   Floor = '.',
@@ -85,7 +85,7 @@ function runSeatingRoundPart2(grid: Grid): Grid {
 }
 
 function* line(
-  grid,
+  grid: Grid,
   from: Point,
   direction: { x: number; y: number }
 ): Generator<PositionType> {

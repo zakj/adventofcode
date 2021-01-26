@@ -1,4 +1,4 @@
-import { answers, example } from './util';
+import { answers, example } from '../advent';
 
 function spokenNumber(input: number[], n: number): number {
   const lastSaid: { [k: number]: number[] } = {};
