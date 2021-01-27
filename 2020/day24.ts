@@ -1,62 +1,52 @@
 import { answers, example, load } from '../advent';
+import { sum, zip } from '../util';
 
 type Grid = Map<string, boolean>;
 
-function parse(lines: string[]): string[][] {
+type Direction = 'ne' | 'e' | 'se' | 'sw' | 'w' | 'nw';
+type Point = [x: number, y: number, z: number];
+
+const neighborDeltas = new Map<Direction, Point>([
+  ['ne', [1, 0, -1]],
+  ['e', [1, -1, 0]],
+  ['se', [0, -1, 1]],
+  ['sw', [-1, 0, 1]],
+  ['w', [-1, 1, 0]],
+  ['nw', [0, 1, -1]],
+]);
+
+function parse(lines: string[]): Direction[][] {
   const re = /((?:se)|(?:sw)|(?:ne)|(?:nw)|e|w)/g;
-  return lines.map((line) => Array.from(line.matchAll(re), (m) => m[0]));
+  return lines.map((line) =>
+    Array.from(line.matchAll(re), (m) => m[0] as Direction)
+  );
 }
 
-function flipTiles(list: string[][]): Grid {
+function flipTiles(list: Direction[][]): Grid {
   const grid = new Map();
-  list.forEach((instructions) => {
-    let x = 0,
-      y = 0,
-      z = 0;
-    instructions.forEach((instr) => {
-      switch (instr) {
-        case 'ne':
-          x++;
-          z--;
-          break;
-        case 'sw':
-          x--;
-          z++;
-          break;
-        case 'se':
-          y--;
-          z++;
-          break;
-        case 'nw':
-          y++;
-          z--;
-          break;
-        case 'e':
-          x++;
-          y--;
-          break;
-        case 'w':
-          x--;
-          y++;
-          break;
-      }
+  list.forEach((directions) => {
+    let point = [0, 0, 0];
+    directions.forEach((dir) => {
+      point = zip(point, neighborDeltas.get(dir)).map(sum);
     });
-    const key = [x, y, z].join(',');
+    const key = point.join(',');
     grid.set(key, !grid.get(key));
   });
   return grid;
 }
 
+const neighborsCache = new Map<string, string[]>();
 function neighbors(key: string): string[] {
-  const [x, y, z] = key.split(',').map(Number);
-  return [
-    [x + 1, y, z - 1],
-    [x - 1, y, z + 1],
-    [x, y - 1, z + 1],
-    [x, y + 1, z - 1],
-    [x + 1, y - 1, z],
-    [x - 1, y + 1, z],
-  ].map((x) => x.join(','));
+  if (!neighborsCache.has(key)) {
+    const point = key.split(',').map(Number) as Point;
+    neighborsCache.set(
+      key,
+      [...neighborDeltas.values()].map((delta) =>
+        zip(point, delta).map(sum).join(',')
+      )
+    );
+  }
+  return neighborsCache.get(key);
 }
 
 function cycle(start: Grid): Grid {
@@ -73,9 +63,7 @@ function cycle(start: Grid): Grid {
 
   for (let point of candidates) {
     const isBlack = !!start.get(point);
-    const count = neighbors(point)
-      .map((p) => start.get(p))
-      .filter(Boolean).length;
+    const count = neighbors(point).filter((p) => start.get(p)).length;
     grid.set(point, count === 2 || (count === 1 && isBlack));
   }
 
@@ -98,6 +86,7 @@ example.equal(15, countBlack(life(exampleStart, 1)));
 example.equal(2208, countBlack(life(exampleStart, 100)));
 
 const input = parse(load(24).lines);
+answers.expect(465, 4078);
 answers(
   () => countBlack(flipTiles(input)),
   () => countBlack(life(flipTiles(input), 100))

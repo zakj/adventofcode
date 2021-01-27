@@ -34,6 +34,10 @@ export class Counter<T> {
     }, new Map<T, number>());
   }
 
+  get length() {
+    return this.counts.size;
+  }
+
   entries() {
     return this.counts.entries();
   }
