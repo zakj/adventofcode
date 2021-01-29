@@ -115,7 +115,6 @@ export class PriorityQueue<T> {
 }
 
 export const product = (xs: number[]): number => xs.reduce((acc, x) => acc * x);
-export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
 
 export function range(start: number, stop: number): number[] {
   const step = start < stop ? 1 : -1;
@@ -127,6 +126,13 @@ export function range(start: number, stop: number): number[] {
   }
   return xs;
 }
+
+export function rotate<T>(xs: T[], n: number = 1): T[] {
+  n %= xs.length;
+  return [].concat(xs.slice(n), xs.slice(0, n));
+}
+
+export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
 
 export function zip<T>(...arrs: T[][]): T[][] {
   return range(0, arrs[0].length).map((i) => arrs.map((x) => x[i]));

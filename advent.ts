@@ -25,11 +25,11 @@ export function load(day: number, suffix: string = ''): Input {
   const path = resolve(yearDir, 'input', `${paddedDay}${suffix}.txt`);
   let text: string;
   try {
-    text = readFileSync(path).toString().trim();
+    text = readFileSync(path).toString();
   } catch (e) {
     if (e.code === 'ENOENT' && !suffix) {
       downloadInput(year, day, path);
-      text = readFileSync(path).toString().trim();
+      text = readFileSync(path).toString();
     } else {
       console.error(e.message);
       process.exit(1);
@@ -38,13 +38,16 @@ export function load(day: number, suffix: string = ''): Input {
   return {
     raw: text,
     get lines() {
-      return text.split('\n');
+      return text.trim().split('\n');
     },
     get numbers() {
-      return text.split('\n').map(Number);
+      return text.trim().split('\n').map(Number);
     },
     get paragraphs() {
-      return text.split('\n\n').map((p) => p.split('\n'));
+      return text
+        .trim()
+        .split('\n\n')
+        .map((p) => p.split('\n'));
     },
   };
 }

@@ -1,9 +1,4 @@
-import { chunks, range } from '../util';
-
-function rotate<T>(xs: T[], n: number = 1): T[] {
-  n %= xs.length;
-  return [].concat(xs.slice(n), xs.slice(0, n));
-}
+import { chunks, range, rotate } from '../util';
 
 export function round(
   list: number[],
