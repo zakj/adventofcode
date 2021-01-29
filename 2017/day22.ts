@@ -1,9 +1,8 @@
-import { STATUS_CODES } from 'http';
-
 import { answers, example, load } from '../advent';
-import { sum, zip } from '../util';
 
-type Grid = Map<string, boolean>;
+type Point = [x: number, y: number];
+type PointHash = string;
+type Grid = Map<PointHash, boolean>;
 
 function parse(lines: string[]): Grid {
   const midPoint = Math.floor(lines.length / 2);
@@ -24,27 +23,27 @@ enum Dir {
 }
 
 const moves = new Map([
-  [Dir.U, '0,-1'],
-  [Dir.R, '1,0'],
-  [Dir.D, '0,1'],
-  [Dir.L, '-1,0'],
+  [Dir.U, [0, -1]],
+  [Dir.R, [1, 0]],
+  [Dir.D, [0, 1]],
+  [Dir.L, [-1, 0]],
 ]);
 
-function move(pos: string, dir: Dir): string {
-  return zip(...[pos, moves.get(dir)].map((c) => c.split(',').map(Number)))
-    .map(sum)
-    .join(',');
+function move(pos: Point, dir: Dir): Point {
+  const move = moves.get(dir);
+  return [pos[0] + move[0], pos[1] + move[1]];
 }
 
 function part1(n: number, grid: Grid): number {
   grid = new Map(grid);
   let infections = 0;
-  let pos = '0,0';
+  let pos: Point = [0, 0];
   let dir = Dir.U;
   for (let i = 0; i < n; ++i) {
-    const cur = grid.get(pos);
+    const key = pos.join(',');
+    const cur = grid.get(key);
     dir = (dir + (cur ? 1 : 3)) % 4;
-    grid.set(pos, !cur);
+    grid.set(key, !cur);
     if (!cur) infections++;
     pos = move(pos, dir);
   }
@@ -59,17 +58,18 @@ enum State {
 }
 
 function part2(n: number, infectedGrid: Grid): number {
-  const grid = new Map<string, State>(
+  const grid = new Map<PointHash, State>(
     [...infectedGrid.entries()].map(([k, v]) => [
       k,
       v ? State.Infected : State.Clean,
     ])
   );
   let infections = 0;
-  let pos = '0,0';
+  let pos: Point = [0, 0];
   let dir = Dir.U;
   for (let i = 0; i < n; ++i) {
-    const state = grid.has(pos) ? grid.get(pos) : State.Clean;
+    const key = pos.join(',');
+    const state = grid.has(key) ? grid.get(key) : State.Clean;
     let newState: State;
     switch (state) {
       case State.Clean:
@@ -89,7 +89,7 @@ function part2(n: number, infectedGrid: Grid): number {
         newState = State.Clean;
         break;
     }
-    grid.set(pos, newState);
+    grid.set(key, newState);
     pos = move(pos, dir);
   }
   return infections;
