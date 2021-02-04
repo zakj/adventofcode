@@ -57,6 +57,14 @@ export class DefaultDict<K, V> extends Map<K, V> {
   }
 }
 
+export function hammingDistance(a: string, b: string): number {
+  if (a.length !== b.length) throw new Error('lengths differ');
+  return zip(a.split(''), b.split('')).reduce(
+    (distance, [x, y]) => distance + (x === y ? 0 : 1),
+    0
+  );
+}
+
 export const md5 = (s: string): string =>
   crypto.createHash('md5').update(s).digest('hex');
 
