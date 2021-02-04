@@ -11,6 +11,7 @@ function nextN<T>(it: Iterator<T>, n: number): T[] {
 }
 
 const instructions = parse(load(25).lines);
+answers.expect(192);
 answers(() => {
   const isAlternating = (xs: number[]): boolean =>
     chunks(xs, 2).every(([a, b]) => a === 0 && b === 1);

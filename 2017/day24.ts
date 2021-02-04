@@ -9,16 +9,6 @@ function parse(lines: string[]): Pipe[] {
   });
 }
 
-function partition<T>(xs: T[], fn: (x: T) => boolean): [true: T[], false: T[]] {
-  return xs.reduce(
-    (acc, x) => {
-      acc[fn(x) ? 0 : 1].push(x);
-      return acc;
-    },
-    [[], []]
-  );
-}
-
 const score = (pipe: Pipe): number => sum(pipe.flat());
 
 function bySum(pipes: Pipe[]): Pipe {
@@ -40,7 +30,6 @@ function x(
   best: (pipes: Pipe[]) => Pipe
 ): Pipe {
   const heads = pipes.filter((p) => p.includes(start));
-  // console.log({ heads, pipes });
   const options = [];
   for (const head of heads) {
     const tails = pipes.filter((x) => x !== head);

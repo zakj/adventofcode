@@ -80,6 +80,7 @@ const exampleMap = parse(load(24, 'ex').lines);
 example.equal(solve(exampleMap), 14);
 
 const map = parse(load(24).lines);
+answers.expect(500, 748);
 answers(
   () => solve(map),
   () => solve(map, true)
