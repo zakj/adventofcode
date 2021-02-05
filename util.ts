@@ -137,7 +137,7 @@ export function range(start: number, stop: number): number[] {
 
 export function rotate<T>(xs: T[], n: number = 1): T[] {
   n %= xs.length;
-  return [].concat(xs.slice(n), xs.slice(0, n));
+  return [...xs.slice(n), ...xs.slice(0, n)];
 }
 
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
