@@ -47,6 +47,7 @@ export function load(day: number, suffix: string = ''): Input {
       return text
         .trim()
         .split('\n\n')
+        .filter(Boolean)
         .map((p) => p.split('\n'));
     },
   };
