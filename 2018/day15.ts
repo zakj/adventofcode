@@ -69,6 +69,25 @@ function shortestPathLength(
   return -1;
 }
 
+function allDistances(
+  from: Point,
+  impassable: Set<PointHash>
+): Map<PointHash, Point & { distance: number }> {
+  const q = [from];
+  const distances = new Map([[h(from), { ...from, distance: 0 }]]);
+  while (q.length) {
+    const cur = q.shift();
+    const distance = distances.get(h(cur)).distance + 1;
+    for (const neighbor of adjacent(cur)) {
+      const hash = h(neighbor);
+      if (distances.has(hash) || impassable.has(hash)) continue;
+      distances.set(hash, { ...neighbor, distance });
+      q.push(neighbor);
+    }
+  }
+  return distances;
+}
+
 function play(
   { characters, walls }: Maze,
   elfPower?: number
@@ -92,28 +111,26 @@ function play(
 
       // Move if we can't attack from here.
       if (adjacentEnemies.length === 0) {
-        const impassable = new Set([...characters.keys(), ...walls]);
-        const spl = (from: Point, to: Point): number =>
-          shortestPathLength(from, to, impassable);
-
         // Find the best reachable enemy-adjacent location, or end our turn.
-        const targets = new Set(enemies.flatMap((e) => adjacent(e)));
-        const target = best(
-          [...targets]
-            .filter((p) => !impassable.has(h(p)))
-            .map((p) => ({ ...p, length: spl(char, p) }))
-            .filter((p) => p.length !== -1),
-          'length'
-        );
+        const impassable = new Set([...characters.keys(), ...walls]);
+        const distances = allDistances(char, impassable);
+        const targets = new Set(enemies.flatMap((e) => adjacent(e)).map(h));
+        const targetDistances = [...distances]
+          .filter(([hash]) => targets.has(hash))
+          .map(([hash, pd]) => pd);
+        const target = best([...targetDistances.values()], 'distance');
         if (!target) continue;
 
         // Move to the best next step towards the chosen target.
         const { x, y } = best(
           adjacent(char)
             .filter((p) => !impassable.has(h(p)))
-            .map((p) => ({ ...p, length: spl(p, target) }))
-            .filter((p) => p.length !== -1),
-          'length'
+            .map((p) => ({
+              ...p,
+              distance: shortestPathLength(p, target, impassable),
+            }))
+            .filter((p) => p.distance !== -1),
+          'distance'
         );
         const newChar = { ...char, x, y };
         characters.delete(h(char));
