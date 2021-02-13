@@ -72,9 +72,11 @@ export function answers(...fns: (() => any)[]): void {
         : `${durationMs.toFixed(3)}ms`;
     const indexStr = `${i + 1}: `;
     process.stdout.write(indexStr);
-    process.stdout.cursorTo(process.stdout.columns - duration.length);
-    process.stdout.write(color.grey(duration));
-    process.stdout.cursorTo(indexStr.length);
+    if (process.stdout.cursorTo) {
+      process.stdout.cursorTo(process.stdout.columns - duration.length);
+      process.stdout.write(color.grey(duration));
+      process.stdout.cursorTo(indexStr.length);
+    }
 
     const expected = expectedAnswers[i];
     if (typeof expected === 'undefined' || expected === result) {
