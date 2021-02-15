@@ -1,5 +1,5 @@
-import util from 'util';
 import { answers, example, load } from '../advent';
+import { XMap } from '../util';
 
 enum Cell {
   Open = '.',
@@ -9,72 +9,6 @@ enum Cell {
 type Point = { x: number; y: number };
 type PointHash = string;
 type Area = XMap<Point, Cell, PointHash>;
-
-// TODO: move this into util?
-class XMap<K, V, KHash = string> {
-  private data = new Map<KHash, V>();
-  private _keys = new Map<KHash, K>();
-
-  constructor(
-    private hashFn: (k: K) => KHash,
-    iterable: Iterable<[K, V]> = []
-  ) {
-    for (const [p, v] of iterable) {
-      this.set(p, v);
-    }
-  }
-
-  get(key: K): V {
-    return this.data.get(this.hashFn(key));
-  }
-
-  has(key: K): boolean {
-    return this.data.has(this.hashFn(key));
-  }
-
-  set(key: K, value: V): XMap<K, V, KHash> {
-    const hash = this.hashFn(key);
-    this._keys.set(hash, key);
-    this.data.set(hash, value);
-    return this;
-  }
-
-  delete(key: K): boolean {
-    const hash = this.hashFn(key);
-    this._keys.delete(hash);
-    return this.data.delete(hash);
-  }
-
-  copy(): XMap<K, V, KHash> {
-    const copy = new XMap<K, V, KHash>(this.hashFn);
-    copy.data = new Map(this.data);
-    copy._keys = new Map(this._keys);
-    return copy;
-  }
-
-  *[Symbol.iterator](): Iterator<[K, V]> {
-    for (const [h, v] of this.data) {
-      yield [this._keys.get(h), v];
-    }
-  }
-
-  entries(): [K, V][] {
-    return [...this];
-  }
-
-  keys(): K[] {
-    return [...this._keys.values()];
-  }
-
-  values(): V[] {
-    return [...this.data.values()];
-  }
-
-  [util.inspect.custom](depth: number, options: util.InspectOptionsStylized) {
-    const entries = new Map(this.entries());
-    return util.inspect(entries, options.showHidden, depth, options.colors);
-  }
-}
 
 function parse(lines: string[]): Area {
   return new XMap(
