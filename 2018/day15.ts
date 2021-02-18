@@ -158,19 +158,12 @@ function play(
 function elfatePower(maze: Maze): number {
   let low = 4;
   let high = 20;
-  let elfPower = high;
-  let rv: number;
-  while (high - low > 1) {
-    const result = play(maze, elfPower);
-    if (result === DeadElf) {
-      low = elfPower;
-    } else {
-      rv = result;
-      high = elfPower;
-    }
-    elfPower = Math.floor((low + high) / 2);
+  while (low < high) {
+    const elfPower = Math.floor((low + high) / 2);
+    if (play(maze, elfPower) !== DeadElf) high = elfPower;
+    else low = elfPower + 1;
   }
-  return rv;
+  return play(maze, low) as number;
 }
 
 function debug(characters: Characters, walls: Walls) {
