@@ -185,6 +185,10 @@ export class XMap<K, V, KHash = string> {
     return copy;
   }
 
+  get size() {
+    return this.data.size;
+  }
+
   *[Symbol.iterator](): Iterator<[K, V]> {
     for (const [h, v] of this.data) {
       yield [this._keys.get(h), v];
