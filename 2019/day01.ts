@@ -1,6 +1,5 @@
-import { loadDay } from './util';
-
-const data = loadDay(1).map(x => parseInt(x, 10));
+import { answers, load } from '../advent';
+import { sum } from '../util';
 
 function fuelRequired(mass: number): number {
   return Math.floor(mass / 3) - 2;
@@ -14,8 +13,9 @@ function fuelRequiredPlusFuel(mass: number): number {
   return totalFuel;
 }
 
-const part1 = data.map(mass => fuelRequired(mass)).reduce((acc, x) => acc + x);
-console.log(part1);
-
-const part2 = data.map(mass => fuelRequiredPlusFuel(mass)).reduce((acc, x) => acc + x);
-console.log(part2);
+const data = load(1).numbers;
+answers.expect(3420719, 5128195);
+answers(
+  () => sum(data.map(fuelRequired)),
+  () => sum(data.map(fuelRequiredPlusFuel))
+);
