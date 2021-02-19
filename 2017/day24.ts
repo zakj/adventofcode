@@ -24,7 +24,7 @@ function byLengthAndSum(pipes: Pipe[]): Pipe {
     .pop();
 }
 
-function x(
+function strongestBridge(
   pipes: Pipe[],
   start: number = 0,
   best: (pipes: Pipe[]) => Pipe
@@ -35,7 +35,7 @@ function x(
     const tails = pipes.filter((x) => x !== head);
     options.push(
       [head].concat(
-        x(
+        strongestBridge(
           tails,
           head[0] === head[1] ? head[0] : head.find((x) => x !== start),
           best
@@ -47,12 +47,13 @@ function x(
 }
 
 const examplePipes = parse(load(24, 'ex').lines);
-example.equal(score(x(examplePipes, 0, bySum)), 31);
-example.equal(score(x(examplePipes, 0, byLengthAndSum)), 19);
+example.equal(score(strongestBridge(examplePipes, 0, bySum)), 31);
+example.equal(score(strongestBridge(examplePipes, 0, byLengthAndSum)), 19);
 
 const pipes = parse(load(24).lines);
 answers.expect(1656);
 answers(
-  () => score(x(pipes, 0, bySum)),
-  () => score(x(pipes, 0, byLengthAndSum))
+  // TODO speedup, 1.8s, 1s
+  () => score(strongestBridge(pipes, 0, bySum)),
+  () => score(strongestBridge(pipes, 0, byLengthAndSum))
 );
