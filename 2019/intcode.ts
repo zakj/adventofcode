@@ -1,6 +1,6 @@
 export type Program = number[];
 
-enum OperationType {
+enum OpCode {
   Add = 1,
   Multiply = 2,
   Input = 3,
@@ -9,13 +9,22 @@ enum OperationType {
   JumpElse = 6,
   LessThan = 7,
   Equals = 8,
-  AdjustRelativeBase = 9,
-  Exit = 99,
+  IncRelBase = 9,
+  Halt = 99,
 }
 
-interface Operation {
-  paramCount: number;
-}
+const arities: Record<OpCode, number> = {
+  [OpCode.Add]: 3,
+  [OpCode.Multiply]: 3,
+  [OpCode.Input]: 1,
+  [OpCode.Output]: 1,
+  [OpCode.JumpIf]: 2,
+  [OpCode.JumpElse]: 2,
+  [OpCode.LessThan]: 3,
+  [OpCode.Equals]: 3,
+  [OpCode.IncRelBase]: 1,
+  [OpCode.Halt]: 0,
+};
 
 enum ParamMode {
   Position = 0,
@@ -23,109 +32,113 @@ enum ParamMode {
   Relative = 2,
 }
 
-const OPERATIONS: { [key in OperationType]: Operation } = {
-  [OperationType.Add]: { paramCount: 3 },
-  [OperationType.Multiply]: { paramCount: 3 },
-  [OperationType.Input]: { paramCount: 1 },
-  [OperationType.Output]: { paramCount: 1 },
-  [OperationType.JumpIf]: { paramCount: 2 },
-  [OperationType.JumpElse]: { paramCount: 2 },
-  [OperationType.LessThan]: { paramCount: 3 },
-  [OperationType.Equals]: { paramCount: 3 },
-  [OperationType.AdjustRelativeBase]: { paramCount: 1 },
-  [OperationType.Exit]: { paramCount: 0 },
+type Param = {
+  mode: ParamMode;
+  value: number;
 };
 
-class ParamManager {
-  private modes: ParamMode[];
+type Input = number | Iterator<number>;
+type Output = Generator<number, void, void>;
+type Computer = {
+  (...inputs: Input[]): Output;
+  halted: boolean;
+  memory: number[];
+  seed: (...inputs: Input[]) => Computer;
+};
 
-  constructor(
-    private readonly memory: Program,
-    private readonly relativeBase: number,
-    modes: number,
-    private readonly values: number[]
-  ) {
-    this.modes = modes
-      .toString()
-      .split('')
-      .map(t => Number(t))
-      .reverse();
-    while (this.modes.length < values.length)
-      this.modes.push(ParamMode.Position);
-  }
+export const parse = (s: string): Program => s.split(',').map(Number);
 
-  private extendMemory(length: number): void {
-    const previousLength = this.memory.length;
-    this.memory.length = length;
-    this.memory.fill(0, previousLength);
-  }
+export function compile(program: Program): Computer {
+  const memory = [...program];
+  let relBase = 0;
+  let inputs: Input[] = [];
+  let ptr: number = 0;
 
-  private index(mode: ParamMode, value: number): number {
-    if (![ParamMode.Position, ParamMode.Relative].includes(mode)) {
-      throw new Error(`unexpected parameter mode ${mode}`);
+  function instructionAt(ptr: number): [OpCode, Param[]] {
+    let value = memory[ptr];
+    const op = value % 100;
+    value = Math.floor(value / 100);
+    const params: Param[] = [];
+    for (let i = 1; i <= arities[op]; ++i) {
+      params.push({ mode: value % 10, value: memory[ptr + i] });
+      value = Math.floor(value / 10);
     }
-    const index = value + (mode === ParamMode.Relative ? this.relativeBase : 0);
-    if (index < 0) throw new Error('negative memory index');
-    if (index > this.memory.length) this.extendMemory(index + 1);
-    return index;
+    return [op, params];
   }
 
-  get(i: number): number {
-    const mode = this.modes[i];
-    const value = this.values[i];
-    if (mode === ParamMode.Immediate) return value;
-    return this.memory[this.index(mode, value)];
+  function get(param: Param): number {
+    if (param.mode === ParamMode.Position) return memory[param.value];
+    if (param.mode === ParamMode.Immediate) return param.value;
+    if (param.mode === ParamMode.Relative) return memory[relBase + param.value];
   }
 
-  set(i: number, value: number): void {
-    this.memory[this.index(this.modes[i], this.values[i])] = value;
-  }
-}
-
-export default function* intcode(
-  instructions: Program,
-  inputs: number[] = []
-): Generator<number | undefined, void, number | undefined> {
-  const memory = instructions.slice();
-  let relativeBase = 0;
-  let ptr = 0;
-  while (ptr < memory.length) {
-    const opcode: OperationType = memory[ptr] % 100;
-    const paramModes: number = Math.floor(memory[ptr] / 100);
-    const op = OPERATIONS[opcode];
-    if (!op) throw new Error(`unknown opcode ${opcode} at index ${ptr}`);
-    ptr++;
-    const params = new ParamManager(
-      memory,
-      relativeBase,
-      paramModes,
-      memory.slice(ptr, ptr + op.paramCount)
-    );
-    ptr += op.paramCount;
-
-    if (opcode === OperationType.Add) {
-      params.set(2, params.get(0) + params.get(1));
-    } else if (opcode === OperationType.Multiply) {
-      params.set(2, params.get(0) * params.get(1));
-    } else if (opcode === OperationType.Input) {
-      let input;
-      if (inputs.length) input = inputs.shift();
-      else input = yield;
-      params.set(0, input!);
-    } else if (opcode === OperationType.Output) {
-      yield params.get(0);
-    } else if (opcode === OperationType.JumpIf) {
-      if (params.get(0) !== 0) ptr = params.get(1);
-    } else if (opcode === OperationType.JumpElse) {
-      if (params.get(0) === 0) ptr = params.get(1);
-    } else if (opcode === OperationType.LessThan) {
-      params.set(2, params.get(0) < params.get(1) ? 1 : 0);
-    } else if (opcode === OperationType.Equals) {
-      params.set(2, params.get(0) === params.get(1) ? 1 : 0);
-    } else if (opcode === OperationType.AdjustRelativeBase) {
-      relativeBase += params.get(0);
-    } else if (opcode === OperationType.Exit) return;
+  function set(param: Param, value: number): void {
+    if (param.mode === ParamMode.Immediate) throw new Error();
+    if (param.mode === ParamMode.Position) memory[param.value] = value;
+    if (param.mode === ParamMode.Relative)
+      memory[relBase + param.value] = value;
   }
 
-  throw new Error('end of program without exit code');
+  function* run(...xs: typeof inputs): Output {
+    seed(...xs);
+    while (!run.halted) {
+      const [op, params] = instructionAt(ptr);
+      const p = (n: number) => get(params[n]);
+      ptr += params.length + 1;
+
+      switch (op) {
+        case OpCode.Add:
+          set(params[2], p(0) + p(1));
+          break;
+        case OpCode.Multiply:
+          set(params[2], p(0) * p(1));
+          break;
+        case OpCode.Input:
+          const input = inputs.shift();
+          if (input === undefined) {
+            // Rewind pointer and pause.
+            ptr -= params.length + 1;
+            return;
+          }
+          set(
+            params[0],
+            typeof input === 'number' ? input : input.next().value
+          );
+          break;
+        case OpCode.Output:
+          yield p(0);
+          break;
+        case OpCode.JumpIf:
+          if (p(0) !== 0) ptr = p(1);
+          break;
+        case OpCode.JumpElse:
+          if (p(0) === 0) ptr = p(1);
+          break;
+        case OpCode.LessThan:
+          set(params[2], p(0) < p(1) ? 1 : 0);
+          break;
+        case OpCode.Equals:
+          set(params[2], p(0) === p(1) ? 1 : 0);
+          break;
+        case OpCode.IncRelBase:
+          relBase += p(0);
+          break;
+        case OpCode.Halt:
+          run.halted = true;
+          return;
+        default:
+          throw new Error(`unknown opcode ${op}`);
+      }
+    }
+  }
+
+  function seed(...xs: typeof inputs): Computer {
+    inputs = inputs.concat(xs);
+    return run;
+  }
+
+  run.halted = false;
+  run.memory = memory;
+  run.seed = seed;
+  return run;
 }

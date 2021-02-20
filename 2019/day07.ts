@@ -1,39 +1,48 @@
-import intcode from './intcode';
-import { Program } from './intcode';
-import { loadIntcode, permutations } from './util';
+import { answers, example, load } from '../advent';
+import { permutations, range } from '../util';
+import { compile, parse, Program } from './intcode';
 
-const data = loadIntcode(7);
-
-function amplifier(program: Program, phaseSettings: number[]) {
-  let signal = 0;
-  phaseSettings.forEach(phaseSetting => {
-    const gen = intcode(program, [phaseSetting, signal])
-    signal = gen.next().value as number;
-  })
-  return signal;
-}
-
-function findHighestOutput(program: Program) {
+function maxThrusterSignal(program: Program): number {
   let max = -Infinity;
-  for (let phaseSettings of permutations([0, 1, 2, 3, 4])) {
-    const signal = amplifier(program, phaseSettings);
+  for (const perm of permutations(range(0, 5))) {
+    let signal = 0;
+    for (const phaseSetting of perm) {
+      const amp = compile(program);
+      signal = [...amp(phaseSetting, signal)].pop();
+    }
     max = Math.max(max, signal);
   }
   return max;
 }
 
-function findHighestOutputWithFeedback(program: Program) {
+function maxThrusterFeedback(program: Program): number {
   let max = -Infinity;
-  for (let phaseSettings of permutations([5, 6, 7, 8, 9])) {
-    const signal = amplifier(program, phaseSettings);
+  for (const phaseSettings of permutations(range(5, 10))) {
+    const amps = range(0, 5).map((i) =>
+      compile(program).seed(phaseSettings[i])
+    );
+    let signal = 0;
+    while (amps.some((a) => !a.halted)) {
+      for (const amp of amps) {
+        signal = [...amp(signal)].pop();
+      }
+    }
     max = Math.max(max, signal);
   }
   return max;
 }
 
-console.log(findHighestOutput(data));
-
-
-function applyFunction(f: (x: number) => number, x: number): number {
-  return f(x);
+const examples = load(7, 'ex').paragraphs;
+for (const [program, max] of examples[0].map((l) => l.split(' '))) {
+  example.equal(maxThrusterSignal(parse(program)), Number(max));
 }
+for (const [program, max] of examples[1].map((l) => l.split(' '))) {
+  example.equal(maxThrusterFeedback(parse(program)), Number(max));
+}
+
+const program = parse(load(7).raw);
+answers.expect(844468, 4215746);
+answers(
+  () => maxThrusterSignal(program),
+  () => maxThrusterFeedback(program)
+);
