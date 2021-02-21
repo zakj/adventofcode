@@ -1,83 +1,56 @@
-import { loadDay } from './util';
-
-const data = loadDay(8)[0]
-  .split('')
-  .map(Number);
-const WIDTH = 25;
-const HEIGHT = 6;
+import { answers, load, ocr } from '../advent';
+import { chunks, Counter } from '../util';
 
 type Layer = number[];
-
 enum Color {
   Black = 0,
   White = 1,
   Transparent = 2,
 }
+const WIDTH = 25;
+const HEIGHT = 6;
 
-function chunks<T>(arr: T[], chunkSize: number): T[][] {
-  const output = [];
-  for (let i = 0; i < arr.length; i += chunkSize) {
-    output.push(arr.slice(i, i + chunkSize));
-  }
-  return output;
+function parse(s: string): Layer[] {
+  return chunks(s.split('').map(Number), WIDTH * HEIGHT);
 }
 
-function loadImageLayers(
-  data: number[],
-  width: number,
-  height: number
-): Layer[] {
-  return chunks(data, width * height);
-}
-
-function findLayerWithFewestZeros(layers: Layer[]) {
-  let minLayer = null;
-  let minZeroes = Infinity;
-  return layers
-    .map((layer): [number, Layer] => [layer.filter(x => x === 0).length, layer])
-    .sort((a, b) => a[0] - b[0])[0][1];
-}
-
-// First layer in front, last layer in back.
-function flattenImage(layers: Layer[]): Layer {
-  const layer: Layer = [];
-  for (let i = 0; i < layers[0].length; ++i) {
+function flattenLayers(layers: Layer[]): Layer {
+  const final: Layer = [];
+  const layerSize = layers[0].length;
+  for (let i = 0; i < layerSize; ++i) {
     for (let j = 0; j < layers.length; ++j) {
       if (layers[j][i] !== Color.Transparent) {
-        layer[i] = layers[j][i];
+        final[i] = layers[j][i];
         break;
       }
     }
   }
-  return layer;
+  return final;
 }
 
-function layerString(layer: Layer, width: number, height: number): string {
+function layerString(layer: Layer): string {
   const colorMap = {
     [Color.Black]: ' ',
     [Color.White]: '#',
     [Color.Transparent]: '?',
   };
   return chunks(
-    layer.map(x => colorMap[x as Color]),
-    width
+    layer.map((x) => colorMap[x as Color]),
+    WIDTH
   )
-    .map(x => x.join(''))
+    .map((x) => x.join(''))
     .join('\n');
 }
 
-function part1(data: number[]) {
-  const layers = loadImageLayers(data, WIDTH, HEIGHT);
-  const fewest = findLayerWithFewestZeros(layers);
-  return (
-    fewest.filter(x => x === 1).length * fewest.filter(x => x === 2).length
-  );
-}
-
-function part2(data: number[]) {
-  const image = flattenImage(loadImageLayers(data, WIDTH, HEIGHT));
-  return layerString(image, WIDTH, HEIGHT);
-}
-
-console.log(part1(data));
-console.log(part2(data));
+const layers = parse(load(8).lines[0]);
+answers.expect(1320, 'RCYKR');
+answers(
+  () => {
+    const counts = layers.map((l) => new Map(new Counter(l).mostCommon));
+    const fewestZeros = counts.reduce((min, c) =>
+      c.get(0) < min.get(0) ? c : min
+    );
+    return fewestZeros.get(1) * fewestZeros.get(2);
+  },
+  () => ocr(layerString(flattenLayers(layers)), './figlet.txt')
+);

@@ -3,6 +3,7 @@ import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { dirname, resolve, sep } from 'path';
 import { performance } from 'perf_hooks';
+import { zip } from './util';
 
 type Input = {
   raw: string;
@@ -111,3 +112,26 @@ const assertHandler: ProxyHandler<typeof assert> = {
 };
 
 export const example: typeof assert = new Proxy(assert, assertHandler);
+
+export function ocr(s: string, lettersPath: string): string {
+  const paras = readFileSync(lettersPath).toString().split('\n\n');
+  const values = paras.shift().split('');
+  const keys = paras.map((c) => c.split('\n').join(''));
+  const charWidth = paras[0].split('\n')[0].length;
+  const letterMap = new Map(zip(keys, values) as [string, string][]);
+  const rows = s.split('\n');
+  let x = 0;
+  const output = [];
+  while (x < rows[0].length) {
+    const key = rows
+      .map((r) => r.slice(x, x + charWidth).padEnd(charWidth))
+      .join('');
+    if (letterMap.has(key)) {
+      output.push(letterMap.get(key));
+      x += charWidth;
+    } else {
+      x++; // padding
+    }
+  }
+  return output.join('');
+}
