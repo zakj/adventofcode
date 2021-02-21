@@ -143,7 +143,8 @@ export function rotate<T>(xs: T[], n: number = 1): T[] {
 
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
 
-// TODO better name? refactor old places that could use this
+// TODO refactor old places that could use this
+// TODO just enforce KHash = string
 export class XMap<K, V, KHash = string> {
   private data = new Map<KHash, V>();
   private _keys = new Map<KHash, K>();
@@ -167,7 +168,7 @@ export class XMap<K, V, KHash = string> {
 
   set(key: K, value: V): XMap<K, V, KHash> {
     const hash = this.hashFn(key);
-    this._keys.set(hash, key);
+    this._keys.set(hash, { ...key });
     this.data.set(hash, value);
     return this;
   }
@@ -210,6 +211,50 @@ export class XMap<K, V, KHash = string> {
   [util.inspect.custom](depth: number, options: util.InspectOptionsStylized) {
     const entries = new Map(this.entries());
     return util.inspect(entries, options.showHidden, depth, options.colors);
+  }
+}
+
+// TODO refactor old places that could use this
+export class XSet<T> {
+  private map: Map<string, T> = new Map();
+
+  constructor(private hashFn: (x: T) => string, iterable: Iterable<T> = []) {
+    for (const x of iterable) {
+      this.add(x);
+    }
+  }
+
+  add(item: T): void {
+    this.map.set(this.hashFn(item), item);
+  }
+
+  has(item: T): boolean {
+    return this.map.has(this.hashFn(item));
+  }
+
+  delete(item: T): boolean {
+    return this.map.delete(this.hashFn(item));
+  }
+
+  intersect(other: XSet<T>): XSet<T> {
+    const next = new XSet<T>(this.hashFn);
+    for (const item of this) {
+      if (other.has(item)) next.add(item);
+    }
+    return next;
+  }
+
+  get size(): number {
+    return this.map.size;
+  }
+
+  *[Symbol.iterator](): Iterator<T> {
+    yield* this.map.values();
+  }
+
+  [util.inspect.custom](depth: number, options: util.InspectOptionsStylized) {
+    const values = new Set(this.map.values());
+    return util.inspect(values, options.showHidden, depth, options.colors);
   }
 }
 
