@@ -1,8 +1,9 @@
-import intcode from './intcode';
-import { Program } from './intcode';
-import { loadIntcode } from './util';
+import { answers, load } from '../advent';
+import { compile, parse } from './intcode';
 
-const data = loadIntcode(9);
-
-console.log(intcode(data, [1]));
-console.log(intcode(data, [2]));
+const program = parse(load(9).raw);
+answers.expect(3546494377, 47253);
+answers(
+  () => [...compile(program)(1)].pop(),
+  () => [...compile(program)(2)].pop()
+);
