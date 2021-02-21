@@ -1,75 +1,67 @@
-import { loadDay, roundRobin } from './util';
+import { answers, load } from '../advent';
+import { XMap, XSet } from '../util';
 
-interface Point {
-  x: number;
-  y: number;
+type Point = { x: number; y: number };
+const h = ({ x, y }: Point) => `${x},${y}`;
+
+function parse(lines: string[]): XSet<Point> {
+  const asteroids = new XSet(h);
+  lines.forEach((line, y) => {
+    line.split('').forEach((c, x) => {
+      if (c === '#') asteroids.add({ x, y });
+    });
+  });
+  return asteroids;
 }
-
-enum MapCell {
-  Space = '.',
-  Asteroid = '#',
-}
-
-const asteroids: Point[] = [];
-const data = loadDay(10)
-  .map(row => row.split('').map(cell => cell as MapCell))
-  .forEach((row, y) =>
-    row.forEach((cell, x) => {
-      if (cell === MapCell.Asteroid) {
-        asteroids.push({ x, y });
-      }
-    })
-  );
 
 function angleBetween(a: Point, b: Point): number {
-  const angle = (Math.atan2(a.y - b.y, a.x - b.x) * 180) / Math.PI + 180;
-  return (angle + 90) % 360; // zero is up
+  const radians = Math.atan2(a.y - b.y, a.x - b.x);
+  const degrees = (radians * 180) / Math.PI - 90;
+  return (degrees + 360) % 360;
 }
 
-function distanceBetween(a: Point, b: Point): number {
-  const deltaX = a.x - b.x;
-  const deltaY = a.y - b.y;
-  return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+function monitoringStation(
+  asteroids: XSet<Point>
+): { station: Point; angles: Map<number, Point[]> } {
+  const anglesTo = new XMap<Point, Map<number, Point[]>>(h);
+  for (const asteroid of asteroids) {
+    const angles = new Map<number, Point[]>();
+    for (const other of asteroids) {
+      if (asteroid === other) continue;
+      const angle = angleBetween(asteroid, other);
+      if (!angles.has(angle)) angles.set(angle, []);
+      angles.get(angle).push(other);
+    }
+    anglesTo.set(asteroid, angles);
+  }
+  const station = anglesTo
+    .entries()
+    .reduce((max, p) => (p[1].size > max[1].size ? p : max));
+  return { station: station[0], angles: station[1] };
 }
 
-function uniqueAnglesFrom(point: Point, points: Point[]): Set<number> {
-  return points
-    .filter(p => p !== point)
-    .reduce(
-      (angles, other) => angles.add(angleBetween(point, other)),
-      new Set<number>()
+function distance(a: Point, b: Point): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+const asteroids = parse(load(10).lines);
+answers.expect(347, 829);
+answers(
+  () => monitoringStation(asteroids).angles.size,
+  () => {
+    const { station, angles } = monitoringStation(asteroids);
+    angles.forEach((asteroids) =>
+      asteroids.sort((a, b) => distance(station, a) - distance(station, b))
     );
-}
-
-function mostVisibleAsteroids(asteroids: Point[]): [number, Point] {
-  return asteroids
-    .map<[number, Point]>(a => [uniqueAnglesFrom(a, asteroids).size, a])
-    .sort((a, b) => b[0] - a[0])[0];
-}
-
-function asteroidsByAngleAndDistance(asteroid: Point, asteroids: Point[]) {
-  const rv: { [key: number]: [number, Point][] } = {};
-  asteroids.forEach(other => {
-    const angle = angleBetween(asteroid, other);
-    rv[angle] = rv[angle] || [];
-    rv[angle].push([distanceBetween(asteroid, other), other]);
-  });
-  Object.values(rv).forEach(v => v.sort((a, b) => a[0] - b[0]));
-  return Object.entries(rv)
-    .map<[number, Point[]]>(([angle, list]) => [
-      Number(angle),
-      list.map(x => x[1]),
-    ])
-    .sort((a, b) => a[0] - b[0]);
-}
-
-const [mostVisible, monitoringStation] = mostVisibleAsteroids(asteroids);
-console.log(mostVisible, monitoringStation);
-
-console.log(
-  roundRobin<Point>(
-    asteroidsByAngleAndDistance(monitoringStation, asteroids).map(
-      ([angle, points]) => points
-    )
-  )[199]
+    const list = [...angles.keys()].sort((a, b) => a - b);
+    let i = 0;
+    let count = 0;
+    let destroyed: Point;
+    for (let i = 0; count < 200; ++i) {
+      const angle = list[i % list.length];
+      destroyed = angles.get(angle).pop();
+      if (destroyed !== undefined) ++count;
+    }
+    return destroyed.x * 100 + destroyed.y;
+  }
 );
