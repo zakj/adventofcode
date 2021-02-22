@@ -1,109 +1,86 @@
-import { combinations, gcd, loadDay } from './util';
+import { answers, load } from '../advent';
+import { product, sum } from '../util';
+import { combinations } from './util';
 
-interface Position {
+type Point = {
   x: number;
   y: number;
   z: number;
-}
-
-interface Velocity {
+};
+type Velocity = {
   x: number;
   y: number;
   z: number;
-}
+};
+type Moon = Point & { v: Velocity };
 
-interface Moon {
-  pos: Position;
-  vel: Velocity;
-}
-
-function positionFromData(data: string[]): Position[] {
+function parse(lines: string[]): Moon[] {
   const re = /^<x=(-?\d+), y=(-?\d+), z=(-?\d+)>$/;
-  return data.map(s => {
-    const match = re.exec(s);
-    if (!match) throw new Error('bad input');
+  return lines.map((line) => {
+    const match = line.match(re);
     const [x, y, z] = match.slice(1, 4).map(Number);
-    return { x, y, z };
+    return { x, y, z, v: { x: 0, y: 0, z: 0 } };
   });
 }
 
 function step(moons: Moon[]): void {
-  for (let [a, b] of combinations(moons)) {
-    if (a.pos.x < b.pos.x) {
-      a.vel.x++;
-      b.vel.x--;
-    }
-    if (a.pos.x > b.pos.x) {
-      a.vel.x--;
-      b.vel.x++;
-    }
-    if (a.pos.y < b.pos.y) {
-      a.vel.y++;
-      b.vel.y--;
-    }
-    if (a.pos.y > b.pos.y) {
-      a.vel.y--;
-      b.vel.y++;
-    }
-    if (a.pos.z < b.pos.z) {
-      a.vel.z++;
-      b.vel.z--;
-    }
-    if (a.pos.z > b.pos.z) {
-      a.vel.z--;
-      b.vel.z++;
+  for (const [a, b] of combinations(moons)) {
+    for (const p of ['x', 'y', 'z']) {
+      if (a[p] === b[p]) continue;
+      if (a[p] > b[p]) {
+        a.v[p]--;
+        b.v[p]++;
+      } else {
+        a.v[p]++;
+        b.v[p]--;
+      }
     }
   }
 
-  moons.forEach(({ pos, vel }) => {
-    pos.x += vel.x;
-    pos.y += vel.y;
-    pos.z += vel.z;
-  });
+  for (const moon of moons) {
+    for (const p of ['x', 'y', 'z']) {
+      moon[p] += moon.v[p];
+    }
+  }
 }
 
-function moonEnergy({ pos, vel }: Moon): number {
-  const pot = Math.abs(pos.x) + Math.abs(pos.y) + Math.abs(pos.z);
-  const kin = Math.abs(vel.x) + Math.abs(vel.y) + Math.abs(vel.z);
+function moonEnergy(moon: Moon): number {
+  const pot = Math.abs(moon.x) + Math.abs(moon.y) + Math.abs(moon.z);
+  const kin = Math.abs(moon.v.x) + Math.abs(moon.v.y) + Math.abs(moon.v.z);
   return pot * kin;
 }
 
-function moonsFromData(data: string[]) {
-  return positionFromData(data).map(pos => ({
-    pos,
-    vel: { x: 0, y: 0, z: 0 },
-  }));
-}
-
-function part1(data: string[]) {
-  const moons = moonsFromData(data);
-  for (let i = 0; i < 1000; ++i) step(moons);
-  return moons.map(moonEnergy).reduce((sum, x) => x + sum, 0);
-}
-
-function part2(data: string[]) {
-  const moons = moonsFromData(data);
-
-  const freezeProp = (moons: Moon[], prop: 'x' | 'y' | 'z') =>
-    JSON.stringify(moons.map(({ pos, vel }) => [pos[prop], vel[prop]]));
-
-  const start = {
-    x: freezeProp(moons, 'x'),
-    y: freezeProp(moons, 'y'),
-    z: freezeProp(moons, 'z'),
-  };
-  const cycles = { x: 0, y: 0, z: 0 };
-  for (let count = 1; !(cycles.x && cycles.y && cycles.z); ++count) {
-    step(moons);
-    if (!cycles.x && freezeProp(moons, 'x') === start.x) cycles.x = count;
-    if (!cycles.y && freezeProp(moons, 'y') === start.y) cycles.y = count;
-    if (!cycles.z && freezeProp(moons, 'z') === start.z) cycles.z = count;
+function lcm(...xs: number[]): number {
+  const max = Math.max(...xs);
+  let hcf: number;
+  for (let i = 1; i < max; ++i) {
+    if (xs.every((x) => x % i === 0)) hcf = i;
   }
-
-  const tmp = (cycles.x * cycles.y) / gcd(cycles.x, cycles.y);
-  return (tmp * cycles.z / gcd(tmp, cycles.z));
+  return product(xs) / Math.pow(hcf, xs.length - 1);
 }
 
-const data = loadDay(12);
-console.log(part1(data))
-console.log(part2(data))
+const moons = parse(load(12).lines);
+answers.expect(9127, 353620566035124);
+answers(
+  () => {
+    for (let i = 0; i < 1000; ++i) step(moons);
+    return sum(moons.map(moonEnergy));
+  },
+  () => {
+    const hash = (p: string) =>
+      moons.map((moon) => `${moon[p]},${moon.v[p]}`).join('|');
+    const start = {
+      x: hash('x'),
+      y: hash('y'),
+      z: hash('z'),
+    };
+    const cycle = { x: null, y: null, z: null };
+    for (let steps = 1; !(cycle.x && cycle.y && cycle.z); ++steps) {
+      step(moons);
+      if (!cycle.x && hash('x') === start.x) cycle.x = steps;
+      if (!cycle.y && hash('y') === start.y) cycle.y = steps;
+      if (!cycle.z && hash('z') === start.z) cycle.z = steps;
+    }
+    return lcm(cycle.x, cycle.y, cycle.z);
+  }
+);
