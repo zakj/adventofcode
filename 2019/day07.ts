@@ -18,9 +18,7 @@ function maxThrusterSignal(program: Program): number {
 function maxThrusterFeedback(program: Program): number {
   let max = -Infinity;
   for (const phaseSettings of permutations(range(5, 10))) {
-    const amps = range(0, 5).map((i) =>
-      compile(program).seed(phaseSettings[i])
-    );
+    const amps = range(0, 5).map((i) => compile(program, phaseSettings[i]));
     let signal = 0;
     while (amps.some((a) => !a.halted)) {
       for (const amp of amps) {

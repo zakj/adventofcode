@@ -1,3 +1,5 @@
+import { DefaultDict } from '../util';
+
 export type Program = number[];
 
 enum OpCode {
@@ -37,50 +39,63 @@ type Param = {
   value: number;
 };
 
-type Input = number | Iterator<number>;
+type Input = number[] | string[];
 type Output = Generator<number, void, void>;
 type Computer = {
-  (...inputs: Input[]): Output;
+  (...inputs: Input): Output;
+  ascii: (...inputs: Input) => string;
   halted: boolean;
-  memory: number[];
-  seed: (...inputs: Input[]) => Computer;
+  memory: Map<number, number>;
 };
+
+const isStrings = (x: any): x is string[] => typeof x?.[0] === 'string';
+function deAscii(xs: Input): number[] {
+  if (isStrings(xs)) {
+    xs = xs
+      .concat('')
+      .join('\n')
+      .split('')
+      .map((c) => c.charCodeAt(0));
+  }
+  return xs;
+}
 
 export const parse = (s: string): Program => s.split(',').map(Number);
 
-export function compile(program: Program): Computer {
-  const memory = [...program];
+export function compile(program: Program, ...input: Input): Computer {
+  const memory = new DefaultDict(() => 0, [...program].entries());
   let relBase = 0;
-  let inputs: Input[] = [];
+  let inputs: number[] = deAscii(input);
   let ptr: number = 0;
 
   function instructionAt(ptr: number): [OpCode, Param[]] {
-    let value = memory[ptr];
+    let value = memory.get(ptr);
     const op = value % 100;
     value = Math.floor(value / 100);
     const params: Param[] = [];
     for (let i = 1; i <= arities[op]; ++i) {
-      params.push({ mode: value % 10, value: memory[ptr + i] });
+      params.push({ mode: value % 10, value: memory.get(ptr + i) });
       value = Math.floor(value / 10);
     }
     return [op, params];
   }
 
   function get(param: Param): number {
-    if (param.mode === ParamMode.Position) return memory[param.value];
+    if (param.mode === ParamMode.Position) return memory.get(param.value);
     if (param.mode === ParamMode.Immediate) return param.value;
-    if (param.mode === ParamMode.Relative) return memory[relBase + param.value];
+    if (param.mode === ParamMode.Relative)
+      return memory.get(relBase + param.value);
   }
 
   function set(param: Param, value: number): void {
     if (param.mode === ParamMode.Immediate) throw new Error();
-    if (param.mode === ParamMode.Position) memory[param.value] = value;
+    if (param.mode === ParamMode.Position) memory.set(param.value, value);
     if (param.mode === ParamMode.Relative)
-      memory[relBase + param.value] = value;
+      memory.set(relBase + param.value, value);
   }
 
-  function* run(...xs: typeof inputs): Output {
-    seed(...xs);
+  function* run(...xs: Input): Output {
+    inputs = inputs.concat(deAscii(xs));
     while (!run.halted) {
       const [op, params] = instructionAt(ptr);
       const p = (n: number) => get(params[n]);
@@ -100,10 +115,7 @@ export function compile(program: Program): Computer {
             ptr -= params.length + 1;
             return;
           }
-          set(
-            params[0],
-            typeof input === 'number' ? input : input.next().value
-          );
+          set(params[0], input);
           break;
         case OpCode.Output:
           yield p(0);
@@ -132,13 +144,11 @@ export function compile(program: Program): Computer {
     }
   }
 
-  function seed(...xs: typeof inputs): Computer {
-    inputs = inputs.concat(xs);
-    return run;
-  }
+  run.ascii = function ascii(...xs: Input): string {
+    return [...run(...xs)].map((x) => String.fromCharCode(x)).join('');
+  };
 
   run.halted = false;
   run.memory = memory;
-  run.seed = seed;
   return run;
 }

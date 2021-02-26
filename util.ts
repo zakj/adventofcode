@@ -49,8 +49,8 @@ export class Counter<T> {
 }
 
 export class DefaultDict<K, V> extends Map<K, V> {
-  constructor(private init: () => V) {
-    super();
+  constructor(private init: () => V, iterable: Iterable<[K, V]> = []) {
+    super(iterable);
   }
   get(key: K): V {
     if (!super.has(key)) super.set(key, this.init());
