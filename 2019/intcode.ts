@@ -40,7 +40,7 @@ type Param = {
 };
 
 type Input = number[] | string[];
-type Output = Generator<number, void, void>;
+type Output = number[];
 type Computer = {
   (...inputs: Input): Output;
   ascii: (...inputs: Input) => string;
@@ -94,8 +94,9 @@ export function compile(program: Program, ...input: Input): Computer {
       memory.set(relBase + param.value, value);
   }
 
-  function* run(...xs: Input): Output {
+  function run(...xs: Input): Output {
     inputs = inputs.concat(deAscii(xs));
+    const outputs: number[] = [];
     while (!run.halted) {
       const [op, params] = instructionAt(ptr);
       const p = (n: number) => get(params[n]);
@@ -113,12 +114,12 @@ export function compile(program: Program, ...input: Input): Computer {
           if (input === undefined) {
             // Rewind pointer and pause.
             ptr -= params.length + 1;
-            return;
+            return outputs;
           }
           set(params[0], input);
           break;
         case OpCode.Output:
-          yield p(0);
+          outputs.push(p(0));
           break;
         case OpCode.JumpIf:
           if (p(0) !== 0) ptr = p(1);
@@ -137,7 +138,7 @@ export function compile(program: Program, ...input: Input): Computer {
           break;
         case OpCode.Halt:
           run.halted = true;
-          return;
+          return outputs;
         default:
           throw new Error(`unknown opcode ${op}`);
       }
@@ -145,7 +146,9 @@ export function compile(program: Program, ...input: Input): Computer {
   }
 
   run.ascii = function ascii(...xs: Input): string {
-    return [...run(...xs)].map((x) => String.fromCharCode(x)).join('');
+    return run(...xs)
+      .map((x) => String.fromCharCode(x))
+      .join('');
   };
 
   run.halted = false;

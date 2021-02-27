@@ -2,11 +2,11 @@ import { answers, load } from '../advent';
 import { compile, parse, Program } from './intcode';
 
 function runWith(program: Program, noun: number, verb: number) {
-  const c = compile(program);
-  c.memory[1] = noun;
-  c.memory[2] = verb;
-  [...c()];
-  return c.memory[0];
+  const computer = compile(program);
+  computer.memory.set(1, noun);
+  computer.memory.set(2, verb);
+  computer();
+  return computer.memory.get(0);
 }
 
 const program = parse(load(2).raw);

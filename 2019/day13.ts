@@ -23,14 +23,14 @@ const tiles: Record<Tile, string> = {
 
 function play(program: Program): number {
   const cabinet = compile(program);
-  cabinet.memory[0] = 2;
+  cabinet.memory.set(0, 2);
   const grid = new XMap<Point, Tile>(h);
   let joystick = 0;
   let score = 0;
   let ball: Point;
   let paddle: Point;
   while (!cabinet.halted) {
-    for (const [x, y, v] of chunks([...cabinet(joystick)], 3)) {
+    for (const [x, y, v] of chunks(cabinet(joystick), 3)) {
       if (x === -1 && y === 0) score = v;
       else {
         grid.set({ x, y }, v);
@@ -38,7 +38,6 @@ function play(program: Program): number {
         if (v === Tile.Paddle) paddle = { x, y };
       }
     }
-    // console.log(toString(grid));
     joystick = ball.x < paddle.x ? -1 : ball.x > paddle.x ? 1 : 0;
   }
   return score;
@@ -69,7 +68,7 @@ const program = parse(load(13).raw);
 answers.expect(318, 16309);
 answers(
   () =>
-    chunks([...compile(program)()], 3).filter(([x, y, t]) => t === Tile.Block)
+    chunks(compile(program)(), 3).filter(([x, y, t]) => t === Tile.Block)
       .length,
   () => play(program)
 );
