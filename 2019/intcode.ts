@@ -143,6 +143,7 @@ export function compile(program: Program, ...input: Input): Computer {
           throw new Error(`unknown opcode ${op}`);
       }
     }
+    return outputs;
   }
 
   run.ascii = function ascii(...xs: Input): string {
