@@ -85,7 +85,7 @@ function walkableFrom(
     );
 }
 
-type State = [Point, Keyring];
+type State = [Point[], Keyring];
 
 function reachableKeyDistances(
   map: MapData,
@@ -114,28 +114,37 @@ function reachableKeyDistances(
 
 function shortestPath(
   map: MapData,
-  start: Point = map.start,
+  starts: Point[] = [map.start],
   keyring: Keyring = new Keyring(),
   cache = new XMap<State, number>(
-    ([point, keyring]) => `${h(point)}|${keyring}`
+    ([points, keyring]) => `${points.map((p) => h(p)).join('|')}|${keyring}`
   )
 ) {
-  if (cache.has([start, keyring])) return cache.get([start, keyring]);
-  const reachable = reachableKeyDistances(map, start, keyring);
+  if (cache.has([starts, keyring])) return cache.get([starts, keyring]);
   let shortest = 0;
 
-  if (reachable.size) {
-    const options = reachable
-      .entries()
-      .map(
-        ([point, distance]) =>
-          distance +
-          shortestPath(map, point, keyring.with(map.keys.get(point)), cache)
-      );
+  const reachables = starts.map((start) =>
+    reachableKeyDistances(map, start, keyring)
+  );
+  if (reachables.some((r) => r.size)) {
+    const options = reachables.flatMap((reachable, i) =>
+      reachable.entries().map(([point, distance]) => {
+        const nextStarts = starts.slice();
+        nextStarts.splice(i, 1, point);
+        return (
+          shortestPath(
+            map,
+            nextStarts,
+            keyring.with(map.keys.get(point)),
+            cache
+          ) + distance
+        );
+      })
+    );
     shortest = Math.min(...options);
   }
 
-  cache.set([start, keyring], shortest);
+  cache.set([starts, keyring], shortest);
   return shortest;
 }
 
@@ -145,8 +154,24 @@ const ex2 = parse(load(18, 'ex2').lines);
 example.equal(shortestPath(ex2), 136);
 
 const map = parse(load(18).lines);
-answers.expect(4668);
+answers.expect(4668, 1910);
 answers(
   () => shortestPath(map),
-  () => {}
+  () => {
+    map.paths.delete(map.start);
+    map.paths.delete({ x: map.start.x - 1, y: map.start.y });
+    map.paths.delete({ x: map.start.x + 1, y: map.start.y });
+    map.paths.delete({ x: map.start.x, y: map.start.y - 1 });
+    map.paths.delete({ x: map.start.x, y: map.start.y + 1 });
+    const starts = [
+      { x: map.start.x - 1, y: map.start.y - 1 },
+      { x: map.start.x - 1, y: map.start.y + 1 },
+      { x: map.start.x + 1, y: map.start.y - 1 },
+      { x: map.start.x + 1, y: map.start.y + 1 },
+    ];
+    for (const p of starts) {
+      map.paths.add(p);
+    }
+    return shortestPath(map, starts);
+  }
 );
