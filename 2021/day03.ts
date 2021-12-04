@@ -1,9 +1,5 @@
 import { answers, load } from '../advent';
-import { Counter, range } from '../util';
-
-function countCharAtPos(lines: string[], i: number, c: string): number {
-  return lines.filter((line) => line[i] === c).length;
-}
+import { Counter, partition, range } from '../util';
 
 const data = load(3).lines;
 answers.expect(3687446, 4406844);
@@ -17,25 +13,21 @@ answers(
     return gamma * epsilon;
   },
   () => {
-    let generatorRatings = data.slice();
-    let scrubberRatings = data.slice();
-    let genRe = '^';
-    let scrRe = '^';
+    let genRatings = data.slice();
+    let scrRatings = data.slice();
     const ratingLength = data[0].length;
 
     for (let i = 0; i < ratingLength; ++i) {
-      if (generatorRatings.length > 1) {
-        const genCount = countCharAtPos(generatorRatings, i, '1');
-        genRe += genCount >= generatorRatings.length / 2 ? 1 : 0;
-        generatorRatings = generatorRatings.filter((l) => l.match(genRe));
+      if (genRatings.length > 1) {
+        const [ones, zeros] = partition((line) => line[i] === '1', genRatings);
+        genRatings = ones.length >= zeros.length ? ones : zeros;
       }
-      if (scrubberRatings.length > 1) {
-        const scrCount = countCharAtPos(scrubberRatings, i, '0');
-        scrRe += scrCount <= scrubberRatings.length / 2 ? 0 : 1;
-        scrubberRatings = scrubberRatings.filter((l) => l.match(scrRe));
+      if (scrRatings.length > 1) {
+        const [ones, zeros] = partition((line) => line[i] === '1', scrRatings);
+        scrRatings = zeros.length <= ones.length ? zeros : ones;
       }
     }
 
-    return parseInt(generatorRatings[0], 2) * parseInt(scrubberRatings[0], 2);
+    return parseInt(genRatings[0], 2) * parseInt(scrRatings[0], 2);
   }
 );

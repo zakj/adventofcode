@@ -75,6 +75,17 @@ export function pairs<T>(arr: T[]): T[][] {
   return a.map((x, i) => [x, b[i]]);
 }
 
+export function partition<T>(
+  predicate: (v: T) => boolean,
+  xs: T[]
+): [T[], T[]] {
+  const rv: [T[], T[]] = [[], []];
+  xs.forEach((x) => {
+    rv[predicate(x) ? 0 : 1].push(x);
+  });
+  return rv;
+}
+
 export function* permutations<T>(arr: T[]): Generator<T[]> {
   const length = arr.length;
   const c = Array(length).fill(0);
