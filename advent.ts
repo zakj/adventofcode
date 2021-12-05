@@ -17,7 +17,7 @@ function downloadInput(year: number, day: number, path: string): void {
     .toString()
     .trim();
   execSync(
-    `curl --silent --fail --cookie 'session=${session}' -o '${path}' https://adventofcode.com/${year}/day/${day}/input`
+    `curl --silent --show-error --fail --cookie 'session=${session}' -o '${path}' https://adventofcode.com/${year}/day/${day}/input`
   );
 }
 
@@ -31,8 +31,13 @@ export function load(day: number, suffix: string = ''): Input {
     text = readFileSync(path).toString();
   } catch (e) {
     if (e.code === 'ENOENT' && !suffix) {
-      downloadInput(year, day, path);
-      text = readFileSync(path).toString();
+      try {
+        downloadInput(year, day, path);
+        text = readFileSync(path).toString();
+      } catch (e) {
+        console.error(`Failed to fetch ${year} day ${day}'s input`);
+        process.exit(1);
+      }
     } else {
       console.error(e.message);
       process.exit(1);
