@@ -22,7 +22,7 @@ example.equal(simulate(exampleFish, 80), 5934);
 example.equal(simulate(exampleFish, 256), 26984457539);
 
 const fish = parse(load(6).raw);
-answers.expect(352195);
+answers.expect(352195, 1600306001288);
 answers(
   () => simulate(fish, 80),
   () => simulate(fish, 256)
