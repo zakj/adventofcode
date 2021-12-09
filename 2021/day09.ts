@@ -1,14 +1,14 @@
 import { answers, load } from '../advent';
-import { product, XSet } from '../util';
+import { product, sum, XSet } from '../util';
 
-// const exampleData = parse(load(8, 'ex').lines);
-// example.equal(decodedOutput(exampleData), 5353);
+type Point = { x: number; y: number; val?: number };
+const h = ({ x, y }: Point): string => `${x},${y}`;
 
 function parse(lines: string[]): number[][] {
   return lines.map((line) => line.split('').map(Number));
 }
 
-function neighbors(x: number, y: number) {
+function neighbors(x: number, y: number): Point[] {
   return [
     { x: x + 1, y },
     { x: x - 1, y },
@@ -17,54 +17,30 @@ function neighbors(x: number, y: number) {
   ];
 }
 
-const h = ({ x, y }): string => `${x},${y}`;
-
-function findLowPoints(heightmap) {
-  const points = [];
-  for (let y = 0; y < heightmap.length; ++y) {
-    const row = heightmap[y];
-    for (let x = 0; x < row.length; ++x) {
-      const val = row[x];
-      const ns = neighbors(x, y).filter(
-        ({ x, y }) => x >= 0 && x < row.length && y >= 0 && y < heightmap.length
-      );
-      if (ns.every(({ x, y }) => heightmap[y][x] > val)) points.push({ x, y });
-    }
-  }
-  return points;
+function inBounds({ x, y }: Point, heightmap: number[][]) {
+  return x >= 0 && x < heightmap[0].length && y >= 0 && y < heightmap.length;
 }
 
-const heightmap = parse(load(9).lines);
-answers.expect(516);
-answers(
-  () => {
-    let risk = 0;
-    for (let y = 0; y < heightmap.length; ++y) {
-      const row = heightmap[y];
-      for (let x = 0; x < row.length; ++x) {
-        const val = row[x];
-        const ns = neighbors(x, y).filter(
-          ({ x, y }) =>
-            x >= 0 && x < row.length && y >= 0 && y < heightmap.length
-        );
-        if (ns.every(({ x, y }) => heightmap[y][x] > val)) risk += val + 1;
-      }
-    }
-    return risk;
-  },
-  () => {
-    const lowPoints = findLowPoints(heightmap);
-    const height = heightmap.length;
-    const width = heightmap[0].length;
-    const basins = [];
-    for (const { x, y } of lowPoints) {
-      const basin = new XSet(h, [{ x, y }]);
-      const q = [{ x, y }];
+function lowPoints(heightmap: number[][]): Point[] {
+  return heightmap.flatMap((row, y) => {
+    return row
+      .map((val, x) => ({ val, x, y }))
+      .filter(({ val, x, y }) => {
+        const ns = neighbors(x, y).filter((p) => inBounds(p, heightmap));
+        return ns.every((p) => heightmap[p.y][p.x] > val);
+      });
+  });
+}
+
+function basinSizes(heightmap: number[][]): number[] {
+  return lowPoints(heightmap)
+    .map((point) => {
+      const basin = new XSet(h, [point]);
+      const q = [point];
       while (q.length) {
         const cur = q.pop();
         const ns = neighbors(cur.x, cur.y).filter(
-          ({ x, y }) =>
-            x >= 0 && x < width && y >= 0 && y < height && heightmap[y][x] < 9
+          ({ x, y }) => inBounds({ x, y }, heightmap) && heightmap[y][x] < 9
         );
         for (const p of ns) {
           if (basin.has(p)) continue;
@@ -72,11 +48,14 @@ answers(
           q.push(p);
         }
       }
-      basins.push(basin.size);
-    }
-    console.log('basins', basins.length);
-    basins.sort((a, b) => b - a);
-    console.log(basins[0]);
-    return product(basins.slice(0, 3));
-  }
+      return basin.size;
+    })
+    .sort((a, b) => b - a);
+}
+
+const heightmap = parse(load(9).lines);
+answers.expect(516, 1023660);
+answers(
+  () => sum(lowPoints(heightmap).map(({ val }) => val + 1)),
+  () => product(basinSizes(heightmap).slice(0, 3))
 );
