@@ -1,83 +1,61 @@
-import { answers, load } from '../advent';
+import { answers, load, ocr } from '../advent';
 import { XSet } from '../util';
 
 type Point = { x: number; y: number };
 const h = ({ x, y }: Point) => `${x},${y}`;
 
-function parse(paras: string[][]) {
-  const dots = paras[0].map((line) => {
-    const [x, y] = line.split(',', 2).map(Number);
-    return { x, y };
-  });
+type FoldDir = 'x' | 'y';
+type Dots = XSet<Point>;
+type Fold = { dir: 'x' | 'y'; n: number };
+type Page = {
+  dots: Dots;
+  folds: Fold[];
+};
+const isFoldDir = (s: string): s is FoldDir => ['x', 'y'].includes(s);
+
+function parse(paras: string[][]): Page {
+  const dots = new XSet(
+    h,
+    paras[0].map((line) => {
+      const [x, y] = line.split(',', 2).map(Number);
+      return { x, y };
+    })
+  );
   const folds = paras[1].map((line) => {
     const [a, b, c] = line.split(' ', 3);
     const [dir, n] = c.split('=', 2);
+    if (!isFoldDir(dir)) throw 'parse error';
     return { dir, n: Number(n) };
   });
   return { dots, folds };
 }
 
-function p1(page) {
-  const dots = new XSet<Point>(h, page.dots);
-  const fold = page.folds[0];
-  if (fold.dir === 'y') {
-    const af = [...dots].map(({ x, y }) => {
-      if (y === fold.n) throw 'lies!';
-      if (y < fold.n) return { x, y };
-      return { x, y: fold.n * 2 - y };
-    });
-    return new XSet(h, af).size;
-  }
-
-  if (fold.dir === 'x') {
-    const af = [...dots].map(({ x, y }) => {
-      if (x === fold.n) throw 'lies!';
-      if (x < fold.n) return { x, y };
-      return { x: fold.n * 2 - x, y };
-    });
-    return new XSet(h, af).size;
-  }
-}
-
-function p2(page) {
-  let dots = new XSet<Point>(h, page.dots);
-  for (const fold of page.folds) {
-    if (fold.dir === 'y') {
-      const af = [...dots].map(({ x, y }) => {
-        if (y === fold.n) throw 'lies!';
-        if (y < fold.n) return { x, y };
-        return { x, y: fold.n * 2 - y };
-      });
-      dots = new XSet(h, af);
-    }
-
-    if (fold.dir === 'x') {
-      const af = [...dots].map(({ x, y }) => {
-        if (x === fold.n) throw 'lies!';
-        if (x < fold.n) return { x, y };
-        return { x: fold.n * 2 - x, y };
-      });
-      dots = new XSet(h, af);
-    }
-  }
-
-  return dots;
+function fold(dots: Dots, fold: Fold): Dots {
+  return new XSet(
+    h,
+    [...dots].map((d) => {
+      const val = d[fold.dir];
+      if (val === fold.n) throw 'invalid fold';
+      if (val < fold.n) return d;
+      return { ...d, [fold.dir]: fold.n * 2 - val };
+    })
+  );
 }
 
 const page = parse(load(13).paragraphs);
 answers.expect(753, 'HZLEHJRK');
 answers(
-  () => p1(page),
+  () => fold(page.dots, page.folds[0]).size,
   () => {
-    const dots = p2(page);
-    console.log(dots);
+    const dots = page.folds.reduce(fold, page.dots);
     const rows = [];
+    // TODO: util function to create this from points
     for (let r = 0; r < 6; ++r) {
       rows.push(new Array(40).fill(' '));
     }
     for (const { x, y } of dots) {
       rows[y][x] = '#';
     }
-    console.log(rows.map((r) => r.join('')).join('\n'));
+    return ocr(rows.map((r) => r.join('')).join('\n'), '../figlet-4x6.txt');
   }
 );

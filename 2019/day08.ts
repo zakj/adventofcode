@@ -52,5 +52,5 @@ answers(
     );
     return fewestZeros.get(1) * fewestZeros.get(2);
   },
-  () => ocr(layerString(flattenLayers(layers)), './figlet.txt')
+  () => ocr(layerString(flattenLayers(layers)), '../figlet-4x6.txt')
 );
