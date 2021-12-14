@@ -26,17 +26,21 @@ export function* combinations<T>(arr: T[]): Generator<[T, T]> {
 
 export class Counter<T> {
   private counts: Map<T, number>;
+  private _mostCommon: [T, number][] = [];
 
-  constructor(xs: T[]) {
-    this.counts = xs.reduce((counts, x) => {
-      if (!counts.has(x)) counts.set(x, 0);
-      counts.set(x, counts.get(x) + 1);
-      return counts;
-    }, new Map<T, number>());
+  constructor(xs: T[] = []) {
+    this.counts = new Map<T, number>();
+    xs.forEach((x) => this.incr(x));
   }
 
   get length() {
     return this.counts.size;
+  }
+
+  incr(x: T, by: number = 1): void {
+    this._mostCommon = [];
+    if (!this.counts.has(x)) this.counts.set(x, 0);
+    this.counts.set(x, this.counts.get(x) + by);
   }
 
   entries() {
@@ -44,7 +48,9 @@ export class Counter<T> {
   }
 
   get mostCommon(): [T, number][] {
-    return [...this.entries()].sort(([_a, a], [_b, b]) => b - a);
+    if (this._mostCommon.length === 0)
+      this._mostCommon = [...this.entries()].sort(([_a, a], [_b, b]) => b - a);
+    return this._mostCommon;
   }
 }
 
