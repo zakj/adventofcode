@@ -72,6 +72,8 @@ export function hammingDistance(a: string, b: string): number {
   );
 }
 
+export const last = <T>(xs: T[]): T => xs[xs.length - 1];
+
 export const md5 = (s: string): string =>
   crypto.createHash('md5').update(s).digest('hex');
 

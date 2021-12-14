@@ -1,5 +1,5 @@
 import { answers, load } from '../advent';
-import { Counter, DefaultDict, pairs } from '../util';
+import { Counter, last, pairs, range } from '../util';
 
 function parse(paras: string[][]) {
   const template = paras.shift()[0];
@@ -12,49 +12,44 @@ function parse(paras: string[][]) {
   return { template, rules };
 }
 
-function step(input: string, rules: Map<string, string>): string {
-  const output = [input[0]];
-  for (const [a, b] of pairs(input.split(''))) {
-    output.push(rules.get(a + b));
-    output.push(b);
+function step(
+  pairCounts: Counter<string>,
+  rules: Map<string, string>
+): Counter<string> {
+  return [...pairCounts.entries()].reduce((pc, [pair, n]) => {
+    const [a, b] = [pair[0], pair[1]];
+    const ins = rules.get(pair);
+    pc.incr(a + ins, n);
+    pc.incr(ins + b, n);
+    return pc;
+  }, new Counter<string>());
+}
+
+function countCharacters(
+  input: string,
+  rules: Map<string, string>,
+  steps: number
+): Counter<string> {
+  const start = new Counter<string>(
+    pairs(input.split('')).map((p) => p.join(''))
+  );
+  const pairCount = range(0, steps).reduce((pc) => step(pc, rules), start);
+  const totalCount = new Counter<string>([last(input.split(''))]);
+  for (const [pair, n] of pairCount.entries()) {
+    totalCount.incr(pair[0], n);
   }
-  return output.join('');
+  return totalCount;
 }
 
 const data = parse(load(14).paragraphs);
 answers.expect(3555, 4439442043739);
 answers(
   () => {
-    let string = data.template;
-    for (let i = 0; i < 10; ++i) {
-      string = step(string, data.rules);
-    }
-    const counts = new Counter(string.split(''));
-    const common = counts.mostCommon;
-    return common[0][1] - common[common.length - 1][1];
+    const counts = countCharacters(data.template, data.rules, 10);
+    return counts.mostCommon[0][1] - last(counts.mostCommon)[1];
   },
   () => {
-    let string = data.template;
-    let pairCount = new DefaultDict<string, number>(() => 0);
-    pairs(data.template.split(''))
-      .map((p) => p.join(''))
-      .forEach((pair) => pairCount.set(pair, pairCount.get(pair) + 1));
-    for (let i = 0; i < 40; ++i) {
-      const newPairs = new DefaultDict<string, number>(() => 0);
-      for (const [pair, n] of pairCount.entries()) {
-        const [a, b] = pair.split('', 2);
-        const ins = data.rules.get(pair);
-        newPairs.set(a + ins, newPairs.get(a + ins) + n);
-        newPairs.set(ins + b, newPairs.get(ins + b) + n);
-      }
-      pairCount = newPairs;
-    }
-    const totalCount = new DefaultDict<string, number>(() => 0);
-    totalCount.set(data.template[data.template.length - 1], 1);
-    for (const [pair, n] of pairCount.entries()) {
-      totalCount.set(pair[0], totalCount.get(pair[0]) + n);
-    }
-    const sorted = [...totalCount.entries()].sort((a, b) => b[1] - a[1]);
-    return sorted[0][1] - sorted[sorted.length - 1][1];
+    const counts = countCharacters(data.template, data.rules, 40);
+    return counts.mostCommon[0][1] - last(counts.mostCommon)[1];
   }
 );
