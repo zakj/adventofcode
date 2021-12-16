@@ -1,46 +1,26 @@
 import { answers, load } from '../advent';
-import { product, sum, XSet } from '../util';
+import { neighbors4, parseMap, Point, PointMap, PointSet } from '../coords';
+import { product, sum } from '../util';
 
-type Point = { x: number; y: number; val?: number };
-const h = ({ x, y }: Point): string => `${x},${y}`;
-
-function parse(lines: string[]): number[][] {
-  return lines.map((line) => line.split('').map(Number));
+function lowPoints(heightmap: PointMap<number>): Point[] {
+  return [...heightmap]
+    .filter(([p, height]) => {
+      return neighbors4(p)
+        .filter((n) => heightmap.has(n))
+        .every((n) => heightmap.get(n) > height);
+    })
+    .map(([p]) => p);
 }
 
-function neighbors(x: number, y: number): Point[] {
-  return [
-    { x: x + 1, y },
-    { x: x - 1, y },
-    { x, y: y + 1 },
-    { x, y: y - 1 },
-  ];
-}
-
-function inBounds({ x, y }: Point, heightmap: number[][]) {
-  return x >= 0 && x < heightmap[0].length && y >= 0 && y < heightmap.length;
-}
-
-function lowPoints(heightmap: number[][]): Point[] {
-  return heightmap.flatMap((row, y) => {
-    return row
-      .map((val, x) => ({ val, x, y }))
-      .filter(({ val, x, y }) => {
-        const ns = neighbors(x, y).filter((p) => inBounds(p, heightmap));
-        return ns.every((p) => heightmap[p.y][p.x] > val);
-      });
-  });
-}
-
-function basinSizes(heightmap: number[][]): number[] {
+function basinSizes(heightmap: PointMap<number>): number[] {
   return lowPoints(heightmap)
     .map((point) => {
-      const basin = new XSet(h, [point]);
+      const basin = new PointSet([point]);
       const q = [point];
       while (q.length) {
         const cur = q.pop();
-        const ns = neighbors(cur.x, cur.y).filter(
-          ({ x, y }) => inBounds({ x, y }, heightmap) && heightmap[y][x] < 9
+        const ns = neighbors4(cur).filter(
+          (cur) => heightmap.has(cur) && heightmap.get(cur) < 9
         );
         for (const p of ns) {
           if (basin.has(p)) continue;
@@ -53,9 +33,9 @@ function basinSizes(heightmap: number[][]): number[] {
     .sort((a, b) => b - a);
 }
 
-const heightmap = parse(load(9).lines);
+const heightmap = parseMap(load(9).lines, Number);
 answers.expect(516, 1023660);
 answers(
-  () => sum(lowPoints(heightmap).map(({ val }) => val + 1)),
+  () => sum(lowPoints(heightmap).map((p) => heightmap.get(p) + 1)),
   () => product(basinSizes(heightmap).slice(0, 3))
 );
