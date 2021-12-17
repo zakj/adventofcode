@@ -10,45 +10,19 @@ import { PriorityQueue, range } from '../util';
 
 type RiskMap = PointMap<number>;
 
-function leastRiskNaive(points: RiskMap): number {
-  const { max } = findBounds(points.keys());
-  let minRisk = Infinity;
-  const q: [Point, number][] = [[{ x: 0, y: 0 }, 0]];
-  const visitedRisk = new PointMap<number>(q);
-  while (q.length) {
-    let [cur, risk] = q.pop();
-    risk = Math.min(risk, visitedRisk.get(cur) || Infinity);
-    if (cur.x === max.x && cur.y === max.y) {
-      minRisk = Math.min(risk, minRisk);
-      continue;
-    }
-    const ns = neighbors(cur).filter((p) => points.has(p));
-    for (const p of ns) {
-      const nextRisk = risk + points.get(p);
-      if ((visitedRisk.get(p) || Infinity) <= nextRisk) continue;
-      visitedRisk.set(p, nextRisk);
-      q.push([p, nextRisk]);
-    }
-  }
-  return minRisk;
-}
-
 function leastRisk(riskMap: RiskMap): number {
-  const { max } = findBounds(riskMap.keys());
-  let minRisk = Infinity;
-
+  const { max: end } = findBounds(riskMap.keys());
   const start = { x: 0, y: 0 };
   const riskTo = new PointMap<number>([[start, 0]]);
   const q = new PriorityQueue<Point>(
-    (p) => riskTo.get(p) + (max.x - p.x) + (max.y - p.y)
+    (p) => riskTo.get(p) + (end.x - p.x) + (end.y - p.y)
   );
   q.add(start);
 
   while (q.length) {
     let cur = q.shift();
-    if (cur.x === max.x && cur.y === max.y) break;
+    if (cur.x === end.x && cur.y === end.y) break;
     const curRisk = riskTo.get(cur);
-
     const ns = neighbors(cur).filter((p) => riskMap.has(p));
     for (const next of ns) {
       const nextRisk = curRisk + riskMap.get(next);
@@ -59,9 +33,10 @@ function leastRisk(riskMap: RiskMap): number {
     }
   }
 
-  return riskTo.get(max);
+  return riskTo.get(end);
 }
 
+// TODO: refactor?
 function expandMap(map: RiskMap, by: number = 5) {
   const expanded = new PointMap<number>();
   const { max } = findBounds(map.keys());
