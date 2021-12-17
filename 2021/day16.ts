@@ -1,138 +1,112 @@
 import { answers, load } from '../advent';
-import { product, sum } from '../util';
+import { product, sum, ValuesOf } from '../util';
 
-function parse(s: string): string {
+function parse(s: string): number[] {
   return s
     .trim()
     .split('')
-    .map((s) => parseInt(s, 16).toString(2).padStart(4, '0'))
-    .join('');
+    .flatMap((c) => parseInt(c, 16).toString(2).padStart(4, '0').split(''))
+    .map(Number);
 }
 
-enum PacketType {
-  Sum = 0,
-  Product = 1,
-  Minimum = 2,
-  Maximum = 3,
-  Literal = 4,
-  GreaterThan = 5,
-  LessThan = 6,
-  EqualTo = 7,
-}
+const PacketType = {
+  Sum: 0,
+  Product: 1,
+  Minimum: 2,
+  Maximum: 3,
+  Literal: 4,
+  GreaterThan: 5,
+  LessThan: 6,
+  EqualTo: 7,
+} as const;
+type PacketType = ValuesOf<typeof PacketType>;
 
-const nextMultiple = (val: number, of: number): number =>
-  Math.ceil(val / of) * of;
-
-type BasePacket = {
+type LiteralPacket = {
   version: number;
-  type: number;
-};
-type LiteralPacket = BasePacket & {
-  type: PacketType.Literal;
+  type: Extract<PacketType, 4>;
   value: number;
 };
-type OperatorPacket = BasePacket & {
-  lengthType: '0' | '1';
-  length: number;
+type OperatorPacket = {
+  version: number;
+  type: Exclude<PacketType, LiteralPacket['type']>;
   packets: Packet[];
 };
-
 type Packet = LiteralPacket | OperatorPacket;
 
-function parsePacket(input: string): {
+function parsePacket(input: number[]): {
   packet: Packet;
   read: number;
-  remainder: string;
+  remainder: number[];
 } {
-  let arr = input.split('');
-  const version = parseInt(arr.splice(0, 3).join(''), 2);
-  const type = parseInt(arr.splice(0, 3).join(''), 2);
-  let readCount = 6;
-  switch (type) {
-    case PacketType.Literal:
-      let head: string;
-      let bits = [];
-      do {
-        head = arr.shift();
-        bits = [...bits, ...arr.splice(0, 4)];
-        readCount += 5;
-      } while (head === '1');
-      // if (arr.some((v) => v !== '0')) throw `bad trailing characters, ${arr}`;
-      return {
-        packet: {
-          version,
-          type,
-          value: parseInt(bits.join(''), 2),
-        },
-        read: readCount,
-        remainder: arr.join(''),
-      };
-    default:
-      const lengthType = arr.shift();
-      readCount += 1;
-      let length;
-      if (lengthType === '0') {
-        length = parseInt(arr.splice(0, 15).join(''), 2);
-        readCount += 15;
-      } else if (lengthType === '1') {
-        length = parseInt(arr.splice(0, 11).join(''), 2);
-        readCount += 11;
-      } else throw 'bad lengthType';
-      const packet: OperatorPacket = {
-        version,
-        type,
-        lengthType,
-        length,
-        packets: [],
-      };
-      let readSubBits = 0;
-      let readPackets = 0;
-      while (
-        (lengthType === '0' && readSubBits < length) ||
-        (lengthType === '1' && readPackets < length)
-      ) {
-        const rv = parsePacket(arr.join(''));
-        packet.packets.push(rv.packet);
-        readSubBits += rv.read;
-        readPackets++;
-        arr = rv.remainder.split('');
-      }
-      return { packet, read: readCount + readSubBits, remainder: arr.join('') };
-  }
-}
+  let arr = input.slice(); // don't mutate the input
+  let readCount = 0;
+  const readInt = (len: number): number => {
+    readCount += len;
+    return parseInt(arr.splice(0, len).join(''), 2);
+  };
 
-function isLiteral(packet: Packet): packet is LiteralPacket {
-  return packet.type === PacketType.Literal;
+  const version = readInt(3);
+  const type = readInt(3) as PacketType;
+  let packet: Packet;
+
+  if (type === PacketType.Literal) {
+    let bits = [];
+    while (true) {
+      const head = readInt(1);
+      bits.push(...arr.splice(0, 4));
+      readCount += 4;
+      if (head === 0) break;
+    }
+    packet = { version, type, value: parseInt(bits.join(''), 2) };
+  } else {
+    const lengthType = readInt(1);
+    let length = readInt(lengthType === 0 ? 15 : 11);
+    let readSubBits = 0;
+    let readPackets = 0;
+    const packets: Packet[] = [];
+    while (
+      (lengthType === 0 && readSubBits < length) ||
+      (lengthType === 1 && readPackets < length)
+    ) {
+      const rv = parsePacket(arr);
+      packets.push(rv.packet);
+      readSubBits += rv.read;
+      readPackets++;
+      arr = rv.remainder;
+    }
+    readCount += readSubBits;
+    packet = { version, type, packets };
+  }
+  return { packet, read: readCount, remainder: arr };
 }
 
 function sumVersion(packet: Packet): number {
-  if (isLiteral(packet)) {
+  if (packet.type === PacketType.Literal) {
     return packet.version;
   } else {
-    return packet.version + sum(packet.packets.map((p) => sumVersion(p)));
+    return packet.version + sum(packet.packets.map(sumVersion));
   }
 }
 
 function evaluate(packet: Packet): number {
+  const values = 'packets' in packet ? packet.packets.map(evaluate) : null;
   switch (packet.type) {
     case PacketType.Sum:
-      return sum(packet.packets.map((p) => evaluate(p)));
+      return sum(values);
     case PacketType.Product:
-      return product(packet.packets.map((p) => evaluate(p)));
+      return product(values);
     case PacketType.Minimum:
-      return Math.min(...packet.packets.map((p) => evaluate(p)));
+      return Math.min(...values);
     case PacketType.Maximum:
-      return Math.max(...packet.packets.map((p) => evaluate(p)));
+      return Math.max(...values);
     case PacketType.Literal:
-      return (packet as LiteralPacket).value;
+      return packet.value;
     case PacketType.GreaterThan:
-      return evaluate(packet.packets[0]) > evaluate(packet.packets[1]) ? 1 : 0;
+      return values[0] > values[1] ? 1 : 0;
     case PacketType.LessThan:
-      return evaluate(packet.packets[0]) < evaluate(packet.packets[1]) ? 1 : 0;
+      return values[0] < values[1] ? 1 : 0;
     case PacketType.EqualTo:
-      return evaluate(packet.packets[0]) === evaluate(packet.packets[1])
-        ? 1
-        : 0;
+      return values[0] === values[1] ? 1 : 0;
   }
   return 0;
 }

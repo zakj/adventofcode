@@ -162,6 +162,8 @@ export function rotate<T>(xs: T[], n: number = 1): T[] {
 
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
 
+export type ValuesOf<T> = T[keyof T];
+
 // TODO refactor old places that could use this
 // TODO just enforce KHash = string
 export class XMap<K, V, KHash = string> {
