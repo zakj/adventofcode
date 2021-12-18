@@ -1,4 +1,4 @@
-import { answers, example } from '../advent';
+import { answers, example, load } from '../advent';
 import { md5 } from '../util';
 
 type Hasher<T, U> = (key: T) => U;
@@ -45,7 +45,8 @@ function indexOfNthKey(
 const exampleSalt = 'abc';
 example.equal(indexOfNthKey(exampleSalt, 64, md5), 22728);
 
-const salt = 'ngcjuoqr';
+const salt = load(14).raw.trim();
+answers.expect(18626, 20092);
 answers(
   () => indexOfNthKey(salt, 64, md5),
   () => indexOfNthKey(salt, 64, stretchedMd5)

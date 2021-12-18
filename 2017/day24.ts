@@ -51,7 +51,7 @@ example.equal(score(strongestBridge(examplePipes, 0, bySum)), 31);
 example.equal(score(strongestBridge(examplePipes, 0, byLengthAndSum)), 19);
 
 const pipes = parse(load(24).lines);
-answers.expect(1656);
+answers.expect(1656, 1642);
 answers(
   // TODO speedup, 1.8s, 1s
   () => score(strongestBridge(pipes, 0, bySum)),

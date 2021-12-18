@@ -45,6 +45,7 @@ example.equal(supportsSsl('aaa[kek]eke'), true);
 example.equal(supportsSsl('zazbz[bzb]cdb'), true);
 
 const ips = load(7).lines;
+answers.expect(115, 231);
 answers(
   () => ips.filter(supportsTls).length,
   () => ips.filter(supportsSsl).length

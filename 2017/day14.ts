@@ -65,7 +65,7 @@ const exampleKey = 'flqrgnkx';
 example.equal(buildGrid(exampleKey).flat().filter(Boolean).length, 8108);
 example.equal(countRegions(buildGrid(exampleKey)), 1242);
 
-const key = load(14).raw;
+const key = load(14).raw.trim();
 answers.expect(8304, 1018);
 answers(
   () => buildGrid(key).flat().filter(Boolean).length,

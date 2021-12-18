@@ -8,7 +8,7 @@ example.equal(knotHash('AoC 2017'), '33efeb34ea91902bb2f59c9920caa6cd');
 example.equal(knotHash('1,2,3'), '3efbe78a8d82f29979031a4aa0b16a9d');
 example.equal(knotHash('1,2,4'), '63960835bcdc130f0b66d7ff4f6a5a8e');
 
-const input = load(10).raw;
+const input = load(10).raw.trim();
 answers.expect(38628, 'e1462100a34221a7f0906da15c1c979a');
 answers(
   () =>

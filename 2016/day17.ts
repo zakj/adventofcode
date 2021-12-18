@@ -62,6 +62,7 @@ example.equal(longestPath('kglvqrro').length, 492);
 example.equal(longestPath('ulqzkmiv').length, 830);
 
 const input = 'mmsxrhfx';
+answers.expect('RLDUDRDDRR', 590);
 answers(
   () => shortestPath(input),
   () => longestPath(input).length

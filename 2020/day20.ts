@@ -196,6 +196,7 @@ example.equal(
 example.equal(273, roughness(markMonsters(assembleImage(exampleTiles))));
 
 const tiles = parseTiles(load(20).paragraphs);
+answers.expect(5775714912743, 1836);
 answers(
   () => product(findCorners(tiles).map((t) => t.id)),
   () => roughness(markMonsters(assembleImage(tiles)))

@@ -69,9 +69,9 @@ function fieldIndexes(data: Data): { [k: string]: number } {
     });
 
   // remove field options that don't work due to conflicts
-  const fieldOptionsMap = Object.entries(
-    fieldOptions
-  ).map(([index, options]) => ({ index: Number(index), options }));
+  const fieldOptionsMap = Object.entries(fieldOptions).map(
+    ([index, options]) => ({ index: Number(index), options })
+  );
 
   do {
     fieldOptionsMap
@@ -103,6 +103,7 @@ const exampleData2 = parse(load(16, 'ex2').paragraphs);
 example.deepEqual({ class: 1, row: 0, seat: 2 }, fieldIndexes(exampleData2));
 
 const data = parse(load(16).paragraphs);
+answers.expect(32835, 514662805187);
 answers(
   () => sum(invalidValues(data.fields, data.otherTickets)),
   () => {

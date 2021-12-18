@@ -28,6 +28,7 @@ example.equal(curve('111100001010'), '1111000010100101011110000');
 example.equal(checksumForDisk('10000', 20), '01100');
 
 const input = '01111010110010011';
+answers.expect('00100111000101111', '11101110011100110');
 answers(
   () => checksumForDisk(input, 272),
   () => checksumForDisk(input, 35651584)

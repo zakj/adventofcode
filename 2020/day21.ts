@@ -84,6 +84,7 @@ example.equal(5, part1(exampleFoods));
 example.equal('mxmxvkd,sqjhc,fvjkl', part2(exampleFoods));
 
 const foods = parseFoods(load(21).lines);
+answers.expect(2061, 'cdqvp,dglm,zhqjs,rbpg,xvtrfz,tgmzqjz,mfqgx,rffqhl');
 answers(
   () => part1(foods),
   () => part2(foods)

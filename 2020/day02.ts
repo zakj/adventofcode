@@ -50,6 +50,7 @@ example.equal(2, countValidPasswords1(exampleData));
 example.equal(1, countValidPasswords2(exampleData));
 
 const data = load(2).lines.map(parseData);
+answers.expect(640, 472);
 answers(
   () => countValidPasswords1(data),
   () => countValidPasswords2(data)

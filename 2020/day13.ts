@@ -43,6 +43,7 @@ example.equal(295, part1(exampleInput));
 example.equal(1068781, part2(exampleInput));
 
 const input = parseInput(load(13).lines);
+answers.expect(153, 471793476184394);
 answers(
   () => part1(input),
   () => part2(input)

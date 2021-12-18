@@ -116,6 +116,7 @@ const exampleFs = parse(load(22, 'ex').lines.slice(2));
 example.equal(shortestPath(exampleFs), 7);
 
 const fs = parse(load(22).lines.slice(2));
+answers.expect(872, 211);
 answers(
   () => viablePairs(fs).length,
   () => shortestPath(fs)

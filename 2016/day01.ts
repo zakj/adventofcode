@@ -58,6 +58,7 @@ example.equal(distanceToEnd('R5, L5, R5, R3'), 12);
 example.equal(distanceToFirstRepeat('R8, R4, R4, R8'), 4);
 
 const path = load(1).lines[0];
+answers.expect(298, 158);
 answers(
   () => distanceToEnd(path),
   () => distanceToFirstRepeat(path)

@@ -18,6 +18,7 @@ example.equal(11, sum(exampleGroups.map(uniqueCharacters)));
 example.equal(6, sum(exampleGroups.map(commonCharacters)));
 
 const groups = load(6).paragraphs;
+answers.expect(6662, 3382);
 answers(
   () => sum(groups.map(uniqueCharacters)),
   () => sum(groups.map(commonCharacters))

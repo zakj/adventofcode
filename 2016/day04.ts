@@ -55,6 +55,7 @@ example.equal(
 );
 
 const rooms = parse(load(4).lines);
+answers.expect(409147, 991);
 answers(
   () => sum(rooms.filter(isValidRoom).map((r) => r.id)),
   () =>

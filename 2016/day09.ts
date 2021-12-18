@@ -19,9 +19,11 @@ function decompress(s: string): string {
   return output.join('');
 }
 
-function repeatChunk(
-  s: string
-): { repeat: string; count: number; offset: number } {
+function repeatChunk(s: string): {
+  repeat: string;
+  count: number;
+  offset: number;
+} {
   if (s[0] !== '(') throw new Error();
   const closeIndex = s.split('').findIndex((v) => v === ')');
   const marker = s.slice(1, closeIndex).split('x');
@@ -59,6 +61,7 @@ example.equal(
 );
 
 const compressed = load(9).lines.join('');
+answers.expect(107035, 11451628995);
 answers(
   () => decompress(compressed).length,
   () => decompressV2Length(compressed)

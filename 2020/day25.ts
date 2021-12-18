@@ -1,4 +1,4 @@
-import { answers, example } from '../advent';
+import { answers, example, load } from '../advent';
 
 const INITIAL_SUBJECT = 7;
 
@@ -40,5 +40,6 @@ example.equal(examplePubKeys[0], transformSubject(7, 8));
 example.equal(examplePubKeys[1], transformSubject(7, 11));
 example.equal(14897079, encryptionKey(examplePubKeys));
 
-const pubKeys = [10604480, 4126658];
+const pubKeys = load(25).numbers;
+answers.expect(4968512);
 answers(() => encryptionKey(pubKeys));

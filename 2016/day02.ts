@@ -63,6 +63,7 @@ example.equal(
 );
 
 const instructions = load(2).lines;
+answers.expect('33444', '446A6');
 answers(
   () => doorCode(instructions, keypadGrid, clampGrid),
   () => doorCode(instructions, keypadDiamond, clampDiamond)

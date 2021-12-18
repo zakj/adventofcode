@@ -70,6 +70,7 @@ const exampleInstructions = parse(load(10, 'ex').lines);
 example.deepEqual(process(exampleInstructions).bots.get(2), new Set([2, 5]));
 
 const instructions = parse(load(10).lines);
+answers.expect(113, 12803);
 answers(
   () => {
     const { bots } = process(instructions);

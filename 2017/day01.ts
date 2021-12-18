@@ -21,7 +21,7 @@ example.equal(captcha('123425', 3), 4);
 example.equal(captcha('123123', 3), 12);
 example.equal(captcha('12131415', 4), 4);
 
-const input = load(1).raw;
+const input = load(1).raw.trim();
 answers.expect(1203, 1146);
 answers(
   () => captcha(input),

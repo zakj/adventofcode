@@ -71,6 +71,7 @@ function printGrid(w, h, n, path) {
 example.equal(shortestPathTo([7, 4], 10).length, 11);
 
 const faveNum = 1358;
+answers.expect(96, 141);
 answers(
   () => {
     const path = shortestPathTo([31, 39], 1358);

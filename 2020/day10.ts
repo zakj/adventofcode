@@ -50,6 +50,7 @@ example.equal(8, countValidPaths([16, 10, 15, 5, 1, 11, 7, 19, 6, 12, 4]));
 example.equal(19208, countValidPaths(exampleAdapters));
 
 const adapters = load(10).numbers;
+answers.expect(2240, 99214346656768);
 answers(
   () => {
     const diffs = joltageJumps(adapters);

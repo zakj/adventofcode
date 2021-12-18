@@ -75,7 +75,7 @@ const exampleRules = augmentRules(parse(load(21, 'ex').lines));
 example.equal(countPixels(cycles(2, start, exampleRules)), 12);
 
 const rules = augmentRules(parse(load(21).lines));
-answers.expect(120);
+answers.expect(120, 2204099);
 answers(
   () => countPixels(cycles(5, start, rules)),
   () => countPixels(cycles(18, start, rules))

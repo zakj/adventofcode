@@ -95,6 +95,7 @@ example.equal('67384529', part1(exampleCups, 100));
 example.deepEqual(149245887792, part2(exampleCups, 10000000));
 
 const cups = '476138259'.split('').map(Number);
+answers.expect('97245386', 156180332979);
 answers(
   () => part1(cups, 100),
   () => part2(cups, 10000000)

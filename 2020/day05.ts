@@ -39,6 +39,7 @@ const examples: [string, number][] = [
 examples.forEach((e) => example.equal(e[1], findSeatId(e[0])));
 
 const seatIds = load(5).lines.map(findSeatId);
+answers.expect(842, 617);
 answers(
   () => Math.max(...seatIds),
   () => findMissing(seatIds)

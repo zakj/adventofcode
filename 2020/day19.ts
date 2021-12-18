@@ -46,6 +46,7 @@ example.equal(
 
 const [input, messages] = load(19).paragraphs;
 const rules = parseRules(input);
+answers.expect(187, 392);
 answers(
   () => messages.filter((m) => canStringMatchRules(m, rules, [0])).length,
   () => {

@@ -169,6 +169,7 @@ example.equal(
 );
 
 const grid = parseGrid(load(11).lines);
+answers.expect(2263, 2002);
 answers(
   () =>
     stabilize(grid, runSeatingRoundPart1).layout.filter(

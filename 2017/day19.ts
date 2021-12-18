@@ -52,7 +52,7 @@ example.equal(walk(exampleMaze).letters, 'ABCDEF');
 example.equal(walk(exampleMaze).steps, 38);
 
 const maze = parse(load(19).raw);
-answers.expect('DWNBGECOMY');
+answers.expect('DWNBGECOMY', 17228);
 answers(
   () => walk(maze).letters,
   () => walk(maze).steps

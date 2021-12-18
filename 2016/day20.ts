@@ -44,6 +44,7 @@ example.equal(lowestNonBlocked(exampleBlocklist), 3n);
 example.equal(countAllowed(exampleBlocklist, 9n), 2n);
 
 const blocklist = parse(load(20).lines);
+answers.expect(22887907n, 109n);
 answers(
   () => lowestNonBlocked(blocklist),
   () => countAllowed(blocklist, MAX_IP)

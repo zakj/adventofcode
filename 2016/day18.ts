@@ -26,6 +26,7 @@ function countSafeTiles(rows: string[]): number {
 example.equal(countSafeTiles(buildTiles('.^^.^.^^^^', 10)), 38);
 
 const firstRow = load(18).lines[0];
+answers.expect(1939, 19999535);
 answers(
   () => countSafeTiles(buildTiles(firstRow, 40)),
   () => countSafeTiles(buildTiles(firstRow, 400000))

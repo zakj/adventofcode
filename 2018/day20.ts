@@ -79,7 +79,7 @@ for (const [regex, expected] of testCases) {
 }
 
 const regex = parse(load(20).lines[0]);
-answers.expect();
+answers.expect(4214, 8492);
 answers(
   () => maxSteps(walk(regex)),
   () =>

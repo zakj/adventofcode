@@ -52,6 +52,7 @@ example.equal(306, Math.max(...play(exampleGame).map(score)));
 example.equal(291, Math.max(...playRecursive(exampleGame)));
 
 const game = parseGame(load(22).paragraphs);
+answers.expect(32629, 32519);
 answers(
   () => Math.max(...play(game).map(score)),
   () => Math.max(...playRecursive(game))

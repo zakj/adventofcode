@@ -14,6 +14,7 @@ function fromColumns(lines: number[][]): number[][] {
 }
 
 const triangles = parse(load(3).lines);
+answers.expect(983, 1836);
 answers(
   () => triangles.filter(isValidTriangle).length,
   () => fromColumns(triangles).filter(isValidTriangle).length

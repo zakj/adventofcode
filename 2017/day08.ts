@@ -58,7 +58,7 @@ const exampleInstructions = parse(load(8, 'ex').lines);
 example.equal(execute(exampleInstructions).currentMax, 1);
 
 const instructions = parse(load(8).lines);
-answers.expect(5752);
+answers.expect(5752, 6366);
 answers(
   () => execute(instructions).currentMax,
   () => execute(instructions).historicalMax

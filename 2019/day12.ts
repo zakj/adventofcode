@@ -1,6 +1,5 @@
 import { answers, load } from '../advent';
-import { product, sum } from '../util';
-import { combinations } from './util';
+import { combinations, product, sum } from '../util';
 
 type Point = {
   x: number;

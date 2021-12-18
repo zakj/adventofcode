@@ -1,4 +1,4 @@
-import { answers, example } from '../advent';
+import { answers, example, load } from '../advent';
 import { md5 } from '../util';
 
 function passwordForId(id: string): string {
@@ -30,6 +30,7 @@ function passwordForIdPos(id: string): string {
 }
 
 function updateProgress(s: string): void {
+  if (!process.stdout.isTTY) return;
   const chars = '0123456789abcdef'.split('');
   process.stdout.write(' : ');
   process.stdout.write(
@@ -40,7 +41,9 @@ function updateProgress(s: string): void {
 
 example.equal(passwordForId('abc'), '18f47a30');
 
+const doorId = load(5).raw.trim();
+answers.expect('f77a0e6e', '999828ec');
 answers(
-  () => passwordForId('cxdnnyjw'),
-  () => passwordForIdPos('cxdnnyjw')
+  () => passwordForId(doorId),
+  () => passwordForIdPos(doorId)
 );

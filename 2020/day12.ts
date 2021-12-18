@@ -137,6 +137,7 @@ example.equal(25, manhattanDistance(executePartOne(exampleInstructions)));
 example.equal(286, manhattanDistance(executePartTwo(exampleInstructions)));
 
 const instructions = parseInstructions(load(12).lines);
+answers.expect(2879, 178986);
 answers(
   () => manhattanDistance(executePartOne(instructions)),
   () => manhattanDistance(executePartTwo(instructions))

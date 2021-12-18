@@ -73,6 +73,7 @@ const exampleData = parsePassports(load(4, 'ex').paragraphs);
 example.equal(2, exampleData.filter(containsRequiredFields).length);
 
 const passports = parsePassports(load(4).paragraphs);
+answers.expect(228, 175);
 answers(
   () => passports.filter(containsRequiredFields).length,
   () => passports.filter(isValid).length

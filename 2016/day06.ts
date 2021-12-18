@@ -20,6 +20,7 @@ const exampleSignals = load(6, 'ex').lines;
 example.equal(errorCorrect(exampleSignals), 'easter');
 
 const signals = load(6).lines;
+answers.expect('qqqluigu', 'lsoypmia');
 answers(
   () => errorCorrect(signals),
   () => errorCorrectLeast(signals)

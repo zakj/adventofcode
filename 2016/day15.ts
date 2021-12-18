@@ -26,6 +26,7 @@ const exampleDiscs = parse(load(15, 'ex').lines);
 example.equal(firstButtonPress(exampleDiscs), 5);
 
 const discs = parse(load(15).lines);
+answers.expect(16824, 3543984);
 answers(
   () => firstButtonPress(discs),
   () => firstButtonPress(discs.concat({ positions: 11, time0: 0 }))

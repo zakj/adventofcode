@@ -38,7 +38,7 @@ example.deepEqual(cycle(exampleBanks), [2, 4, 1, 2]);
 example.equal(cyclesToDuplicate(exampleBanks), 5);
 example.equal(loopCycles(exampleBanks), 4);
 
-const banks = load(6).raw.split(/\s+/).map(Number);
+const banks = load(6).raw.trim().split(/\s+/).map(Number);
 answers.expect(5042, 1086);
 answers(
   () => cyclesToDuplicate(banks),

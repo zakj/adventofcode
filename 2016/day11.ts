@@ -102,6 +102,7 @@ example.equal(minPath(exampleState), 11);
 
 const state = '1' + parse(load(11).lines);
 const state2 = state + '1111';
+answers.expect(37, 61);
 answers(
   () => minPath(state),
   () => minPath(state2)

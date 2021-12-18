@@ -98,8 +98,8 @@ example.equal(165, sumOfMemoryValuesV1(exampleProgram));
 exampleProgram = parseProgram(load(14, 'ex2').lines);
 example.equal(208, sumOfMemoryValuesV2(exampleProgram));
 
-// 105471513358 too low
 const program = parseProgram(load(14).lines);
+answers.expect(11179633149677, 4822600194774);
 answers(
   () => sumOfMemoryValuesV1(program),
   () => sumOfMemoryValuesV2(program)

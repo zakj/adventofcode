@@ -1,4 +1,4 @@
-import { answers, example } from '../advent';
+import { answers, example, load } from '../advent';
 import { range } from '../util';
 
 type Elf = {
@@ -50,7 +50,8 @@ function whiteElephantAcross(elfCount: number): number {
 example.equal(whiteElephantLeft(5), 3);
 example.equal(whiteElephantAcross(5), 2);
 
-const input = 3014387;
+const input = load(19).numbers[0];
+answers.expect(1834471, 1420064);
 answers(
   () => whiteElephantLeft(input),
   () => whiteElephantAcross(input)

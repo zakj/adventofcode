@@ -53,6 +53,7 @@ example.equal(32, countContainedBags('shiny gold', exampleRules1));
 example.equal(126, countContainedBags('shiny gold', exampleRules2));
 
 const rules = parseRules(load(7).lines);
+answers.expect(326, 5635);
 answers(
   () => whatCanContain('shiny gold', rules).length,
   () => countContainedBags('shiny gold', rules)

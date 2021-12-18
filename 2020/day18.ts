@@ -65,6 +65,7 @@ example.equal(part2('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))'), 669060);
 example.equal(part2('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2'), 23340);
 
 const expressions = load(18).lines;
+answers.expect(31142189909908, 323912478287549);
 answers(
   () => sum(expressions.map(part1)),
   () => sum(expressions.map(part2))

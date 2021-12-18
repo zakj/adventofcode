@@ -40,7 +40,7 @@ example.equal(distanceFromStart(walk(parse('ne,ne,sw,sw')).pop()), 0);
 example.equal(distanceFromStart(walk(parse('ne,ne,s,s')).pop()), 2);
 example.equal(distanceFromStart(walk(parse('se,sw,se,sw,sw')).pop()), 3);
 
-const directions = parse(load(11).raw);
+const directions = parse(load(11).raw.trim());
 answers.expect(784, 1558);
 answers(
   () => distanceFromStart(walk(directions).pop()),

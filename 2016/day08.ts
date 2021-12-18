@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { answers, example, load, ocr } from '../advent';
 import { sum, zip } from '../util';
 
 type RectInstruction = {
@@ -91,7 +91,8 @@ const exampleInstructions = parse(load(8, 'ex').lines);
 example.equal(count(run(exampleInstructions, 7, 3)), 6);
 
 const instructions = parse(load(8).lines);
+answers.expect(116, 'UPOJFLBCEZ');
 answers(
   () => count(run(instructions, 50, 6)),
-  () => '\n' + toString(run(instructions, 50, 6))
+  () => ocr(toString(run(instructions, 50, 6)), '../figlet-4x6.txt')
 );

@@ -68,5 +68,5 @@ const program = parse(load(11).raw);
 answers.expect(2252, 'AGALRGJE');
 answers(
   () => paint(program, Color.Black).size,
-  () => ocr(toString(paint(program, Color.White)), './figlet.txt')
+  () => ocr(toString(paint(program, Color.White)), '../figlet-4x6.txt')
 );

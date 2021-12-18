@@ -97,6 +97,7 @@ const exampleInstructions = parse(load(21, 'ex').lines);
 example.equal(process(exampleInstructions, 'abcde'), 'decab');
 
 const instructions = parse(load(21).lines);
+answers.expect('dbfgaehc', 'aghfcdeb');
 answers(
   () => process(instructions, 'abcdefgh'),
   () => process(instructions.reverse(), 'fbgdceah', true)

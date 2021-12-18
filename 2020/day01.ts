@@ -36,6 +36,7 @@ example.deepEqual(
 );
 
 const data = load(1).numbers;
+answers.expect(1018944, 8446464);
 answers(
   () => product(find2ElementsWithSum(2020, data)),
   () => product(find3ElementsWithSum(2020, data))

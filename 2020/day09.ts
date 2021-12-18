@@ -31,6 +31,7 @@ example.equal(62, contiguousSum(127, exampleData));
 
 const data = load(9).numbers;
 const part1 = firstFailingNumber(data, 25);
+answers.expect(104054607, 13935797);
 answers(
   () => part1,
   () => contiguousSum(part1, data)

@@ -1,4 +1,4 @@
-ABCEFGHJKLPRYZ
+ABCEFGHJKLOPRUYZ
 
  ##  
 #  # 
@@ -70,6 +70,13 @@ ABCEFGHJKLPRYZ
 #    
 #### 
 
+ ##  
+#  # 
+#  # 
+#  # 
+#  # 
+ ##  
+
 ###  
 #  # 
 #  # 
@@ -83,6 +90,13 @@ ABCEFGHJKLPRYZ
 ###  
 # #  
 #  # 
+
+#  # 
+#  # 
+#  # 
+#  # 
+#  # 
+ ##  
 
 #   #
 #   #

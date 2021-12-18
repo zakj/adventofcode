@@ -97,6 +97,7 @@ example.equal(5, accumulatorValueBeforeLoop(exampleInstructions));
 example.equal(8, findAccumulatorAfterNonLoopingChange(exampleInstructions));
 
 const instructions = parseInstructions(load(8).lines);
+answers.expect(1584, 920);
 answers(
   () => accumulatorValueBeforeLoop(instructions),
   () => findAccumulatorAfterNonLoopingChange(instructions)
