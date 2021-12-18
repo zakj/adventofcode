@@ -4,6 +4,11 @@ export type Point = { x: number; y: number };
 export type PointHash = string;
 export const pointHash = ({ x, y }: Point): PointHash => `${x},${y}`;
 
+export type Rect = {
+  min: Point;
+  max: Point;
+};
+
 export class PointMap<T> extends XMap<Point, T, PointHash> {
   constructor(iterable: Iterable<[Point, T]> = []) {
     super(pointHash, iterable);
@@ -69,6 +74,15 @@ export function findBounds(points: Point[]): { min: Point; max: Point } {
 
 function setToMap(set: PointSet): PointMap<boolean> {
   return new PointMap([...set].map((k) => [k, true]));
+}
+
+export function intersect(point: Point, rect: Rect): boolean {
+  return (
+    point.x >= rect.min.x &&
+    point.x <= rect.max.x &&
+    point.y >= rect.min.y &&
+    point.y <= rect.max.y
+  );
 }
 
 export function toAscii(set: PointSet, char?: string): string;
