@@ -65,6 +65,7 @@ export function answers(...fns: (() => any)[]): void {
   const c = (n: number) => (text: string) => `\x1b[${n}m${text}\x1b[0m`;
   const color = {
     red: c(31),
+    yellow: c(33),
     green: c(32),
     grey: c(90),
   };
@@ -87,8 +88,11 @@ export function answers(...fns: (() => any)[]): void {
     }
 
     const expected = expectedAnswers[i];
-    if (typeof expected === 'undefined' || expected === result) {
+    if (expected === result) {
       console.log(color.green(result?.toString()));
+    } else if (typeof expected === 'undefined') {
+      success = false;
+      console.log(color.yellow(result?.toString()));
     } else {
       success = false;
       console.log(
