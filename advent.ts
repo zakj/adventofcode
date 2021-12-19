@@ -146,3 +146,33 @@ export function ocr(s: string, lettersPath: string): string {
   }
   return output.join('');
 }
+
+const measureTimings: Map<string, number[]> = new Map();
+export function measure(name: string) {
+  const start = performance.now();
+  return () => {
+    const time = performance.now() - start;
+    if (!measureTimings.has(name)) measureTimings.set(name, []);
+    measureTimings.get(name).push(time);
+  };
+}
+
+process.on('exit', () => {
+  for (const [measure, timesInp] of measureTimings) {
+    let times = new Uint32Array(timesInp);
+    times.sort();
+    const total = Math.round(times.reduce((a, b) => a + b));
+    const index = 0.95 * times.length;
+    const p95 = (
+      index + 1 >= times.length
+        ? times[times.length - 1]
+        : Math.ceil(index) === index
+        ? (times[index] + times[index + 1]) / 2
+        : times[Math.ceil(index)]
+    ).toFixed(2);
+    const max = times[times.length - 1].toFixed(2);
+    console.log(
+      `${measure} ${times.length} // ${total}ms // p95 ${p95}ms // max ${max}ms`
+    );
+  }
+});
