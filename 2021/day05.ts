@@ -1,5 +1,5 @@
 import { answers, example, load } from '../advent';
-import { Point, pointHash } from '../coords';
+import { Point, pointToString } from '../coords';
 import { Counter } from '../util';
 
 type Vent = [Point, Point];
@@ -32,7 +32,7 @@ function countOverlaps(vents: Vent[], diagonal = false): number {
     vents = vents.filter(([v1, v2]) => v1.x === v2.x || v1.y === v2.y);
   }
   const points = vents.flatMap(ventToPoints);
-  return [...new Counter(points.map(pointHash)).entries()].filter(
+  return [...new Counter(points.map(pointToString)).entries()].filter(
     ([p, count]) => count >= 2
   ).length;
 }

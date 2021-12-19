@@ -1,6 +1,5 @@
 import { answers, example, load } from '../advent';
-
-type PointHash = string;
+import { PointMap, pointToString } from '../coords';
 
 function powerLevel(x: number, y: number, serial: number): number {
   const rackId = x + 10;
@@ -8,34 +7,32 @@ function powerLevel(x: number, y: number, serial: number): number {
   return Math.floor((power % 1000) / 100) - 5;
 }
 
-const key = (...args: number[]): PointHash => args.join(',');
-
 class SummedAreaTable {
-  private sums: Map<PointHash, number>;
+  private sums: PointMap<number>;
 
   constructor(
     width: number,
     height: number,
     value: (x: number, y: number) => number
   ) {
-    this.sums = new Map();
+    this.sums = new PointMap();
     for (let y = 0; y < height; ++y) {
       for (let x = 0; x < width; ++x) {
         const sum =
           value(x, y) +
-          (this.sums.get(key(x, y - 1)) || 0) +
-          (this.sums.get(key(x - 1, y)) || 0) -
-          (this.sums.get(key(x - 1, y - 1)) || 0);
-        this.sums.set(key(x, y), sum);
+          (this.sums.get({ x, y: y - 1 }) || 0) +
+          (this.sums.get({ x: x - 1, y }) || 0) -
+          (this.sums.get({ x: x - 1, y: y - 1 }) || 0);
+        this.sums.set({ x, y }, sum);
       }
     }
   }
 
   get(x: number, y: number, size: number): number {
-    const tl = key(x - 1, y - 1);
-    const br = key(x + size - 1, y + size - 1);
-    const tr = key(x + size - 1, y - 1);
-    const bl = key(x - 1, y + size - 1);
+    const tl = { x: x - 1, y: y - 1 };
+    const br = { x: x + size - 1, y: y + size - 1 };
+    const tr = { x: x + size - 1, y: y - 1 };
+    const bl = { x: x - 1, y: y + size - 1 };
     return (
       this.sums.get(tl) +
       this.sums.get(br) -
@@ -60,7 +57,7 @@ function maxSquareValue(serial: number) {
       }
     }
   }
-  return [key(max.x, max.y), max.value];
+  return [pointToString(max), max.value];
 }
 
 function maxSquareValueAnySize(serial: number) {
@@ -81,7 +78,7 @@ function maxSquareValueAnySize(serial: number) {
       }
     }
   }
-  return [key(max.x, max.y, max.size), max.value];
+  return [`${pointToString(max)},${max.size}`, max.value];
 }
 
 example.equal(powerLevel(3, 5, 8), 4);

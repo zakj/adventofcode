@@ -1,8 +1,6 @@
-import { readFileSync } from 'fs';
-import { answers, load } from '../advent';
-import { zip } from '../util';
+import { answers, load, ocr } from '../advent';
+import { findBounds, Point, PointSet, toAscii } from '../coords';
 
-type Point = number[];
 type PointRule = {
   start: Point;
   velocity: Point;
@@ -12,33 +10,27 @@ function parse(lines: string[]): PointRule[] {
   const re = /[<>]/;
   return lines.map((line) => {
     const chunks = line.split(re);
-    const start = chunks[1].trim().split(/,\s+/).map(Number);
-    const velocity = chunks[3].trim().split(/,\s+/).map(Number);
+    let [x, y] = chunks[1].trim().split(/,\s+/).map(Number);
+    const start = { x, y };
+    [x, y] = chunks[3].trim().split(/,\s+/).map(Number);
+    const velocity = { x, y };
     return { start, velocity };
   });
 }
 
 function after(seconds: number, rules: PointRule[]): Point[] {
-  return rules.map((r) =>
-    zip(r.start, r.velocity).map(([p, v]) => p + v * seconds)
-  );
-}
-
-function bounds(points: Point[]): [Point, Point] {
-  const xs = points.map((p) => p[0]);
-  const ys = points.map((p) => p[1]);
-  return [
-    [Math.min(...xs), Math.min(...ys)],
-    [Math.max(...xs), Math.max(...ys)],
-  ];
+  return rules.map((r) => ({
+    x: r.start.x + r.velocity.x * seconds,
+    y: r.start.y + r.velocity.y * seconds,
+  }));
 }
 
 function area(points: Point[]): number {
-  const [min, max] = bounds(points);
-  return (max[0] - min[0]) * (max[1] - min[1]);
+  const { min, max } = findBounds(points);
+  return (max.x - min.x) * (max.y - min.y);
 }
 
-function converge(rules: PointRule[]) {
+function converge(rules: PointRule[]): number {
   let last = Infinity;
   for (let i = 0; ; ++i) {
     const cur = area(after(i, rules));

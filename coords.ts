@@ -1,4 +1,4 @@
-import { range, XMap, XSet } from './util';
+import { range, ValuesOf, XMap, XSet } from './util';
 
 export type Point = { x: number; y: number };
 export type PointHash = number;
@@ -8,6 +8,14 @@ export type Rect = {
   min: Point;
   max: Point;
 };
+
+export const Dir = {
+  Up: 0,
+  Right: 1,
+  Down: 2,
+  Left: 3,
+};
+export type Dir = ValuesOf<typeof Dir>;
 
 // https://en.wikipedia.org/wiki/Pairing_function
 function cantorPairSigned({ x, y }: Point): number {
@@ -67,16 +75,45 @@ export function neighbors8({ x, y }: Point): Point[] {
   ];
 }
 
-export function findBounds(points: Point[]): { min: Point; max: Point } {
-  const min = { x: Infinity, y: Infinity };
-  const max = { x: -Infinity, y: -Infinity };
-  for (const p of points) {
-    min.x = Math.min(min.x, p.x);
-    min.y = Math.min(min.y, p.y);
-    max.x = Math.max(max.x, p.x);
-    max.y = Math.max(max.y, p.y);
+export function add(a: Point, b: Partial<Point>): Point {
+  return { x: a.x + (b.x || 0), y: a.y + (b.y || 0) };
+}
+
+export function move(p: Point, dir: Dir): Point {
+  switch (dir) {
+    case Dir.Up:
+      return add(p, { y: -1 });
+    case Dir.Right:
+      return add(p, { x: 1 });
+    case Dir.Down:
+      return add(p, { y: 1 });
+    case Dir.Left:
+      return add(p, { x: -1 });
   }
-  return { min, max };
+}
+
+export function findBounds<T>(points: PointMap<T>): { min: Point; max: Point };
+export function findBounds(points: PointSet): { min: Point; max: Point };
+export function findBounds(points: Point[]): { min: Point; max: Point };
+export function findBounds<T>(points: PointMap<T> | PointSet | Point[]): {
+  min: Point;
+  max: Point;
+} {
+  if (points instanceof PointMap) points = points.keys();
+  else if (points instanceof PointSet) points = [...points];
+  return points.reduce(
+    (rv, p) => {
+      rv.min.x = Math.min(rv.min.x, p.x);
+      rv.min.y = Math.min(rv.min.y, p.y);
+      rv.max.x = Math.max(rv.max.x, p.x);
+      rv.max.y = Math.max(rv.max.y, p.y);
+      return rv;
+    },
+    {
+      min: { x: Infinity, y: Infinity },
+      max: { x: -Infinity, y: -Infinity },
+    }
+  );
 }
 
 function setToMap(set: PointSet): PointMap<boolean> {

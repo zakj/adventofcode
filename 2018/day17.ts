@@ -1,4 +1,5 @@
 import { answers, example, load } from '../advent';
+import { Point, PointMap, PointSet, pointToString } from '../coords';
 import { range } from '../util';
 
 enum Cell {
@@ -10,17 +11,14 @@ enum Cell {
 type Grid = {
   minY: number;
   maxY: number;
-  cells: Map<PointHash, Cell>;
+  cells: PointMap<Cell>;
 };
-type Point = { x: number; y: number };
-type PointHash = string;
-const h = ({ x, y }: Point) => `${x},${y}`;
 const FOUNTAIN: Point = { x: 500, y: 0 };
 
 function parse(lines: string[]): Grid {
   let minY = Infinity;
   let maxY = -Infinity;
-  const cells = new Map<PointHash, Cell>();
+  const cells = new PointMap<Cell>();
   lines.forEach((line) => {
     const elements = line.split(', ');
     let ps: { x: number[]; y: number[] } = { x: null, y: null };
@@ -37,7 +35,7 @@ function parse(lines: string[]): Grid {
       for (const y of ps.y) {
         minY = Math.min(y, minY);
         maxY = Math.max(y, maxY);
-        cells.set(h({ x, y }), Cell.Clay);
+        cells.set({ x, y }, Cell.Clay);
       }
     }
   });
@@ -47,19 +45,18 @@ function parse(lines: string[]): Grid {
 function toString(grid: Grid): string {
   let minX = FOUNTAIN.x;
   let maxX = FOUNTAIN.x;
-  [...grid.cells.keys()].forEach((k) => {
-    const [x, y] = k.split(',').map(Number);
+  [...grid.cells.keys()].forEach(({ x, y }) => {
     minX = Math.min(minX, x);
     maxX = Math.max(maxX, x);
   });
   const rows = [];
-  const fHash = h(FOUNTAIN);
+  const fHash = pointToString(FOUNTAIN);
   const padding = Math.max(maxX.toString().length, grid.maxY.toString().length);
   for (const y of range(Math.min(FOUNTAIN.y, grid.minY), grid.maxY + 1)) {
     const row = [`${y} `.padStart(padding + 1)];
     for (const x of range(minX, maxX + 1)) {
-      const hash = h({ x, y });
-      row.push(hash === fHash ? '+' : grid.cells.get(hash) || Cell.Sand);
+      const hash = pointToString({ x, y });
+      row.push(hash === fHash ? '+' : grid.cells.get({ x, y }) || Cell.Sand);
     }
     rows.push(row.join(''));
   }
@@ -67,10 +64,10 @@ function toString(grid: Grid): string {
 }
 
 function fill(grid: Grid): Grid {
-  const cells = new Map(grid.cells);
+  const cells = new PointMap(grid.cells);
   grid = { ...grid, cells };
 
-  const cell = (p: Point) => cells.get(h(p)) || Cell.Sand;
+  const cell = (p: Point) => cells.get(p) || Cell.Sand;
   const canFlow = (p: Point): boolean =>
     [Cell.Flow, Cell.Sand].includes(cell(p));
 
@@ -82,18 +79,18 @@ function fill(grid: Grid): Grid {
       continue;
     } else if (cell(below) === Cell.Sand) {
       // Flow down.
-      cells.set(h(below), Cell.Flow);
+      cells.set(below, Cell.Flow);
       q.push(below);
     } else {
       // Blocked on settled water or clay; flow sideways.
       let overflow = false;
-      const filled: PointHash[] = [h(cur)];
+      const filled = new PointSet([cur]);
       for (const d of [-1, 1]) {
         let side = cur;
         while (true) {
           side = { x: side.x + d, y: side.y };
           if (!canFlow(side)) break;
-          filled.push(h(side));
+          filled.add(side);
           if (canFlow({ x: side.x, y: side.y + 1 })) {
             overflow = true;
             q.push(side);
@@ -102,10 +99,10 @@ function fill(grid: Grid): Grid {
         }
       }
       if (overflow) {
-        filled.forEach((hash) => cells.set(hash, Cell.Flow));
+        [...filled].forEach((hash) => cells.set(hash, Cell.Flow));
       } else {
         // Trapped water; move back up the flow.
-        filled.forEach((hash) => cells.set(hash, Cell.Water));
+        [...filled].forEach((hash) => cells.set(hash, Cell.Water));
         q.push({ x: cur.x, y: cur.y - 1 });
       }
     }
@@ -114,8 +111,7 @@ function fill(grid: Grid): Grid {
 }
 
 function countCells(grid: Grid, types: Cell[]): number {
-  return [...grid.cells.entries()].filter(([k, c]) => {
-    const [x, y] = k.split(',').map(Number);
+  return [...grid.cells.entries()].filter(([{ x, y }, c]) => {
     return y >= grid.minY && y <= grid.maxY && types.includes(c);
   }).length;
 }

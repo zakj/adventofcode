@@ -1,32 +1,17 @@
 import { answers, example, load } from '../advent';
+import { findBounds, parseSet, Point } from '../coords';
 import { Counter, sum } from '../util';
 
-type Point = { x: number; y: number };
-
 function parse(lines: string[]): Point[] {
-  return lines
-    .map((line) => line.split(', ').map(Number))
-    .map(([x, y]) => ({ x, y }));
+  return [...parseSet(lines)];
 }
 
 function distance(a: Point, b: Point): number {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
-function bounds(coords: Point[]): { min: Point; max: Point } {
-  const min = { ...coords[0] };
-  const max = { ...coords[0] };
-  for (const c of coords) {
-    min.x = Math.min(c.x, min.x);
-    min.y = Math.min(c.y, min.y);
-    max.x = Math.max(c.x, max.x);
-    max.y = Math.max(c.y, max.y);
-  }
-  return { min, max };
-}
-
 function largestArea(coords: Point[]): number {
-  const { min, max } = bounds(coords);
+  const { min, max } = findBounds(coords);
   const areas = [];
   const infiniteCoords = new Set();
   for (let x = min.x; x <= max.x; ++x) {
@@ -48,7 +33,7 @@ function largestArea(coords: Point[]): number {
 }
 
 function totalDistanceLessThan(coords: Point[], maxDistance: number): number {
-  const { min, max } = bounds(coords);
+  const { min, max } = findBounds(coords);
   let size = 0;
   for (let x = min.x; x <= max.x; ++x) {
     for (let y = min.y; y <= max.y; ++y) {

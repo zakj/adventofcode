@@ -1,40 +1,29 @@
 import { answers, example, load } from '../advent';
+import { findBounds, neighbors4, Point, PointMap, PointSet } from '../coords';
 import { sum } from '../util';
 
-type Point = { x: number; y: number };
-type PointHash = string;
 type Character = {
   type: 'E' | 'G';
   hp: number;
   power: number;
 } & Point;
-type Characters = Map<PointHash, Character>;
-type Walls = Set<PointHash>;
+type Characters = PointMap<Character>;
+type Walls = PointSet;
 type Maze = { characters: Characters; walls: Walls };
-const h = ({ x, y }: Point) => `${x},${y}`;
 const DeadElf = Symbol('dead elf');
 
 function parse(lines: string[]): { characters: Characters; walls: Walls } {
-  const characters: Characters = new Map();
-  const walls: Walls = new Set();
+  const characters: Characters = new PointMap();
+  const walls: Walls = new PointSet();
   lines.forEach((line, y) =>
     line.split('').forEach((c, x) => {
-      if (c === '#') walls.add(h({ x, y }));
+      if (c === '#') walls.add({ x, y });
       if (c === 'G' || c === 'E') {
-        characters.set(h({ x, y }), { type: c, hp: 200, power: 3, x, y });
+        characters.set({ x, y }, { type: c, hp: 200, power: 3, x, y });
       }
     })
   );
   return { characters, walls };
-}
-
-function adjacent(p: Point): Point[] {
-  return [
-    { x: p.x, y: p.y - 1 },
-    { x: p.x, y: p.y + 1 },
-    { x: p.x - 1, y: p.y },
-    { x: p.x + 1, y: p.y },
-  ];
 }
 
 function readingOrder<T extends Point>(a: T, b: T): number {
@@ -51,18 +40,16 @@ function best<T extends Point>(xs: T[], key: keyof T): T {
 function shortestPathLength(
   from: Point,
   to: Point,
-  impassable: Set<PointHash>
+  impassable: PointSet
 ): number {
-  const target = h(to);
-  const visited = new Set<PointHash>();
+  const visited = new PointSet();
   const q: { point: Point; steps: number }[] = [{ point: from, steps: 0 }];
   while (q.length) {
     const { point: cur, steps } = q.shift();
-    if (h(cur) === target) return steps;
-    for (const neighbor of adjacent(cur)) {
-      const hash = h(neighbor);
-      if (visited.has(hash) || impassable.has(hash)) continue;
-      visited.add(hash);
+    if (cur.x === to.x && cur.y === to.y) return steps;
+    for (const neighbor of neighbors4(cur)) {
+      if (visited.has(neighbor) || impassable.has(neighbor)) continue;
+      visited.add(neighbor);
       q.push({ point: neighbor, steps: steps + 1 });
     }
   }
@@ -71,17 +58,16 @@ function shortestPathLength(
 
 function allDistances(
   from: Point,
-  impassable: Set<PointHash>
-): Map<PointHash, Point & { distance: number }> {
+  impassable: PointSet
+): PointMap<Point & { distance: number }> {
   const q = [from];
-  const distances = new Map([[h(from), { ...from, distance: 0 }]]);
+  const distances = new PointMap([[from, { ...from, distance: 0 }]]);
   while (q.length) {
     const cur = q.shift();
-    const distance = distances.get(h(cur)).distance + 1;
-    for (const neighbor of adjacent(cur)) {
-      const hash = h(neighbor);
-      if (distances.has(hash) || impassable.has(hash)) continue;
-      distances.set(hash, { ...neighbor, distance });
+    const distance = distances.get(cur).distance + 1;
+    for (const neighbor of neighbors4(cur)) {
+      if (distances.has(neighbor) || impassable.has(neighbor)) continue;
+      distances.set(neighbor, { ...neighbor, distance });
       q.push(neighbor);
     }
   }
@@ -93,7 +79,7 @@ function play(
   elfPower?: number
 ): number | typeof DeadElf {
   let rounds = 0;
-  characters = new Map(
+  characters = new PointMap(
     [...characters.entries()].map(([k, v]) => [k, { ...v }])
   );
   while (true) {
@@ -106,15 +92,15 @@ function play(
         return rounds * sum([...characters.values()].map((c) => c.hp));
       }
 
-      let adjacentPoints = new Set(adjacent(char).map(h));
-      let adjacentEnemies = enemies.filter((e) => adjacentPoints.has(h(e)));
+      let adjacentPoints = new PointSet(neighbors4(char));
+      let adjacentEnemies = enemies.filter((e) => adjacentPoints.has(e));
 
       // Move if we can't attack from here.
       if (adjacentEnemies.length === 0) {
         // Find the best reachable enemy-adjacent location, or end our turn.
-        const impassable = new Set([...characters.keys(), ...walls]);
+        const impassable = new PointSet([...characters.keys(), ...walls]);
         const distances = allDistances(char, impassable);
-        const targets = new Set(enemies.flatMap((e) => adjacent(e)).map(h));
+        const targets = new PointSet(enemies.flatMap((e) => neighbors4(e)));
         const targetDistances = [...distances]
           .filter(([hash]) => targets.has(hash))
           .map(([hash, pd]) => pd);
@@ -123,8 +109,8 @@ function play(
 
         // Move to the best next step towards the chosen target.
         const { x, y } = best(
-          adjacent(char)
-            .filter((p) => !impassable.has(h(p)))
+          neighbors4(char)
+            .filter((p) => !impassable.has(p))
             .map((p) => ({
               ...p,
               distance: shortestPathLength(p, target, impassable),
@@ -133,12 +119,12 @@ function play(
           'distance'
         );
         const newChar = { ...char, x, y };
-        characters.delete(h(char));
-        characters.set(h(newChar), newChar);
+        characters.delete(char);
+        characters.set(newChar, newChar);
 
         // Adjacent enemies have changed since the move.
-        adjacentPoints = new Set(adjacent(newChar).map(h));
-        adjacentEnemies = enemies.filter((e) => adjacentPoints.has(h(e)));
+        adjacentPoints = new PointSet(neighbors4(newChar));
+        adjacentEnemies = enemies.filter((e) => adjacentPoints.has(e));
       }
 
       // Attack if we can.
@@ -146,7 +132,7 @@ function play(
         const enemy = best(adjacentEnemies, 'hp');
         enemy.hp -= elfPower && char.type === 'E' ? elfPower : char.power;
         if (enemy.hp <= 0) {
-          characters.delete(h(enemy));
+          characters.delete(enemy);
           if (elfPower && enemy.type === 'E') return DeadElf;
         }
       }
@@ -167,16 +153,15 @@ function elfatePower(maze: Maze): number {
 }
 
 function debug(characters: Characters, walls: Walls) {
-  const size =
-    Math.max(...[...walls.keys()].map((s) => Number(s.split(',')[0]))) + 1;
-  for (let y = 0; y < size; ++y) {
+  const bounds = findBounds(walls);
+  for (let y = 0; y <= bounds.max.y; ++y) {
     const row = [];
     const chars = [];
-    for (let x = 0; x < size; ++x) {
-      const hash = h({ x, y });
-      if (walls.has(hash)) row.push('#');
-      else if (characters.has(hash)) {
-        const c = characters.get(hash);
+    for (let x = 0; x < bounds.max.x; ++x) {
+      const p = { x, y };
+      if (walls.has(p)) row.push('#');
+      else if (characters.has(p)) {
+        const c = characters.get(p);
         row.push(c.type);
         chars.push(c);
       } else {
