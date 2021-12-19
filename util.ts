@@ -236,10 +236,10 @@ export class XMap<K, V, KHash = string> {
 }
 
 // TODO refactor old places that could use this
-export class XSet<T> {
-  private map: Map<string, T> = new Map();
+export class XSet<T, Hash = string> {
+  private map: Map<Hash, T> = new Map();
 
-  constructor(private hashFn: (x: T) => string, iterable: Iterable<T> = []) {
+  constructor(private hashFn: (x: T) => Hash, iterable: Iterable<T> = []) {
     for (const x of iterable) {
       this.add(x);
     }
@@ -257,8 +257,8 @@ export class XSet<T> {
     return this.map.delete(this.hashFn(item));
   }
 
-  intersect(other: XSet<T>): XSet<T> {
-    const next = new XSet<T>(this.hashFn);
+  intersect(other: XSet<T, Hash>): XSet<T, Hash> {
+    const next = new XSet<T, Hash>(this.hashFn);
     for (const item of this) {
       if (other.has(item)) next.add(item);
     }

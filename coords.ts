@@ -1,23 +1,30 @@
 import { range, XMap, XSet } from './util';
 
 export type Point = { x: number; y: number };
-export type PointHash = string;
-export const pointHash = ({ x, y }: Point): PointHash => `${x},${y}`;
+export type PointHash = number;
+export const pointToString = ({ x, y }: Point): string => `${x},${y}`;
 
 export type Rect = {
   min: Point;
   max: Point;
 };
 
+// https://en.wikipedia.org/wiki/Pairing_function
+function cantorPairSigned({ x, y }: Point): number {
+  const a = x >= 0 ? 2 * x : -2 * x - 1;
+  const b = y >= 0 ? 2 * y : -2 * y - 1;
+  return 0.5 * (a + b) * (a + b + 1) + b;
+}
+
 export class PointMap<T> extends XMap<Point, T, PointHash> {
   constructor(iterable: Iterable<[Point, T]> = []) {
-    super(pointHash, iterable);
+    super(cantorPairSigned, iterable);
   }
 }
 
-export class PointSet extends XSet<Point> {
+export class PointSet extends XSet<Point, PointHash> {
   constructor(iterable: Iterable<Point> = []) {
-    super(pointHash, iterable);
+    super(cantorPairSigned, iterable);
   }
 }
 
