@@ -1,13 +1,9 @@
 import { answers, example, load } from '../advent';
+import { Point } from '../coords';
 
 type Instruction = {
   action: string;
   value: number;
-};
-
-type Point = {
-  x: number;
-  y: number;
 };
 
 function parseInstructions(lines: string[]): Instruction[] {

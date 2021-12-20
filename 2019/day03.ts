@@ -1,5 +1,5 @@
 import { answers, load } from '../advent';
-import { XMap, XSet } from '../util';
+import { add, PointMap, PointSet } from '../coords';
 
 enum Dir {
   L = 'L',
@@ -12,10 +12,6 @@ interface Move {
   dist: number;
 }
 type Wire = Move[];
-
-type Point = { x: number; y: number };
-type PointHash = string;
-const h = ({ x, y }: Point): PointHash => `${x},${y}`;
 
 function parse(lines: string[]): Wire[] {
   return lines.map((line) => {
@@ -33,15 +29,14 @@ const deltas: Record<Dir, { x: number; y: number }> = {
   [Dir.D]: { x: 0, y: 1 },
 };
 
-function path(wire: Wire): XMap<Point, number> {
-  const path = new XMap<Point, number>(h);
-  const cur = { x: 0, y: 0 };
+function path(wire: Wire): PointMap<number> {
+  const path = new PointMap<number>();
+  let cur = { x: 0, y: 0 };
   let steps = 1;
   for (const move of wire) {
     const d = deltas[move.dir];
     for (let i = 0; i < move.dist; ++i) {
-      cur.x += d.x;
-      cur.y += d.y;
+      cur = add(cur, d);
       if (!path.has(cur)) path.set(cur, steps);
       ++steps;
     }
@@ -49,9 +44,9 @@ function path(wire: Wire): XMap<Point, number> {
   return path;
 }
 
-function closestIntersectionByDistance(wires: Wire[]) {
-  const pointsA = new XSet(h, path(wires[0]).keys());
-  const pointsB = new XSet(h, path(wires[1]).keys());
+function closestIntersectionByDistance(wires: Wire[]): number {
+  const pointsA = new PointSet(path(wires[0]).keys());
+  const pointsB = new PointSet(path(wires[1]).keys());
   const intersections = pointsA.intersect(pointsB);
   return [...intersections]
     .map((p) => Math.abs(p.x) + Math.abs(p.y))
@@ -61,8 +56,8 @@ function closestIntersectionByDistance(wires: Wire[]) {
 function closestIntersectionBySteps(wires: Wire[]) {
   const pathA = path(wires[0]);
   const pathB = path(wires[1]);
-  const pointsA = new XSet(h, pathA.keys());
-  const pointsB = new XSet(h, pathB.keys());
+  const pointsA = new PointSet(pathA.keys());
+  const pointsB = new PointSet(pathB.keys());
   const intersections = pointsA.intersect(pointsB);
   return [...intersections]
     .map((p) => pathA.get(p) + pathB.get(p))

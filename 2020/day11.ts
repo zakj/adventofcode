@@ -1,15 +1,11 @@
 import { answers, example, load } from '../advent';
+import { Point } from '../coords';
 
 enum PositionType {
   Floor = '.',
   EmptySeat = 'L',
   OccupiedSeat = '#',
 }
-
-type Point = {
-  x: number;
-  y: number;
-};
 
 type Grid = {
   width: number;
