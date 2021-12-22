@@ -32,11 +32,10 @@ function passwordForIdPos(id: string): string {
 function updateProgress(s: string): void {
   if (!process.stdout.isTTY) return;
   const chars = '0123456789abcdef'.split('');
-  process.stdout.write(' : ');
   process.stdout.write(
     s.replaceAll('_', () => chars[Math.floor(Math.random() * 16)])
   );
-  process.stdout.cursorTo(0);
+  process.stdout.cursorTo(3);
 }
 
 example.equal(passwordForId('abc'), '18f47a30');

@@ -72,6 +72,8 @@ export function answers(...fns: (() => any)[]): void {
 
   let success = true;
   fns.forEach((fn, i) => {
+    const indexStr = `${i + 1}: `;
+    process.stdout.write(indexStr);
     const start = performance.now();
     const result = fn();
     const durationMs = performance.now() - start;
@@ -79,8 +81,6 @@ export function answers(...fns: (() => any)[]): void {
       durationMs > 1000
         ? `${(durationMs / 1000).toFixed(3)}s`
         : `${durationMs.toFixed(3)}ms`;
-    const indexStr = `${i + 1}: `;
-    process.stdout.write(indexStr);
     if (process.stdout.cursorTo) {
       process.stdout.cursorTo(process.stdout.columns - duration.length);
       process.stdout.write(color.grey(duration));
