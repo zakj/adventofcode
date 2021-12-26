@@ -1,13 +1,5 @@
 import { answers, load } from '../advent';
-import {
-  Dir,
-  findBounds,
-  intersect,
-  move,
-  parseMap,
-  PointSet,
-  Rect,
-} from '../coords';
+import { parseGrid, PointGrid } from '../coords';
 import { ValuesOf } from '../util';
 
 const Cell = {
@@ -16,61 +8,43 @@ const Cell = {
   South: 'v',
 } as const;
 type Cell = ValuesOf<typeof Cell>;
-type Floor = { bounds: Rect; east: PointSet; south: PointSet };
 
-function parse(lines: string[]) {
-  const floor = parseMap(lines, (c) => c as Cell);
-  return {
-    east: new PointSet(
-      [...floor]
-        .filter(([point, cell]) => cell === Cell.East)
-        .map(([point]) => point)
-    ),
-    south: new PointSet(
-      [...floor]
-        .filter(([point, cell]) => cell === Cell.South)
-        .map(([point]) => point)
-    ),
-    bounds: findBounds(floor),
-  };
+function stepsToStabilize(grid: PointGrid<Cell>): number {
+  let steps = 0;
+
+  while (true) {
+    ++steps;
+
+    const eastMoves = [];
+    for (const y of grid.ys) {
+      for (const x of grid.xs) {
+        const next = (x + 1) % grid.width;
+        if (grid.get(x, y) === Cell.East && grid.get(next, y) === Cell.Empty)
+          eastMoves.push([x, y, next]);
+      }
+    }
+    for (const [x, y, next] of eastMoves) {
+      grid.set(x, y, Cell.Empty);
+      grid.set(next, y, Cell.East);
+    }
+
+    const southMoves = [];
+    for (const y of grid.ys) {
+      for (const x of grid.xs) {
+        const next = (y + 1) % grid.height;
+        if (grid.get(x, y) === Cell.South && grid.get(x, next) === Cell.Empty)
+          southMoves.push([x, y, next]);
+      }
+    }
+    for (const [x, y, next] of southMoves) {
+      grid.set(x, y, Cell.Empty);
+      grid.set(x, next, Cell.South);
+    }
+
+    if (eastMoves.length + southMoves.length === 0) return steps;
+  }
 }
 
-function step(floor: Floor): boolean {
-  let changed = false;
-  let remove = new PointSet();
-  let add = new PointSet();
-  for (const cur of floor.east) {
-    const next = move(cur, Dir.Right);
-    if (!intersect(next, floor.bounds)) next.x = 0;
-    if (floor.east.has(next) || floor.south.has(next)) continue;
-    remove.add(cur);
-    add.add(next);
-  }
-  for (const p of remove) floor.east.delete(p);
-  for (const p of add) floor.east.add(p);
-  if (remove.size) changed = true;
-
-  remove = new PointSet();
-  add = new PointSet();
-  for (const cur of floor.south) {
-    const next = move(cur, Dir.Down);
-    if (!intersect(next, floor.bounds)) next.y = 0;
-    if (floor.east.has(next) || floor.south.has(next)) continue;
-    remove.add(cur);
-    add.add(next);
-  }
-  for (const p of remove) floor.south.delete(p);
-  for (const p of add) floor.south.add(p);
-  if (remove.size) changed = true;
-
-  return changed;
-}
-
-const floor = parse(load(25).lines);
-// TODO: speedup
+const grid = parseGrid(load(25).lines, (v) => v as Cell);
 answers.expect(498);
-answers(() => {
-  let steps = 1;
-  while (step(floor)) steps++;
-  return steps;
-});
+answers(() => stepsToStabilize(grid));

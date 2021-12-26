@@ -17,6 +17,52 @@ export const Dir = {
 };
 export type Dir = ValuesOf<typeof Dir>;
 
+// More performant version of PointMap for dense grids.
+export class PointGrid<T> {
+  private _grid: T[][] = [];
+  private _xs: number[] = [];
+  private _ys: number[] = [];
+
+  static from<T>(grid: T[][]): PointGrid<T> {
+    const g = new PointGrid<T>();
+    g._grid = JSON.parse(JSON.stringify(grid));
+    return g;
+  }
+
+  get xs(): number[] {
+    if (!this._xs.length) this._xs = range(0, this.width);
+    return this._xs;
+  }
+
+  get ys(): number[] {
+    if (!this._ys.length) this._ys = range(0, this.height);
+    return this._ys;
+  }
+
+  get width(): number {
+    return this._grid[0]?.length || 0;
+  }
+
+  get height(): number {
+    return this._grid?.length;
+  }
+
+  get({ x, y }: Point): T;
+  get(x: number, y: number): T;
+  get(xOrPoint: number | Point, y?: number): T {
+    if (typeof xOrPoint === 'object') return this._grid[xOrPoint.y][xOrPoint.x];
+    return this._grid[y][xOrPoint];
+  }
+
+  set({ x, y }: Point, value: T): void;
+  set(x: number, y: number, value: T): void;
+  set(xOrPoint: number | Point, yOrValue: number | T, value?: T): void {
+    if (typeof xOrPoint === 'object')
+      this._grid[xOrPoint.y][xOrPoint.x] = yOrValue as T;
+    else this._grid[yOrValue as number][xOrPoint] = value;
+  }
+}
+
 // https://en.wikipedia.org/wiki/Pairing_function
 function cantorPairSigned({ x, y }: Point): number {
   const a = x >= 0 ? 2 * x : -2 * x - 1;
@@ -34,6 +80,13 @@ export class PointSet extends XSet<Point, PointHash> {
   constructor(iterable: Iterable<Point> = []) {
     super(cantorPairSigned, iterable);
   }
+}
+
+export function parseGrid<T>(
+  lines: string[],
+  valMap: (c: string) => T
+): PointGrid<T> {
+  return PointGrid.from(lines.map((line) => line.split('').map(valMap)));
 }
 
 export function parseMap<T>(
