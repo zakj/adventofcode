@@ -1,6 +1,7 @@
 import { answers, load } from '../advent';
-import { neighbors4, Point, PointMap, PointSet } from '../coords';
-import { combinations, PriorityQueue, range, sum, ValuesOf } from '../util';
+import { Point, PointMap } from '../coords';
+import search from '../graph';
+import { range, sum, ValuesOf } from '../util';
 
 const Type = {
   Amber: 'A',
@@ -11,7 +12,15 @@ const Type = {
 type Type = ValuesOf<typeof Type>;
 const isType = (c: string): c is Type =>
   Object.values(Type).includes(c as Type);
+type Pod = Point & { type: Type };
+type Pods = Pod[];
 
+const targetRoom: Record<Type, number> = {
+  [Type.Amber]: 3,
+  [Type.Bronze]: 5,
+  [Type.Copper]: 7,
+  [Type.Desert]: 9,
+};
 const energyCost: Record<Type, number> = {
   [Type.Amber]: 1,
   [Type.Bronze]: 10,
@@ -19,194 +28,136 @@ const energyCost: Record<Type, number> = {
   [Type.Desert]: 1000,
 };
 
-type State = {
-  pods: PointMap<Type>;
-  done: PointSet;
-  energy: number;
-};
+const HALLWAY_Y = 1;
+const HALLWAY = range(1, 12)
+  .filter((x) => !Object.values(targetRoom).includes(x))
+  .map((x) => ({ x, y: HALLWAY_Y }));
+const ROOM_YS = range(HALLWAY_Y + 1, HALLWAY_Y + 1 + 4);
 
-type Burrow = { walkable: PointSet; pods: PointMap<Type> };
+function parse(s: string): Pods {
+  const lines = s.trim().split('\n');
+  return range(0, lines.length)
+    .flatMap((y) =>
+      range(0, lines[y].length).map((x) => ({
+        x,
+        y,
+        type: lines[y][x] as Type,
+      }))
+    )
+    .filter((p) => isType(p.type));
+}
 
-function parse(lines: string[]): Burrow {
-  const walkable = new PointSet();
-  const pods = new PointMap<Type>();
+// Note: only handles moving from a room or a hallway to another room.
+function stepsToReach(from: Point, to: Point): number {
+  return Math.abs(from.x - to.x) + (to.y - HALLWAY_Y) + (from.y - HALLWAY_Y);
+}
 
-  lines.forEach((line, y) =>
-    line.split('').forEach((c, x) => {
-      if (c === '.') walkable.add({ x, y });
-      if (isType(c)) {
-        walkable.add({ x, y });
-        pods.set({ x, y }, c);
-      }
-    })
+function isHallwayClear(from: Point, to: Point, hallwayPods: Pods) {
+  const [minX, maxX] = [from.x, to.x].sort((a, b) => a - b);
+  return hallwayPods.every((p) => p.x === from.x || p.x < minX || p.x > maxX);
+}
+
+function move(pods: Pods, from: Pod, to: Point): [Pods, number] {
+  const nextPods = pods.slice();
+  nextPods[nextPods.indexOf(from)] = { x: to.x, y: to.y, type: from.type };
+  const steps = stepsToReach(from, to);
+  return [nextPods, stepsToReach(from, to) * energyCost[from.type]];
+}
+
+function edgeWeights(roomSize: 2 | 4): (pods: Pods) => [Pods, number][] {
+  const rooms: [Type, Point[]][] = Object.entries(targetRoom).map(
+    ([type, x]) => [
+      type as Type,
+      ROOM_YS.slice(0, roomSize).map((y) => ({ x, y })),
+    ]
   );
 
-  return { walkable, pods };
-}
-
-function findPathBetween(from: Point, to: Point, walkable: PointSet): PointSet {
-  const q: [Point, PointSet][] = [[from, new PointSet([from])]];
-  while (q.length) {
-    const [cur, path] = q.shift();
-    const neighbors = neighbors4(cur).filter(
-      (p) => walkable.has(p) && !path.has(p)
+  return function edgeWeights(pods: Pods): [Pods, number][] {
+    const podMap = new PointMap(pods.map((p) => [{ x: p.x, y: p.y }, p.type]));
+    const destinations = new Map<Type, Point>(
+      rooms
+        .map(([type, room]) => {
+          const topPodIdx = room.findIndex((p) => podMap.has(p));
+          const emptyIdx = topPodIdx === -1 ? room.length - 1 : topPodIdx - 1;
+          return room.slice(emptyIdx + 1).every((p) => podMap.get(p) === type)
+            ? ([type, room[emptyIdx]] as [Type, Point])
+            : null;
+        })
+        .filter(Boolean)
     );
-    for (const next of neighbors4(cur)) {
-      if (!walkable.has(next) || path.has(next)) continue;
-      if (next.x === to.x && next.y === to.y) {
-        path.delete(from);
-        return path;
+
+    const hallwayPods = pods.filter((p) => p.y === HALLWAY_Y);
+    const roomPods = [
+      ...pods
+        .filter((p) => p.y !== HALLWAY_Y)
+        .reduce((rooms, p) => {
+          if (!rooms.has(p.x)) rooms.set(p.x, []);
+          rooms.get(p.x).push(p);
+          return rooms;
+        }, new Map<number, Pods>()),
+    ]
+      .map(([x, pods]) => {
+        pods.sort((a, b) => a.y - b.y);
+        return pods && pods.some((p) => p.x !== targetRoom[p.type])
+          ? pods[0]
+          : null;
+      })
+      .filter(Boolean);
+
+    // If we can move a pod to its destination, that is the only edge.
+    for (const pod of [...hallwayPods, ...roomPods]) {
+      const dest = destinations.get(pod.type);
+      if (dest && isHallwayClear(pod, dest, hallwayPods)) {
+        return [move(pods, pod, dest)];
       }
-      q.push([next, new PointSet([...path, next])]);
     }
-  }
-  throw 'no path';
+
+    // Otherwise, try moving all pods in rooms to hallways.
+    const candidates = [];
+    for (const pod of roomPods) {
+      for (const dest of HALLWAY) {
+        if (!isHallwayClear(pod, dest, hallwayPods)) continue;
+        candidates.push(move(pods, pod, dest));
+      }
+    }
+    return candidates;
+  };
 }
 
-type AllPaths = PointMap<PointMap<PointSet>>;
-function findAllPaths(walkable: PointSet): AllPaths {
-  const allPaths: AllPaths = new PointMap();
-  for (const [a, b] of combinations([...walkable])) {
-    if (!allPaths.has(a)) allPaths.set(a, new PointMap());
-    if (!allPaths.has(b)) allPaths.set(b, new PointMap());
-    const path = findPathBetween(a, b, walkable);
-    allPaths.get(a).set(b, new PointSet([...path, b]));
-    allPaths.get(b).set(a, new PointSet([...path, a]));
-  }
-  return allPaths;
+function heuristic(pods: Pods): number {
+  const cost = (p: Pod) =>
+    stepsToReach(p, { x: targetRoom[p.type], y: 2 }) * energyCost[p.type];
+  return sum(pods.filter((p) => p.x !== targetRoom[p.type]).map(cost));
 }
 
-function stringifyState({ pods }: State): string {
-  return pods
-    .entries()
-    .map(([p, type]) => `${p.x},${p.y}:${type}`)
+function serialize(pods: Pods): string {
+  return [...pods]
+    .map((pod) => `${pod.x},${pod.y}:${pod.type}`)
     .sort()
     .join(' ');
 }
 
-function organizeMinimumEnergy(burrow: Burrow): number {
-  const roomXs = [3, 5, 7, 9];
-  const maxY = Math.max(...[...burrow.walkable].map(({ y }) => y));
-  const entrances = new PointSet(roomXs.map((x) => ({ x, y: 1 })));
-  const rooms = new Map<Type, Point[]>(
-    [Type.Amber, Type.Bronze, Type.Copper, Type.Desert].map((type, i) => [
-      type,
-      range(2, maxY + 1)
-        .map((y) => ({ x: roomXs[i], y }))
-        .sort((a, b) => b.y - a.y),
-    ])
-  );
-  const allPaths = findAllPaths(burrow.walkable);
-  const hallwayDestinations = [...burrow.walkable].filter(
-    (p) => p.y === 1 && !entrances.has(p)
-  );
+const final1 = parse(`#############
+#...........#
+###A#B#C#D###
+  #A#B#C#D#
+  #########`);
+const final2 = parse(`#############
+#...........#
+###A#B#C#D###
+  #A#B#C#D#
+  #A#B#C#D#
+  #A#B#C#D#
+  #########`);
 
-  // Clear out any pods that are already in the right place.
-  const done = new PointSet();
-  for (const [point, type] of burrow.pods) {
-    const room = rooms.get(type);
-    if (!room.some((p) => p.x === point.x && p.y === point.y)) continue;
-    if ([...room].some((p) => p.y > point.y && burrow.pods.get(p) !== type))
-      continue;
-    done.add(point);
-  }
-
-  // Sum cost to move just into the target room for each remaining pod.
-  function cost({ pods, done, energy }: State): number {
-    return (
-      energy +
-      sum(
-        [...pods].map(([point, type]) => {
-          const target = { x: [...rooms.get(type)][0].x, y: 2 };
-          return done.has(point)
-            ? 0
-            : allPaths.get(point).get(target).size * energyCost[type];
-        })
-      )
-    );
-  }
-
-  const energyToState = new Map<string, number>();
-  function maybeEnqueue(state: State): void {
-    const key = stringifyState(state);
-    if (!energyToState.has(key) || energyToState.get(key) > state.energy) {
-      energyToState.set(key, state.energy);
-      q.add(state);
-    }
-  }
-
-  const q = new PriorityQueue<State>(cost);
-  q.add({ pods: burrow.pods, done, energy: 0 });
-  while (q.length) {
-    const { pods, done, energy } = q.shift();
-    if (done.size === pods.size) {
-      return energy;
-    }
-    const destinations = new Map(
-      [...rooms].map(([type, points]) => {
-        const firstEmpty = points.findIndex((p) => !pods.has(p));
-        if (
-          firstEmpty !== -1 &&
-          points.slice(0, firstEmpty).every((p) => pods.get(p) === type) &&
-          points.slice(firstEmpty + 1).every((p) => !pods.has(p))
-        )
-          return [type, points[firstEmpty]];
-        return [type, null];
-      })
-    );
-
-    for (const [point, type] of pods) {
-      if (done.has(point)) continue;
-      const paths = allPaths.get(point);
-
-      // Attempt to move to our destination. If we can do so, don't try other
-      // moves.
-      const destination = destinations.get(type);
-      const destinationPath = destination ? paths.get(destination) : null;
-      if (
-        destinationPath &&
-        pods.keys().every((p) => !destinationPath.has(p))
-      ) {
-        const newPods = new PointMap(pods);
-        newPods.delete(point);
-        newPods.set(destination, type);
-        const newDone = new PointSet(done);
-        newDone.add(destination);
-        maybeEnqueue({
-          pods: newPods,
-          done: newDone,
-          energy: energy + destinationPath.size * energyCost[type],
-        });
-      }
-      // If our destination is unreachable and we're not in the hallway, attempt
-      // to move to the hallway.
-      else if (point.y !== 1) {
-        for (const dest of hallwayDestinations.filter((p) => !pods.has(p))) {
-          const path = paths.get(dest);
-          if ([...path].some((p) => pods.has(p))) continue;
-          const newPods = new PointMap(pods);
-          newPods.delete(point);
-          newPods.set(dest, type);
-          maybeEnqueue({
-            pods: newPods,
-            done,
-            energy: energy + path.size * energyCost[type],
-          });
-        }
-      }
-    }
-  }
-
-  throw 'failed to organize';
-}
-
-const burrow = parse(load(23).lines);
+const burrow = parse(load(23).raw);
 answers.expect(16506, 48304);
 answers(
-  () => organizeMinimumEnergy(burrow),
+  () => search(burrow, final1, serialize, edgeWeights(2), heuristic),
   () => {
     const lines = load(23).lines;
     lines.splice(3, 0, '  #D#C#B#A#', '  #D#B#A#C#');
-    return organizeMinimumEnergy(parse(lines));
+    const burrow = parse(lines.join('\n'));
+    return search(burrow, final2, serialize, edgeWeights(4), heuristic);
   }
 );
