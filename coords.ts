@@ -63,8 +63,10 @@ export class PointGrid<T> {
   }
 }
 
-// https://en.wikipedia.org/wiki/Pairing_function
-function cantorPairSigned({ x, y }: Point): number {
+/**
+ * Cantor's pairing function, see <https://en.wikipedia.org/wiki/Pairing_function>.
+ */
+export function pointHash({ x, y }: Point): number {
   const a = x >= 0 ? 2 * x : -2 * x - 1;
   const b = y >= 0 ? 2 * y : -2 * y - 1;
   return 0.5 * (a + b) * (a + b + 1) + b;
@@ -72,13 +74,13 @@ function cantorPairSigned({ x, y }: Point): number {
 
 export class PointMap<T> extends XMap<Point, T, PointHash> {
   constructor(iterable: Iterable<[Point, T]> = []) {
-    super(cantorPairSigned, iterable);
+    super(pointHash, iterable);
   }
 }
 
 export class PointSet extends XSet<Point, PointHash> {
   constructor(iterable: Iterable<Point> = []) {
-    super(cantorPairSigned, iterable);
+    super(pointHash, iterable);
   }
 }
 
