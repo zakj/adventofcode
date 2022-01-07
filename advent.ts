@@ -1,6 +1,7 @@
 import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
+import inspector from 'inspector';
 import { dirname, resolve, sep } from 'path';
 import { performance } from 'perf_hooks';
 import { zip } from './util';
@@ -61,7 +62,7 @@ export function load(day: number, suffix: string = ''): Input {
   };
 }
 
-export function answers(...fns: (() => any)[]): void {
+export async function answers(...fns: (() => any)[]): Promise<void> {
   const c = (n: number) => (text: string) => `\x1b[${n}m${text}\x1b[0m`;
   const color = {
     red: c(31),
@@ -71,42 +72,79 @@ export function answers(...fns: (() => any)[]): void {
   };
 
   let success = true;
-  fns.forEach((fn, i) => {
+  for (let i = 0; i < fns.length; ++i) {
+    const fn = fns[i];
     const indexStr = `${i + 1}: `;
     process.stdout.write(indexStr);
-    const start = performance.now();
-    const result = fn();
-    const durationMs = performance.now() - start;
-    const duration =
-      durationMs > 1000
-        ? `${(durationMs / 1000).toFixed(3)}s`
-        : `${durationMs.toFixed(3)}ms`;
-    if (process.stdout.cursorTo) {
-      process.stdout.cursorTo(process.stdout.columns - duration.length);
-      process.stdout.write(color.grey(duration));
-      process.stdout.cursorTo(indexStr.length);
-    }
 
-    const expected = expectedAnswers[i];
-    if (expected === result) {
-      console.log(color.green(result?.toString()));
-    } else if (typeof expected === 'undefined') {
-      success = false;
-      console.log(color.yellow(result?.toString()));
-    } else {
-      success = false;
-      console.log(
-        color.red(result?.toString()),
-        color.grey('!=='),
-        color.green(expected)
-      );
-    }
-  });
+    await new Promise((resolve, reject) => {
+      if (answers.profile) {
+        const session = new inspector.Session();
+        session.connect();
+        session.post('Profiler.enable', () => {
+          session.post('Profiler.start', () => {
+            const start = performance.now();
+            try {
+              const result = fn();
+              const durationMs = performance.now() - start;
+              resolve([result, durationMs]);
+            } catch (e) {
+              reject(e);
+            }
+            session.post('Profiler.stop', (err, { profile }) => {
+              if (err) return;
+              writeFileSync(
+                `./part${i + 1}.cpuprofile`,
+                JSON.stringify(profile)
+              );
+            });
+          });
+        });
+        session.disconnect();
+      } else {
+        const start = performance.now();
+        const result = fn();
+        const durationMs = performance.now() - start;
+        resolve([result, durationMs]);
+      }
+    })
+      .then(([result, durationMs]) => {
+        const duration =
+          durationMs > 1000
+            ? `${(durationMs / 1000).toFixed(3)}s`
+            : `${durationMs.toFixed(3)}ms`;
+        if (process.stdout.cursorTo) {
+          process.stdout.cursorTo(process.stdout.columns - duration.length);
+          process.stdout.write(color.grey(duration));
+          process.stdout.cursorTo(indexStr.length);
+        }
+
+        const expected = expectedAnswers[i];
+        if (expected === result) {
+          console.log(color.green(result?.toString()));
+        } else if (typeof expected === 'undefined') {
+          success = false;
+          console.log(color.yellow(result?.toString()));
+        } else {
+          success = false;
+          console.log(
+            color.red(result?.toString()),
+            color.grey('!=='),
+            color.green(expected)
+          );
+        }
+      })
+      .catch((e) => {
+        console.error(color.red(e));
+      });
+  }
+
   if (!success) process.exit(1);
 }
 
 const expectedAnswers: any[] = [];
 answers.expect = (...args: any[]) => expectedAnswers.push(...args);
+answers.profile = false;
 
 const assertHandler: ProxyHandler<typeof assert> = {
   get: function (target, prop, receiver) {
@@ -146,33 +184,3 @@ export function ocr(s: string, lettersPath: string): string {
   }
   return output.join('');
 }
-
-const measureTimings: Map<string, number[]> = new Map();
-export function measure(name: string) {
-  const start = performance.now();
-  return () => {
-    const time = performance.now() - start;
-    if (!measureTimings.has(name)) measureTimings.set(name, []);
-    measureTimings.get(name).push(time);
-  };
-}
-
-process.on('exit', () => {
-  for (const [measure, timesInp] of measureTimings) {
-    let times = new Uint32Array(timesInp);
-    times.sort();
-    const total = Math.round(times.reduce((a, b) => a + b));
-    const index = 0.95 * times.length;
-    const p95 = (
-      index + 1 >= times.length
-        ? times[times.length - 1]
-        : Math.ceil(index) === index
-        ? (times[index] + times[index + 1]) / 2
-        : times[Math.ceil(index)]
-    ).toFixed(2);
-    const max = times[times.length - 1].toFixed(2);
-    console.log(
-      `${measure} ${times.length} // ${total}ms // p95 ${p95}ms // max ${max}ms`
-    );
-  }
-});
