@@ -1,7 +1,6 @@
 import { answers, example, load } from '../advent';
-import { cartesianProduct, sum } from '../util';
-
-type Point = { x: number; y: number };
+import { neighbors8, Point, PointMap } from '../coords';
+import { sum } from '../util';
 
 function* gridCoords(): Generator<Point> {
   let x = 0;
@@ -24,20 +23,12 @@ function distanceTo(n: number): number {
   }
 }
 
-function neighbors(p: Point): Point[] {
-  const d = [-1, 0, 1];
-  return cartesianProduct(d, d)
-    .filter((x) => x.some(Boolean))
-    .map(([x, y]) => ({ x: p.x + x, y: p.y + y }));
-}
-
 function firstGreaterThan(n: number): number {
-  const grid = new Map<string, number>();
-  const h = (p: Point): string => [p.x, p.y].join(',');
+  const grid = new PointMap<number>();
   for (const p of gridCoords()) {
-    const val = sum(neighbors(p).map((np) => grid.get(h(np)) || 0)) || 1;
+    const val = sum(neighbors8(p).map((np) => grid.get(np) || 0)) || 1;
     if (val > n) return val;
-    grid.set(h(p), val);
+    grid.set(p, val);
   }
 }
 
