@@ -116,32 +116,6 @@ export function* permutations<T>(arr: T[]): Generator<T[]> {
   }
 }
 
-export class PriorityQueue<T> {
-  private items: [T, number][];
-
-  constructor(private cost: (x: T) => number, xs: T[] = []) {
-    this.items = [];
-    for (let x of xs) this.add(x);
-  }
-
-  get length(): number {
-    return this.items.length;
-  }
-
-  add(item: T): void {
-    const cost = this.cost(item);
-    const insertAt = this.items.findIndex(([_, c]) => c >= cost);
-    if (insertAt === -1) this.items.push([item, cost]);
-    else this.items.splice(insertAt, 0, [item, cost]);
-  }
-
-  shift(): T {
-    if (this.items.length === 0) return undefined;
-    const top = this.items.shift();
-    return top[0];
-  }
-}
-
 export const product = (xs: number[]): number => xs.reduce((acc, x) => acc * x);
 
 export function range(start: number, stop: number): number[] {

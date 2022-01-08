@@ -1,10 +1,14 @@
 import { answers, example, load } from '../advent';
-import { chunks, combinations, DefaultDict, PriorityQueue, sum } from '../util';
+import search from '../graph';
+import { chunks, combinations, DefaultDict } from '../util';
 
-// first digit: elevator floor. then pairs of generator/microchip floor locations.
-type State = string;
+type State = {
+  floor: number;
+  locations: number[];
+};
+const TOP_FLOOR = 4;
 
-function parse(lines: string[]): State {
+function parse(lines: string[]): number[] {
   const re = new RegExp(
     `(?<element>\\w+)` +
       `(?:` +
@@ -20,90 +24,72 @@ function parse(lines: string[]): State {
         i + 1;
     }
   });
-  return [...elements.values()].map((x) => x.join('')).join('');
+  return [...elements.values()].flat().map(Number);
 }
 
-function isSafe(state: State): boolean {
+function isSafe({ floor, locations }: State): boolean {
   // A microchip is safe if it is paired with its generator
   //   OR there are no generators on its floor.
-  const [floor, ...locations] = state.split('').map(Number);
   const generatorFloors = new Set(locations.filter((_, i) => i % 2 === 0));
   return chunks(locations, 2).every(
     ([g, m]) => g === m || !generatorFloors.has(m)
   );
 }
 
-function heuristic(state: State): number {
-  const [floor, ...locations] = state.split('').map(Number);
-  return sum(locations.map((x) => 4 - x)) / 2 + floor - Math.min(...locations);
+function serialize({ floor, locations }: State): string {
+  return [floor, ...locations].join('');
 }
 
-function minPath(
-  start: State,
-  goal?: State,
-  bottomFloor = 1,
-  topFloor = 4
-): number {
-  if (!goal) goal = start.replaceAll(/./g, topFloor.toString());
-  // const cameFrom = new Map<State, State>();
-  const stepsToReach = new DefaultDict<State, number>(() => Infinity);
-  stepsToReach.set(start, 0);
-  const cost = (state: State) => stepsToReach.get(state) + heuristic(state);
-  const q = new PriorityQueue(cost, [start]);
-  while (q.length) {
-    const cur = q.shift();
-    if (cur === goal) return stepsToReach.get(cur);
-    const [floor, ...locations] = cur.split('').map(Number);
-    const lowestComponent = Math.min(...locations);
-    const indexes = [];
-    for (let i = 0; i < locations.length; ++i) {
-      if (locations[i] === floor) indexes.push(i);
-    }
-    const moves = [].concat(
-      [...combinations(indexes)],
-      indexes.map((i) => [i])
-    );
-    let movedTwoUp = false;
-    let movedOneDown = false;
-    for (const dir of [1, -1]) {
-      const nextFloor = floor + dir;
-      if (
-        nextFloor < bottomFloor ||
-        nextFloor > topFloor ||
-        nextFloor < lowestComponent
-      )
-        continue;
+function edgeWeights({ floor, locations }: State): [State, number][] {
+  const lowestComponent = Math.min(...locations);
+  const currentFloorIndexes = locations
+    .map((f, i) => [f, i])
+    .filter(([f]) => f === floor)
+    .map(([f, i]) => i);
+
+  // If we can move 2 elements up, skip moving 1. If we can move 1 element down,
+  // skip moving 2.
+  const moves2 = [...combinations(currentFloorIndexes)];
+  const moves1 = currentFloorIndexes.map((i) => [i]);
+  const floorMoves = [];
+  if (floor + 1 <= TOP_FLOOR) floorMoves.push([floor + 1, [moves2, moves1]]);
+  if (floor - 1 >= lowestComponent)
+    floorMoves.push([floor - 1, [moves1, moves2]]);
+
+  const candidates = [];
+  for (const [floor, batches] of floorMoves) {
+    let found = false;
+    for (const moves of batches) {
       for (const move of moves) {
-        // Focus on keeping elements higher up.
-        if (movedTwoUp && dir === 1 && move.length === 1) continue;
-        if (movedOneDown && dir === -1 && move.length === 2) continue;
-
-        let nextLocations = [...locations];
-        for (const i of move) nextLocations[i] = nextFloor;
-        // Which element is which is irrelevant.
+        let nextLocations = locations.slice();
+        for (const i of move) nextLocations[i] = floor;
         nextLocations = chunks(nextLocations, 2).sort().flat();
-
-        const next = [].concat(nextFloor, nextLocations).join('');
-        const nextSteps = stepsToReach.get(cur) + 1;
-        if (!(nextSteps < stepsToReach.get(next) && isSafe(next))) continue;
-        if (dir === 1 && move.length === 2) movedTwoUp = true;
-        if (dir === -1 && move.length === 1) movedOneDown = true;
-        // cameFrom.set(next, cur);
-        stepsToReach.set(next, nextSteps);
-        q.add(next);
+        const next = { floor, locations: nextLocations };
+        if (!isSafe(next)) continue;
+        candidates.push(next);
+        found = true;
       }
+      if (found) break;
     }
   }
-  throw new Error();
+  return candidates.map((state) => [state, 1]);
 }
 
-const exampleState = '1' + parse(load(11, 'ex').lines);
-example.equal(minPath(exampleState), 11);
+const goalFor = ({ locations }: State): State => ({
+  floor: TOP_FLOOR,
+  locations: new Array(locations.length).fill(TOP_FLOOR),
+});
 
-const state = '1' + parse(load(11).lines);
-const state2 = state + '1111';
+const exampleStart = { floor: 1, locations: parse(load(11, 'ex').lines) };
+example.equal(
+  search(exampleStart, goalFor(exampleStart), serialize, edgeWeights),
+  11
+);
+
+const start = { floor: 1, locations: parse(load(11).lines) };
+const start2 = { floor: 1, locations: [...start.locations, ...[1, 1, 1, 1]] };
 answers.expect(37, 61);
 answers(
-  () => minPath(state),
-  () => minPath(state2)
+  () => search(start, goalFor(start), serialize, edgeWeights),
+  () => search(start2, goalFor(start2), serialize, edgeWeights)
 );
