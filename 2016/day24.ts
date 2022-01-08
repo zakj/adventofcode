@@ -1,54 +1,37 @@
 import { answers, example, load } from '../advent';
+import { neighbors4, Point, pointHash, PointSet } from '../coords';
+import search from '../graph';
 import { combinations, permutations } from '../util';
 
-type Point = { x: number; y: number };
-type PointHash = string;
 type TwoPointHash = string;
-const pointHash = (p: Point): PointHash => [p.x, p.y].join(',');
 const distanceHash = (a: Point, b: Point): TwoPointHash =>
   [a, b].map(pointHash).join('|');
 
 type Map = {
   start: Point;
   goals: Point[];
-  walls: Set<PointHash>;
+  walls: PointSet;
 };
 
 function parse(lines: string[]): Map {
-  const map: Map = { start: null, goals: [], walls: new Set() };
+  const map: Map = { start: null, goals: [], walls: new PointSet() };
   lines.forEach((line, row) => {
     line.split('').forEach((c, col) => {
       const point = { x: col, y: row };
       if (c === '0') map.start = point;
-      else if (c === '#') map.walls.add(pointHash(point));
+      else if (c === '#') map.walls.add(point);
       else if (c.match(/\d/)) map.goals.push(point);
     });
   });
   return map;
 }
 
-function neighbors(p: Point, map: Map): Point[] {
-  return [-1, 1]
-    .flatMap((d) => [
-      { x: p.x + d, y: p.y },
-      { x: p.x, y: p.y + d },
-    ])
-    .filter((p) => !map.walls.has(pointHash(p)));
-}
-
-function shortestPath(map: Map, start: Point, goal: Point): number {
-  const visited = new Set<PointHash>();
-  const q: [number, Point][] = [[0, start]];
-  while (q.length) {
-    const [steps, cur] = q.shift();
-    if (pointHash(cur) === pointHash(goal)) return steps;
-    for (const neighbor of neighbors(cur, map)) {
-      const hash = pointHash(neighbor);
-      if (visited.has(hash)) continue;
-      visited.add(hash);
-      q.push([steps + 1, neighbor]);
-    }
-  }
+function shortestPath({ walls }: Map, start: Point, goal: Point): number {
+  const edgeWeights = (cur: Point): [Point, number][] =>
+    neighbors4(cur)
+      .filter((p) => !walls.has(p))
+      .map((p) => [p, 1]);
+  return search(start, goal, pointHash, edgeWeights);
 }
 
 function solve(map: Map, returnToStart = false): number {
