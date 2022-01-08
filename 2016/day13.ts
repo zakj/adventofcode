@@ -1,86 +1,50 @@
-import { answers, example } from '../advent';
-import { range } from '../util';
+import { answers, example, load } from '../advent';
+import { neighbors4, Point, pointHash, PointMap, PointSet } from '../coords';
+import search from '../graph';
 
-type Point = [number, number];
-
-function isWall([x, y]: Point, n: number): boolean {
+function isWall({ x, y }: Point, n: number): boolean {
   const num = x * x + 3 * x + 2 * x * y + y + y * y + n;
   const bin = (num >>> 0).toString(2);
   return bin.split('').filter((x) => x === '1').length % 2 === 1;
 }
 
-function neighbors([x, y]: Point, n: number): Point[] {
-  const points: Point[] = [-1, 1].flatMap((d) => [
-    [x, y + d],
-    [x + d, y],
-  ]);
-  return points.filter((p: Point) => !isWall(p, n) && p[0] >= 0 && p[1] >= 0);
+function neighbors(cur: Point, n: number) {
+  return neighbors4(cur).filter(
+    ({ x, y }) => x >= 0 && y >= 0 && !isWall({ x, y }, n)
+  );
 }
 
-const hash = (p: Point): string => p.join(',');
-
-function shortestPathTo(goal: Point, n: number): string[] {
-  let cur: Point = [1, 1];
-  const q = [cur];
-  const pathTo = new Map<string, string[]>([[hash(cur), []]]);
-  while (q.length > 0) {
-    cur = q.shift();
-    const path = pathTo.get(hash(cur));
-    if (cur[0] === goal[0] && cur[1] === goal[1]) return path;
-    for (let neighbor of neighbors(cur, n)) {
-      const to = pathTo.get(hash(neighbor));
-      if (!to || to.length > path.length) {
-        pathTo.set(hash(neighbor), path.concat(hash(cur)));
-        q.push(neighbor);
-      }
-    }
-  }
+function shortestPathTo(goal: Point, n: number): number {
+  const start = { x: 1, y: 1 };
+  const edgeWeights = (cur: Point): [Point, number][] =>
+    neighbors(cur, n).map((p) => [p, 1]);
+  return search(start, goal, pointHash, edgeWeights);
 }
 
-function mostVisitedIn(goal: number, n: number): string[] {
-  let cur: Point = [1, 1];
+function mostVisitedIn(goal: number, n: number): number {
+  let cur: Point = { x: 1, y: 1 };
   const q = [cur];
-  const pathTo = new Map<string, string[]>([[hash(cur), []]]);
+  const pathTo = new PointMap<Point[]>([[cur, []]]);
   while (q.length > 0) {
     cur = q.shift();
-    const path = pathTo.get(hash(cur));
-    if (path.length === goal) return [...pathTo.keys()];
+    const path = pathTo.get(cur);
+    if (path.length === goal) return new PointSet(pathTo.keys()).size;
     for (let neighbor of neighbors(cur, n)) {
-      const to = pathTo.get(hash(neighbor));
+      const to = pathTo.get(neighbor);
       if (!to) {
-        pathTo.set(hash(neighbor), path.concat(hash(cur)));
+        pathTo.set(neighbor, path.concat(cur));
         q.push(neighbor);
       }
     }
   }
-  return [];
+  throw 'no path';
 }
 
-function printGrid(w, h, n, path) {
-  for (let y = 0; y < h; ++y) {
-    console.log(
-      range(0, w)
-        .map((x) =>
-          isWall([x, y], n) ? '#' : path.includes(hash([x, y])) ? 'O' : '.'
-        )
-        .join('')
-    );
-  }
-}
+example.equal(shortestPathTo({ x: 7, y: 4 }, 10), 11);
 
-example.equal(shortestPathTo([7, 4], 10).length, 11);
-
-const faveNum = 1358;
+const faveNum = load(13).numbers[0];
 answers.expect(96, 141);
 answers(
-  () => {
-    const path = shortestPathTo([31, 39], 1358);
-    // printGrid(40, 44, faveNum, path);
-    return path.length;
-  },
-  () => {
-    const path = mostVisitedIn(50, faveNum);
-    // printGrid(30, 25, faveNum, path);
-    return new Set(path).size;
-  }
+  () => shortestPathTo({ x: 31, y: 39 }, faveNum),
+  () => mostVisitedIn(50, faveNum)
 );
