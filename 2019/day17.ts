@@ -1,108 +1,83 @@
 import { answers, load } from '../advent';
+import {
+  Dir,
+  move,
+  neighbors4,
+  parseMap,
+  Point,
+  PointSet,
+  turnLeft,
+  turnRight,
+} from '../coords';
 import { chunks, sum } from '../util';
 import { compile, parse } from './intcode';
 
-enum Dir {
-  Up,
-  Right,
-  Down,
-  Left,
-}
-type Point = { x: number; y: number };
-type Grid = string[][];
+let robotDirs: Map<string, Dir> = new Map([
+  ['^', Dir.Up],
+  ['>', Dir.Right],
+  ['v', Dir.Down],
+  ['<', Dir.Left],
+]);
 
-function toGrid(s: string): Grid {
-  return s.split('\n').map((row) => row.split(''));
-}
+type RobotOutput = {
+  start: Point;
+  dir: Dir;
+  finish: Point;
+  walkable: PointSet;
+};
 
-function alignmentParameters(grid: Grid): number {
-  const parameters = [];
-  for (let row = 1; row < grid.length - 1; ++row) {
-    for (let col = 1; col < grid[0].length - 1; ++col) {
-      const points = [
-        [row, col],
-        [row + 1, col],
-        [row - 1, col],
-        [row, col + 1],
-        [row, col - 1],
-      ];
-      if (points.every(([row, col]) => grid[row][col] === '#'))
-        parameters.push(row * col);
-    }
-  }
-  return sum(parameters);
+function parseRobot(s: string): RobotOutput {
+  const map = parseMap(s.trim().split('\n'), (c) => c);
+  const startCell: [Point, string] = [...map].find(([p, c]) =>
+    ['^', '>', 'v', '<'].includes(c)
+  );
+  const [start, dir] = [startCell[0], robotDirs.get(startCell[1])];
+  const walkable = new PointSet(
+    [...map].filter(([p, c]) => c === '#').map(([p]) => p)
+  );
+  const finish = [...walkable].find(
+    (p) => neighbors4(p).filter((n) => walkable.has(n)).length === 1
+  );
+  return { start, dir, finish, walkable };
 }
 
-function neighbors(grid: Grid, row: number, col: number): string[] {
-  const points = [
-    [row + 1, col],
-    [row - 1, col],
-    [row, col + 1],
-    [row, col - 1],
-  ];
-  return points.map(([row, col]) => grid[row]?.[col]);
+function alignmentParameters({ walkable }: { walkable: PointSet }): number {
+  return sum(
+    [...walkable].map((p) =>
+      neighbors4(p).every((n) => walkable.has(n)) ? p.x * p.y : 0
+    )
+  );
 }
 
-function findPath(grid: Grid): string {
-  let start: Point;
-  let finish: Point;
-  // TODO improve
-  for (let row = 0; row < grid.length; ++row) {
-    for (let col = 0; col < grid[0].length; ++col) {
-      const c = grid[row][col];
-      if (['<', '>', '^', 'v'].includes(c)) start = { x: col, y: row };
-      else if (
-        c === '#' &&
-        neighbors(grid, row, col).filter((c) => c === '.').length === 3
-      )
-        finish = { x: col, y: row };
-    }
-  }
-
+function findPath({ start, dir, finish, walkable }: RobotOutput): string[] {
   let cur = start;
-  let dir = {
-    '^': Dir.Up,
-    '>': Dir.Right,
-    v: Dir.Down,
-    '<': Dir.Left,
-  }[grid[start.y][start.x]];
-
-  const walkable = (d: Dir) => {
-    const row = cur.y + (d === Dir.Up ? -1 : d === Dir.Down ? 1 : 0);
-    const col = cur.x + (d === Dir.Left ? -1 : d === Dir.Right ? 1 : 0);
-    if (grid[row]?.[col] === '#') return { x: col, y: row };
-    return null;
-  };
-
-  let forward = 0;
   const path = [];
   while (cur.x !== finish.x || cur.y !== finish.y) {
-    const next = walkable(dir);
-    if (next) {
+    let next: Point;
+    let forward = 0;
+    while (walkable.has((next = move(cur, dir)))) {
       forward++;
       cur = next;
+    }
+
+    if (forward) {
+      path.push(forward);
     } else {
-      if (forward > 0) {
-        path.push(forward);
-        forward = 0;
-      }
-      const left = (dir + 3) % 4;
-      const right = (dir + 1) % 4;
-      if (walkable(left)) {
+      const left = turnLeft(dir);
+      if (walkable.has(move(cur, left))) {
         path.push('L');
         dir = left;
       } else {
         path.push('R');
-        dir = right;
+        dir = turnRight(dir);
       }
     }
   }
-  if (forward > 0) path.push(forward);
-  return path.join(',');
+  return path;
 }
 
 // TODO this is such a hack
-function compress(path: string): {
+function compress(path: string[]): {
   main: string;
   A: string;
   B: string;
@@ -110,7 +85,7 @@ function compress(path: string): {
 } {
   // Each subroutine should start with a turn and end with a move, so we can
   // split into pairs.
-  const pairs = chunks(path.split(','), 2).map((x) => x.join(','));
+  const pairs = chunks(path, 2).map((x) => x.join(','));
   // Replace pairs with single characters for ease of comparison later.
   const replacements = 'TUVWXYZ';
   const map = new Map<string, string>();
@@ -138,7 +113,7 @@ function compress(path: string): {
     }
   }
 
-  const revmap = new Map([...map.entries()].map(([k, v]) => [v, k]));
+  const revmap = new Map([...map].map(([k, v]) => [v, k]));
   const toSub = (s: string): string =>
     s
       .split('')
@@ -148,7 +123,11 @@ function compress(path: string): {
   B = toSub(B);
   C = toSub(C);
   return {
-    main: path.replaceAll(A, 'A').replaceAll(B, 'B').replaceAll(C, 'C'),
+    main: path
+      .join(',')
+      .replaceAll(A, 'A')
+      .replaceAll(B, 'B')
+      .replaceAll(C, 'C'),
     A,
     B,
     C,
@@ -160,13 +139,13 @@ answers.expect(2804, 833429);
 answers(
   () => {
     const robot = compile(program);
-    const grid = toGrid(robot.ascii());
-    return alignmentParameters(grid);
+    const { walkable } = parseRobot(robot.ascii());
+    return alignmentParameters({ walkable });
   },
   () => {
     const robot = compile(program);
     robot.memory.set(0, 2);
-    const path = findPath(toGrid(robot.ascii()));
+    const path = findPath(parseRobot(robot.ascii()));
     const routines = compress(path);
     return robot(
       routines.main,

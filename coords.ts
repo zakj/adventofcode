@@ -16,6 +16,8 @@ export const Dir = {
   Left: 3,
 };
 export type Dir = ValuesOf<typeof Dir>;
+export const turnLeft: (dir: Dir) => Dir = (dir) => (dir + 3) % 4;
+export const turnRight: (dir: Dir) => Dir = (dir) => (dir + 1) % 4;
 
 // More performant version of PointMap for dense grids.
 export class PointGrid<T> {
