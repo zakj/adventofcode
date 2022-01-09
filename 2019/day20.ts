@@ -1,10 +1,18 @@
 import { answers, example, load } from '../advent';
-import { DefaultDict, XMap, XSet } from '../util';
+import {
+  findBounds,
+  neighbors4,
+  pointHash as pointHash2,
+  PointMap,
+  PointSet,
+} from '../coords';
+import search from '../graph';
+import { DefaultDict } from '../util';
 
 type Point = { x: number; y: number };
 type Map = {
-  paths: XSet<Point>;
-  portals: XMap<Point, Point>;
+  paths: PointSet;
+  portals: PointMap<Point>;
   start: Point;
   end: Point;
 };
@@ -12,9 +20,9 @@ const pointHash = ({ x, y }: Point): string => `${x},${y}`;
 
 function parse(s: string): Map {
   const lines = s.split('\n');
-  const paths = new XSet<Point>(pointHash);
-  const portals = new XMap<Point, Point>(pointHash);
-  const letters = new XMap<Point, string>(pointHash);
+  const paths = new PointSet();
+  const portals = new PointMap<Point>();
+  const letters = new PointMap<string>();
 
   for (let y = 0; y < lines.length; ++y) {
     const line = lines[y];
@@ -30,11 +38,11 @@ function parse(s: string): Map {
 
   const portalList = new DefaultDict<string, Point[]>(() => []);
   for (const [p, letter] of letters) {
-    const neighborPaths = neighbors(p).filter((p) => paths.has(p));
-    const neighborLetters = neighbors(p).filter((p) => letters.has(p));
+    const neighborPaths = neighbors4(p).filter((p) => paths.has(p));
+    const neighborLetters = neighbors4(p).filter((p) => letters.has(p));
     if (neighborPaths.length === 0) {
       neighborPaths.push(
-        ...neighbors(neighborLetters[0]).filter((p) => paths.has(p))
+        ...neighbors4(neighborLetters[0]).filter((p) => paths.has(p))
       );
     }
     if (neighborPaths.length !== 1 || neighborLetters.length !== 1) {
@@ -68,80 +76,45 @@ function parse(s: string): Map {
   return { paths, portals, start, end };
 }
 
-function neighbors({ x, y }: Point): Point[] {
-  return [
-    { x: x - 1, y },
-    { x: x + 1, y },
-    { x, y: y - 1 },
-    { x, y: y + 1 },
-  ];
-}
-
-const walkableNeighbors = (map: Map, p: Point): Point[] => [
-  ...neighbors(p).filter((p) => map.paths.has(p)),
-  ...(map.portals.has(p) ? [map.portals.get(p)] : []),
-];
-
 function shortestPath(map: Map): number {
-  const visited = new XSet<Point>(pointHash, [map.start]);
-  const q: [Point, number][] = [[map.start, 0]];
-  const hEnd = pointHash(map.end);
-  while (q.length) {
-    const [cur, steps] = q.shift();
-    if (pointHash(cur) === hEnd) return steps;
-    for (const next of walkableNeighbors(map, cur)) {
-      if (visited.has(next)) continue;
-      visited.add(next);
-      q.push([next, steps + 1]);
-    }
+  function edgeWeights(p: Point): [Point, number][] {
+    return [
+      ...neighbors4(p).filter((p) => map.paths.has(p)),
+      ...(map.portals.has(p) ? [map.portals.get(p)] : []),
+    ].map((p) => [p, 1]);
   }
-  return -1;
+  return search(map.start, map.end, pointHash2, edgeWeights);
 }
 
 function shortestPathRecursive(map: Map): number {
   type RecursivePoint = Point & { layer: number };
-  const rpHash = ({ x, y, layer }: RecursivePoint): string =>
-    `${x},${y},${layer}`;
-  const visited = new XSet<RecursivePoint>(rpHash, [
-    { ...map.start, layer: 0 },
-  ]);
-  const q: [RecursivePoint, number][] = [[{ ...map.start, layer: 0 }, 0]];
-  const hEnd = rpHash({ ...map.end, layer: 0 });
+  const rpHash = (rp: RecursivePoint) => [pointHash(rp), rp.layer].join(',');
+  const bounds = findBounds(new PointMap(map.portals));
+  const onBoundary = (p: Point) =>
+    bounds.min.x === p.x ||
+    bounds.max.x === p.x ||
+    bounds.min.y === p.y ||
+    bounds.max.y === p.y;
 
-  const bounds = {
-    x: [
-      Math.min(...map.portals.keys().map((p) => p.x)),
-      Math.max(...map.portals.keys().map((p) => p.x)),
-    ],
-    y: [
-      Math.min(...map.portals.keys().map((p) => p.y)),
-      Math.max(...map.portals.keys().map((p) => p.y)),
-    ],
-  };
-  const onBoundary = (p: Point): boolean =>
-    bounds.x.includes(p.x) || bounds.y.includes(p.y);
-
-  while (q.length) {
-    const [cur, steps] = q.shift();
-    if (rpHash(cur) === hEnd) return steps;
-    for (const next of neighbors(cur).filter((p) => map.paths.has(p))) {
-      const nl = { ...next, layer: cur.layer };
-      if (visited.has(nl)) continue;
-      visited.add(nl);
-      q.push([nl, steps + 1]);
+  function edgeWeights(rp: RecursivePoint): [RecursivePoint, number][] {
+    const edges: [RecursivePoint, number][] = [
+      ...neighbors4(rp).filter((p) => map.paths.has(p)),
+    ].map((p) => [{ ...p, layer: rp.layer }, 1]);
+    const portal = map.portals.get(rp);
+    if (portal) {
+      const layer = rp.layer + (onBoundary(rp) ? -1 : 1);
+      if (layer >= 0) edges.push([{ ...portal, layer }, 1]);
     }
-    const portalDestination = map.portals.get(cur);
-    if (portalDestination) {
-      const nl = {
-        ...portalDestination,
-        layer: cur.layer + (onBoundary(cur) ? -1 : 1),
-      };
-      if (nl.layer < 0 || visited.has(nl)) continue;
-      visited.add(nl);
-      q.push([nl, steps + 1]);
-    }
+    return edges;
   }
-  return -1;
+
+  function heuristic(rp: RecursivePoint): number {
+    return Math.abs(rp.x - end.x) + Math.abs(rp.y - end.y) + rp.layer * 100;
+  }
+
+  const start = { ...map.start, layer: 0 };
+  const end = { ...map.end, layer: 0 };
+  return search(start, end, rpHash, edgeWeights, heuristic);
 }
 
 const ex1Map = parse(load(20, 'ex1').raw);
