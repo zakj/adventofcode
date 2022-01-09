@@ -1,65 +1,67 @@
 import { answers, load } from '../advent';
+import search from '../graph';
+import { sum } from '../util';
 
-type Graph = Map<string, Node>;
-type Node = {
-  name: string;
-  parent: string;
-  children: string[];
-};
-
-function parse(lines: string[]): Graph {
-  const orbits = new Map<string, string>();
-  const orbitedBy = new Map<string, string[]>();
-  lines.forEach((line) => {
-    const [orbitee, orbiter] = line.split(')');
-    orbits.set(orbiter, orbitee);
-    orbitedBy.set(orbitee, (orbitedBy.get(orbitee) || []).concat(orbiter));
-  });
-
-  const graph = new Map<string, Node>();
-  for (const [name, parent] of orbits) {
-    graph.set(name, { name, parent, children: orbitedBy.get(name) || [] });
-  }
-  for (const [name, children] of orbitedBy) {
-    if (orbits.has(name)) continue;
-    graph.set(name, { name, parent: null, children });
-  }
-  return graph;
+interface Node {
+  toString: () => string;
 }
 
-function totalOrbits(graph: Graph): number {
-  let count = 0;
-  for (const node of graph.values()) {
-    let cur = node;
-    while (cur.parent) {
-      count++;
-      cur = graph.get(cur.parent);
+// TODO: consider factoring this out, can I use it elsewhere?
+class DiGraph<T extends Node> {
+  nodes = new Set<T>();
+  pred = new Map<T, Set<T>>();
+  succ = new Map<T, Set<T>>();
+
+  constructor(edges: [T, T][] = []) {
+    for (const edge of edges) {
+      this.addEdge(...edge);
     }
   }
-  return count;
-}
 
-function stepsToBalance(graph: Graph, mover: string, target: string): number {
-  const start = graph.get(mover).parent;
-  const startNode = graph.get(start);
-  const q: [string, number][] = [[startNode.parent, 0]];
-  const visited = new Set([start]);
-  while (q.length) {
-    const [name, steps] = q.shift();
-    if (name === target) return steps;
-    const node = graph.get(name);
-    for (const next of [].concat(node.parent || [], node.children)) {
-      if (visited.has(next)) continue;
-      visited.add(next);
-      q.push([next, steps + 1]);
+  add(n: T): void {
+    if (!this.nodes.has(n)) {
+      this.pred.set(n, new Set<T>());
+      this.succ.set(n, new Set<T>());
+      this.nodes.add(n);
     }
   }
-  return -1;
+
+  addEdge(from: T, to: T): void {
+    this.add(from);
+    this.add(to);
+    this.pred.get(to).add(from);
+    this.succ.get(from).add(to);
+  }
+
+  shortestPath(from: T, to: T): number {
+    const pred = this.pred;
+    const succ = this.succ;
+    function edgeWeights(node: T): [T, number][] {
+      const oneStep = (node: T): [T, number] => [node, 1];
+      return [...pred.get(node), ...succ.get(node)].map(oneStep);
+    }
+    return search(from, to, (x) => x.toString(), edgeWeights);
+  }
+
+  shortestPathUp(from: T, to: T): number {
+    const pred = this.pred;
+    function edgeWeights(node: T): [T, number][] {
+      const oneStep = (node: T): [T, number] => [node, 1];
+      return [...pred.get(node)].map(oneStep);
+    }
+    return search(from, to, (x) => x.toString(), edgeWeights);
+  }
 }
 
-const graph = parse(load(6).lines);
+function parseGraph(lines: string[]): DiGraph<string> {
+  return new DiGraph(
+    lines.map((line) => line.split(')', 2) as [string, string])
+  );
+}
+
+const graph = parseGraph(load(6).lines);
 answers.expect(241064, 418);
 answers(
-  () => totalOrbits(graph),
-  () => stepsToBalance(graph, 'YOU', 'SAN')
+  () => sum([...graph.nodes].map((node) => graph.shortestPathUp(node, 'COM'))),
+  () => graph.shortestPath('YOU', 'SAN') - 2
 );
