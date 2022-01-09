@@ -2,7 +2,7 @@ import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import inspector from 'inspector';
-import { dirname, resolve, sep } from 'path';
+import { basename, dirname, resolve, sep } from 'path';
 import { performance } from 'perf_hooks';
 import { zip } from './util';
 
@@ -22,8 +22,12 @@ function downloadInput(year: number, day: number, path: string): void {
   );
 }
 
-export function load(day: number, suffix: string = ''): Input {
+export function load(day?: number, suffix: string = ''): Input {
   const yearDir = dirname(require.main.filename);
+  if (!day) {
+    const fn = basename(require.main.filename);
+    day = Number(fn.match(/\d+/).pop());
+  }
   const year = Number(yearDir.split(sep).pop());
   const paddedDay = `0${day}`.slice(-2);
   const path = resolve(yearDir, 'input', `${paddedDay}${suffix}.txt`);
