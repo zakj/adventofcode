@@ -1,24 +1,21 @@
 import { answers, example, load } from '../advent';
-import { XMap, XSet } from '../util';
-
-type Point = { x: number; y: number };
-const h = ({ x, y }: Point) => `${x},${y}`;
+import { neighbors4, Point, pointHash, PointMap, PointSet } from '../coords';
+import { XMap } from '../util';
 
 type MapData = {
   start: Point;
-  keys: XMap<Point, string>;
+  keys: PointMap<string>;
   keyLocations: Map<string, Point>;
-  doors: XMap<Point, string>;
-  paths: XSet<Point>;
+  doors: PointMap<string>;
+  paths: PointSet;
 };
 
 class Keyring {
-  private aOffset = 'a'.charCodeAt(0);
+  private static aOffset = 'a'.charCodeAt(0);
   private bitmap = 0;
-  private _size = 0;
 
   private keyToInt(key: string): number {
-    return 1 << (key.charCodeAt(0) - this.aOffset);
+    return 1 << (key.charCodeAt(0) - Keyring.aOffset);
   }
 
   has(key: string): boolean {
@@ -37,10 +34,10 @@ class Keyring {
 }
 
 function parse(lines: string[]): MapData {
-  const keys = new XMap<Point, string>(h);
+  const keys = new PointMap<string>();
   const keyLocations = new Map<string, Point>();
-  const doors = new XMap<Point, string>(h);
-  const paths = new XSet<Point>(h);
+  const doors = new PointMap<string>();
+  const paths = new PointSet();
   const width = lines[0].length;
   const height = lines.length;
   let start: Point;
@@ -69,20 +66,11 @@ function parse(lines: string[]): MapData {
   return { start, keys, keyLocations, doors, paths };
 }
 
-function walkableFrom(
-  { x, y }: Point,
-  map: MapData,
-  keyring: Keyring
-): Point[] {
-  return [-1, 1]
-    .flatMap((d) => [
-      { x: x + d, y },
-      { x, y: y + d },
-    ])
-    .filter(
-      (p: Point) =>
-        map.paths.has(p) || (map.doors.has(p) && keyring.has(map.doors.get(p)))
-    );
+function walkableFrom(p: Point, map: MapData, keyring: Keyring): Point[] {
+  return neighbors4(p).filter(
+    (p) =>
+      map.paths.has(p) || (map.doors.has(p) && keyring.has(map.doors.get(p)))
+  );
 }
 
 type State = [Point[], Keyring];
@@ -91,9 +79,9 @@ function reachableKeyDistances(
   map: MapData,
   start: Point,
   keyring: Keyring
-): XMap<Point, number> {
-  const distances = new XMap<Point, number>(h, [[start, 0]]);
-  const keyDistances = new XMap<Point, number>(h);
+): PointMap<number> {
+  const distances = new PointMap<number>([[start, 0]]);
+  const keyDistances = new PointMap<number>();
   const q = [start];
 
   while (q.length) {
@@ -117,7 +105,7 @@ function shortestPath(
   starts: Point[] = [map.start],
   keyring: Keyring = new Keyring(),
   cache = new XMap<State, number>(
-    ([points, keyring]) => `${points.map((p) => h(p)).join('|')}|${keyring}`
+    ([points, keyring]) => `${points.map(pointHash).join('|')}|${keyring}`
   )
 ) {
   if (cache.has([starts, keyring])) return cache.get([starts, keyring]);
