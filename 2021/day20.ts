@@ -1,11 +1,11 @@
 import { answers, load } from '../advent';
-import { findBounds, parseMap, PointMap } from '../coords';
+import { parseGrid, PointGrid } from '../coords';
+import { range } from '../util';
 
-type Bit = 1 | 0;
-type Image = PointMap<Bit>;
+type Bit = 0 | 1;
 type Thing = {
   algorithm: Bit[];
-  image: Image;
+  image: PointGrid<Bit>;
   fallback: Bit;
 };
 
@@ -13,22 +13,19 @@ function parse(paras: string[][]): Thing {
   const translate = (c: string): Bit => (c === '#' ? 1 : 0);
   return {
     algorithm: paras[0][0].split('').map(translate),
-    image: parseMap<Bit>(paras[1], translate),
+    image: parseGrid<Bit>(paras[1], translate),
     fallback: 0,
   };
 }
 
 function enhance({ image, algorithm, fallback }: Thing): Thing {
-  const bounds = findBounds(image);
-  const next = new PointMap<Bit>();
-  const b = (x: number, y: number) =>
-    image.has({ y: y - 1, x: x - 1 })
-      ? image.get({ y: y - 1, x: x - 1 })
-      : fallback;
+  const b = (x: number, y: number) => image.get(x - 1, y - 1) ?? fallback;
+  const algo = (bits: Bit[]) =>
+    algorithm[bits.reduce((v, b) => (v << 1) + b, 0)];
 
-  for (let x = bounds.min.x - 2; x <= bounds.max.x + 2; ++x) {
-    for (let y = bounds.min.y - 2; y <= bounds.max.y + 2; ++y) {
-      const bits = [
+  const arr = range(0, image.height + 5).map((y) =>
+    range(0, image.width + 5).map((x) =>
+      algo([
         b(x - 1, y - 1),
         b(x, y - 1),
         b(x + 1, y - 1),
@@ -38,44 +35,17 @@ function enhance({ image, algorithm, fallback }: Thing): Thing {
         b(x - 1, y + 1),
         b(x, y + 1),
         b(x + 1, y + 1),
-      ];
-      next.set({ x, y }, algorithm[parseInt(bits.join(''), 2)]);
-    }
-  }
-  const nextFallback =
-    algorithm[parseInt(new Array(9).fill(fallback).join(''), 2)];
-  return { image: next, algorithm, fallback: nextFallback };
+      ])
+    )
+  );
+
+  const nextFallback = algo(new Array(9).fill(fallback));
+  return { image: PointGrid.from(arr), algorithm, fallback: nextFallback };
 }
-
-const exampleData = parse(
-  `..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..###..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###.######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#..#..#..##..#...##.######.####.####.#.#...#.......#..#.#.#...####.##.#......#..#...##.#.##..#...##.#.##..###.#......#.#.......#.#.#.####.###.##...#.....####.#..#..#.##.#....##..#.####....##...##..#...#......#.#.......#.......##..####..#...#.#.#...##..#.#..###..#####........#..####......#..#
-
-#..#.
-#....
-##..#
-..#..
-..###`
-    .split('\n\n')
-    .map((l) => l.split('\n'))
-);
-// example.equal(enhance(exampleData.input, exampleData.algo), 1);
-const dd = enhance(exampleData);
-const ee = enhance(dd);
-console.log([...ee.image.values()].filter((x) => x).length);
 
 const data = parse(load(20).paragraphs);
 answers.expect(5680, 19766);
 answers(
-  () => {
-    const aa = enhance(data);
-    const bb = enhance(aa);
-    return [...bb.image.values()].filter((x) => x).length;
-  },
-  () => {
-    let val = data;
-    for (let i = 0; i < 50; ++i) {
-      val = enhance(val);
-    }
-    return [...val.image.values()].filter((x) => x).length;
-  }
+  () => range(0, 2).reduce(enhance, data).image.filter(Boolean).length,
+  () => range(0, 50).reduce(enhance, data).image.filter(Boolean).length
 );

@@ -52,8 +52,9 @@ export class PointGrid<T> {
   get({ x, y }: Point): T;
   get(x: number, y: number): T;
   get(xOrPoint: number | Point, y?: number): T {
-    if (typeof xOrPoint === 'object') return this._grid[xOrPoint.y][xOrPoint.x];
-    return this._grid[y][xOrPoint];
+    if (typeof xOrPoint === 'object')
+      return this._grid[xOrPoint.y]?.[xOrPoint.x];
+    return this._grid[y]?.[xOrPoint];
   }
 
   set({ x, y }: Point, value: T): void;
@@ -62,6 +63,10 @@ export class PointGrid<T> {
     if (typeof xOrPoint === 'object')
       this._grid[xOrPoint.y][xOrPoint.x] = yOrValue as T;
     else this._grid[yOrValue as number][xOrPoint] = value;
+  }
+
+  filter(predicate: (value: T) => boolean): T[] {
+    return this._grid.flat().filter(predicate);
   }
 }
 
