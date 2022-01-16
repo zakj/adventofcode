@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { parseGrid, PointGrid } from '../coords';
 import { ValuesOf } from '../util';
 
@@ -45,6 +45,5 @@ function stepsToStabilize(grid: PointGrid<Cell>): number {
   }
 }
 
-const grid = parseGrid(load(25).lines, (v) => v as Cell);
-answers.expect(498);
-answers(() => stepsToStabilize(grid));
+const grid = parseGrid(load().lines, (v) => v as Cell);
+export default solve(() => stepsToStabilize(grid)).expect(498);

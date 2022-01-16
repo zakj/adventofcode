@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 type Caves = Map<string, Set<string>>;
 
@@ -46,9 +46,8 @@ function countPaths(caves: Caves, canVisitTwice: boolean = false): number {
   return paths;
 }
 
-const caves = parse(load(12).lines);
-answers.expect(5157, 144309);
-answers(
+const caves = parse(load().lines);
+export default solve(
   () => countPaths(caves),
   () => countPaths(caves, true)
-);
+).expect(5157, 144309);

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { pairs, sum } from '../util';
 
 function countIncreases(xs: number[]): number {
@@ -13,13 +13,12 @@ function countIncreasesWindowed(xs: number[]): number {
   return countIncreases(windows);
 }
 
-const exampleReport = load(1, 'ex').numbers;
+const exampleReport = load('ex').numbers;
 example.equal(countIncreases(exampleReport), 7);
 example.equal(countIncreasesWindowed(exampleReport), 5);
 
-const report = load(1).numbers;
-answers.expect(1548, 1589);
-answers(
+const report = load().numbers;
+export default solve(
   () => countIncreases(report),
   () => countIncreasesWindowed(report)
-);
+).expect(1548, 1589);

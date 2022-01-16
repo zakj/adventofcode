@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type RegularNode = { parent?: PairNode; value: number };
 type PairNode = { parent?: PairNode; left: Node; right: Node };
@@ -174,9 +174,8 @@ magnitudeTests.forEach(([input, output]) => {
   example.equal(magnitude(makeNode(input)), output);
 });
 
-const numbers = load(18).lines;
-answers.expect(4120, 4725);
-answers(
+const numbers = load().lines;
+export default solve(
   () => magnitude(numbers.map(makeNode).reduce(add)),
   () => {
     let maxMagnitude = -Infinity;
@@ -194,4 +193,4 @@ answers(
     }
     return maxMagnitude;
   }
-);
+).expect(4120, 4725);

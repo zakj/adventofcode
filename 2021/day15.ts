@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { neighbors4, parseGrid, Point, PointGrid, pointHash } from '../coords';
 import search from '../graph';
 
@@ -40,9 +40,8 @@ function expandGrid(grid: RiskGrid, by = 5): RiskGrid {
   return PointGrid.from(next);
 }
 
-const riskGrid = parseGrid(load(15).lines, Number);
-answers.expect(415, 2864);
-answers(
+const riskGrid = parseGrid(load().lines, Number);
+export default solve(
   () => leastRisk(riskGrid),
   () => leastRisk(expandGrid(riskGrid))
-);
+).expect(415, 2864);

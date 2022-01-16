@@ -94,5 +94,5 @@ const instructions = parse(load(8).lines);
 answers.expect(116, 'UPOJFLBCEZ');
 answers(
   () => count(run(instructions, 50, 6)),
-  () => ocr(toString(run(instructions, 50, 6)), '../figlet-4x6.txt')
+  () => ocr(toString(run(instructions, 50, 6)), '4x6')
 );

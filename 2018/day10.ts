@@ -42,7 +42,6 @@ function converge(rules: PointRule[]): number {
 const rules = parse(load(10).lines);
 answers.expect('KFLBHXGK', 10659);
 answers(
-  () =>
-    ocr(toAscii(new PointSet(after(converge(rules), rules))), './figlet.txt'),
+  () => ocr(toAscii(new PointSet(after(converge(rules), rules))), '6x10'),
   () => converge(rules)
 );

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { Point, pointToString } from '../coords';
 import { Counter } from '../util';
 
@@ -37,13 +37,12 @@ function countOverlaps(vents: Vent[], diagonal = false): number {
   ).length;
 }
 
-const exampleVents = parse(load(5, 'ex').lines);
+const exampleVents = parse(load('ex').lines);
 example.equal(countOverlaps(exampleVents), 5);
 example.equal(countOverlaps(exampleVents, true), 12);
 
-const vents = parse(load(5).lines);
-answers.expect(6666, 19081);
-answers(
+const vents = parse(load().lines);
+export default solve(
   () => countOverlaps(vents),
   () => countOverlaps(vents, true)
-);
+).expect(6666, 19081);

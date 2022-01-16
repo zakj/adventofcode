@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { parseGrid, PointGrid } from '../coords';
 import { range } from '../util';
 
@@ -43,9 +43,8 @@ function enhance({ image, algorithm, fallback }: Thing): Thing {
   return { image: PointGrid.from(arr), algorithm, fallback: nextFallback };
 }
 
-const data = parse(load(20).paragraphs);
-answers.expect(5680, 19766);
-answers(
+const data = parse(load().paragraphs);
+export default solve(
   () => range(0, 2).reduce(enhance, data).image.filter(Boolean).length,
   () => range(0, 50).reduce(enhance, data).image.filter(Boolean).length
-);
+).expect(5680, 19766);

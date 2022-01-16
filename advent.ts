@@ -2,8 +2,7 @@ import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import inspector from 'inspector';
-import { basename, dirname, resolve, sep } from 'path';
-import { performance } from 'perf_hooks';
+import { dirname, resolve } from 'path';
 import { zip } from './util';
 
 type Input = {
@@ -12,6 +11,13 @@ type Input = {
   numbers: number[];
   paragraphs: string[][];
 };
+
+export interface Answers {
+  expect: (...values: any[]) => Answers;
+  profile: () => Answers;
+  shouldProfile: boolean;
+  parts: [Function, any][];
+}
 
 function downloadInput(year: number, day: number, path: string): void {
   const session = readFileSync(resolve(__dirname, '.session'))
@@ -22,25 +28,43 @@ function downloadInput(year: number, day: number, path: string): void {
   );
 }
 
-export function load(day?: number, suffix: string = ''): Input {
-  const yearDir = dirname(require.main.filename);
-  if (!day) {
-    const fn = basename(require.main.filename);
-    day = Number(fn.match(/\d+/).pop());
-  }
-  const year = Number(yearDir.split(sep).pop());
-  const paddedDay = `0${day}`.slice(-2);
-  const path = resolve(yearDir, 'input', `${paddedDay}${suffix}.txt`);
+function findModule(): { dir: string; year: number; day: number } {
+  const orig = Error.prepareStackTrace;
+  Error.prepareStackTrace = (err, stack) => stack;
+  // @ts-ignore
+  const caller: NodeJS.CallSite = new Error().stack.find(
+    (cs: NodeJS.CallSite) => cs.getFileName() !== module.filename
+  );
+  Error.prepareStackTrace = orig;
+  const filename = caller.getFileName();
+  const match = /(?<year>\d{4})\/day(?<day>\d\d)\.ts$/.exec(filename);
+  return {
+    dir: dirname(filename),
+    year: Number(match.groups.year),
+    day: Number(match.groups.day),
+  };
+}
+
+// TODO: day is unused now
+export function load(day: number, suffix?: string): Input;
+export function load(suffix?: string): Input;
+export function load(day?: number | string, suffix: string = ''): Input {
+  if (typeof day === 'string') suffix = day; // XXX remove after removing first arg
+  const module = findModule();
+  const paddedDay = `0${module.day}`.slice(-2);
+  const path = resolve(module.dir, 'input', `${paddedDay}${suffix}.txt`);
   let text: string;
   try {
     text = readFileSync(path).toString();
   } catch (e) {
     if (e.code === 'ENOENT' && !suffix) {
       try {
-        downloadInput(year, day, path);
+        downloadInput(module.year, module.day, path);
         text = readFileSync(path).toString();
       } catch (e) {
-        console.error(`Failed to fetch ${year} day ${day}'s input`);
+        console.error(
+          `Failed to fetch ${module.year} day ${module.day}'s input`
+        );
         process.exit(1);
       }
     } else {
@@ -66,6 +90,32 @@ export function load(day?: number, suffix: string = ''): Input {
   };
 }
 
+export function solve(...fns: (() => any)[]): Answers {
+  const expected = [];
+  let profile = false;
+
+  return {
+    expect(...values: any[]) {
+      expected.push(...values);
+      return this;
+    },
+
+    profile() {
+      profile = true;
+      return this;
+    },
+
+    get shouldProfile() {
+      return profile;
+    },
+
+    get parts() {
+      return fns.map((f, i) => [f, expected[i]] as [Function, any]);
+    },
+  };
+}
+
+// TODO remove after porting all existing days
 export async function answers(...fns: (() => any)[]): Promise<void> {
   const c = (n: number) => (text: string) => `\x1b[${n}m${text}\x1b[0m`;
   const color = {
@@ -166,7 +216,8 @@ const assertHandler: ProxyHandler<typeof assert> = {
 
 export const example: typeof assert = new Proxy(assert, assertHandler);
 
-export function ocr(s: string, lettersPath: string): string {
+export function ocr(s: string, font: string): string {
+  const lettersPath = resolve(__dirname, `figlet-${font}.txt`);
   const paras = readFileSync(lettersPath).toString().split('\n\n');
   const values = paras.shift().split('');
   const keys = paras.map((c) => c.split('\n').join(''));

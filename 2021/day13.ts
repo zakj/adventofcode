@@ -1,4 +1,4 @@
-import { answers, load, ocr } from '../advent';
+import { load, ocr, solve } from '../advent';
 import { parseSet, PointSet, toAscii } from '../coords';
 
 type FoldDir = 'x' | 'y';
@@ -31,9 +31,8 @@ function fold(dots: PointSet, fold: Fold): PointSet {
   );
 }
 
-const page = parse(load(13).paragraphs);
-answers.expect(753, 'HZLEHJRK');
-answers(
+const page = parse(load().paragraphs);
+export default solve(
   () => fold(page.dots, page.folds[0]).size,
-  () => ocr(toAscii(page.folds.reduce(fold, page.dots)), '../figlet-4x6.txt')
-);
+  () => ocr(toAscii(page.folds.reduce(fold, page.dots)), '4x6')
+).expect(753, 'HZLEHJRK');

@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { chunks, last, ValuesOf } from '../util';
 
 const Type = {
@@ -47,9 +47,8 @@ function findPossibleInputs(program: Program): Record<number, number[]>[] {
   return possibleInputs;
 }
 
-const program = parse(load(24).lines);
-answers.expect(59996912981939, 17241911811915);
-answers(
+const program = parse(load().lines);
+export default solve(
   () => {
     const possibleInputs = findPossibleInputs(program);
     const input = new Array(14);
@@ -70,4 +69,4 @@ answers(
     }
     return Number(input.join(''));
   }
-);
+).expect(59996912981939, 17241911811915);

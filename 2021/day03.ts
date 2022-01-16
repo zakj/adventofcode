@@ -1,9 +1,8 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { Counter, partition, range } from '../util';
 
-const data = load(3).lines;
-answers.expect(3687446, 4406844);
-answers(
+const data = load().lines;
+export default solve(
   () => {
     const counters = range(0, data[0].length).map(
       (i) => new Counter(data.map((line) => line[i]))
@@ -30,4 +29,4 @@ answers(
 
     return parseInt(genRatings[0], 2) * parseInt(scrRatings[0], 2);
   }
-);
+).expect(3687446, 4406844);

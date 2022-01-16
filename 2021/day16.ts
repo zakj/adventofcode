@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { product, sum, ValuesOf } from '../util';
 
 function parse(s: string): number[] {
@@ -111,9 +111,8 @@ function evaluate(packet: Packet): number {
   return 0;
 }
 
-const data = parse(load(16).raw);
-answers.expect(943, 167737115857);
-answers(
+const data = parse(load().raw);
+export default solve(
   () => sumVersion(parsePacket(data).packet),
   () => evaluate(parsePacket(data).packet)
-);
+).expect(943, 167737115857);

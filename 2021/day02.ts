@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 const DIRECTIONS = ['forward', 'down', 'up'] as const;
 type Dir = typeof DIRECTIONS[number];
@@ -20,9 +20,8 @@ function parse(lines: string[]): Course[] {
   });
 }
 
-const course = parse(load(2).lines);
-answers.expect(2150351, 1842742223);
-answers(
+const course = parse(load().lines);
+export default solve(
   () => {
     let h = 0;
     let d = 0;
@@ -61,4 +60,4 @@ answers(
     }
     return h * d;
   }
-);
+).expect(2150351, 1842742223);

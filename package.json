@@ -1,8 +1,19 @@
 {
   "private": true,
   "prettier": "@zakj/prettier-config",
+  "scripts": {
+    "start": "./bin/watch",
+    "node": "ts-node",
+    "runner": "ts-node ./runner.ts"
+  },
+  "dependencies": {
+    "typescript": "^4.5.4"
+  },
   "devDependencies": {
+    "@types/node": "^17.0.8",
     "@zakj/prettier-config": "^1.0.0",
-    "prettier": "^2.3.1"
+    "onchange": "^7.1.0",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.4.0"
   }
 }

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { intersect, Point, Rect } from '../coords';
 
 function parse(s: string): Rect {
@@ -57,9 +57,8 @@ const exampleTarget = parse('target area: x=20..30, y=-10..-5');
 example.equal(findMaxHeight(exampleTarget), 45);
 example.equal(countHits(exampleTarget), 112);
 
-const target = parse(load(17).raw);
-answers.expect(10878, 4716);
-answers(
+const target = parse(load().raw);
+export default solve(
   () => findMaxHeight(target),
   () => countHits(target)
-);
+).expect(10878, 4716);

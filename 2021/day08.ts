@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 type PatternEntry = {
@@ -57,18 +57,17 @@ function decodedOutput(entries: PatternEntry[]) {
   );
 }
 
-const exampleData = parse(load(8, 'ex1').lines);
+const exampleData = parse(load('ex1').lines);
 example.equal(decodedOutput(exampleData), 5353);
-const exampleData2 = parse(load(8, 'ex2').lines);
+const exampleData2 = parse(load('ex2').lines);
 example.equal(decodedOutput(exampleData2), 61229);
 
-const data = parse(load(8).lines);
-answers.expect(479, 1041746);
-answers(
+const data = parse(load().lines);
+export default solve(
   () => {
     return data
       .flatMap((entry) => entry.output)
       .filter((x) => [2, 3, 4, 7].includes(x.length)).length;
   },
   () => decodedOutput(data)
-);
+).expect(479, 1041746);

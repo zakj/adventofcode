@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { neighbors4, parseMap, Point, PointMap, PointSet } from '../coords';
 import { product, sum } from '../util';
 
@@ -33,9 +33,8 @@ function basinSizes(heightmap: PointMap<number>): number[] {
     .sort((a, b) => b - a);
 }
 
-const heightmap = parseMap(load(9).lines, Number);
-answers.expect(516, 1023660);
-answers(
+const heightmap = parseMap(load().lines, Number);
+export default solve(
   () => sum(lowPoints(heightmap).map((p) => heightmap.get(p) + 1)),
   () => product(basinSizes(heightmap).slice(0, 3))
-);
+).expect(516, 1023660);

@@ -1,5 +1,4 @@
-import { answers, load } from '../advent';
-import { Point3d } from '../coords';
+import { load, solve } from '../advent';
 import { cartesianProduct, pairs, sum } from '../util';
 
 type Instruction = {
@@ -24,6 +23,11 @@ function parse(lines: string[]): Instruction[] {
 }
 
 // TODO: factor all this Rect3d stuff into coords and clean up API
+type Point3d = {
+  x: number;
+  y: number;
+  z: number;
+};
 type Rect3d = {
   min: Point3d;
   max: Point3d;
@@ -117,9 +121,8 @@ function initArea(instructions: Instruction[]): Instruction[] {
   );
 }
 
-const instructions = parse(load(22).lines);
-answers.expect(543306, 1285501151402480);
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => countOn(initArea(instructions)),
   () => countOn(instructions)
-);
+).expect(543306, 1285501151402480);

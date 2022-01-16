@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { range, sum, zip } from '../util';
 
 type Board = number[][];
@@ -54,9 +54,8 @@ function lastWinner({ numbers, boards }: Game): number {
   return lastWinnerValue;
 }
 
-const bingoData = parse(load(4).paragraphs);
-answers.expect(44088, 23670);
-answers(
+const bingoData = parse(load().paragraphs);
+export default solve(
   () => firstWinner(bingoData),
   () => lastWinner(bingoData)
-);
+).expect(44088, 23670);

@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { Point, PointMap } from '../coords';
 import search from '../graph';
 import { range, sum, ValuesOf } from '../util';
@@ -150,14 +150,13 @@ const final2 = parse(`#############
   #A#B#C#D#
   #########`);
 
-const burrow = parse(load(23).raw);
-answers.expect(16506, 48304);
-answers(
+const burrow = parse(load().raw);
+export default solve(
   () => search(burrow, final1, serialize, edgeWeights(2), heuristic),
   () => {
-    const lines = load(23).lines;
+    const lines = load().lines;
     lines.splice(3, 0, '  #D#C#B#A#', '  #D#B#A#C#');
     const burrow = parse(lines.join('\n'));
     return search(burrow, final2, serialize, edgeWeights(4), heuristic);
   }
-);
+).expect(16506, 48304);

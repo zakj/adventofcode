@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { Counter, range, sum } from '../util';
 
 type Player = {
@@ -35,9 +35,8 @@ function winsDirac(
   return wins.reduce((a, b) => [a[0] + b[0], a[1] + b[1]]);
 }
 
-const startPos = parse(load(21).lines);
-answers.expect(412344, 214924284932572);
-answers(
+const startPos = parse(load().lines);
+export default solve(
   () => {
     let p1 = { pos: startPos[0], score: 0 };
     let p2 = { pos: startPos[1], score: 0 };
@@ -62,4 +61,4 @@ answers(
         p2: { pos: startPos[1], score: 0 },
       })
     )
-);
+).expect(412344, 214924284932572);

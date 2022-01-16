@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { Counter, last, pairs, range } from '../util';
 
 function parse(paras: string[][]) {
@@ -41,9 +41,8 @@ function countCharacters(
   return totalCount;
 }
 
-const data = parse(load(14).paragraphs);
-answers.expect(3555, 4439442043739);
-answers(
+const data = parse(load().paragraphs);
+export default solve(
   () => {
     const counts = countCharacters(data.template, data.rules, 10);
     return counts.mostCommon[0][1] - last(counts.mostCommon)[1];
@@ -52,4 +51,4 @@ answers(
     const counts = countCharacters(data.template, data.rules, 40);
     return counts.mostCommon[0][1] - last(counts.mostCommon)[1];
   }
-);
+).expect(3555, 4439442043739);

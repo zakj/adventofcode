@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { sum } from '../util';
 
 const PAIRS = new Map([
@@ -47,9 +47,8 @@ function autoCompleteScore(line: string): number {
     .reduce((score, c) => score * 5 + AUTOCOMPLETE_SCORE.get(c), 0);
 }
 
-const lines = load(10).lines;
-answers.expect(367059, 1952146692);
-answers(
+const lines = load().lines;
+export default solve(
   () => sum(lines.map(corruptScore)),
   () => {
     const lineScores = lines
@@ -58,4 +57,4 @@ answers(
       .sort((a, b) => a - b);
     return lineScores[Math.floor(lineScores.length / 2)];
   }
-);
+).expect(367059, 1952146692);

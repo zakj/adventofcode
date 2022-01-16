@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { neighbors8, parseMap, PointMap, PointSet } from '../coords';
 
 function stepFlashes(octopuses: PointMap<number>): number {
@@ -25,9 +25,8 @@ function stepFlashes(octopuses: PointMap<number>): number {
   return flashed.size;
 }
 
-const octopuses = parseMap(load(11).lines, Number);
-answers.expect(1642, 320);
-answers(
+const octopuses = parseMap(load().lines, Number);
+export default solve(
   () => {
     let flashes = 0;
     for (let i = 0; i < 100; ++i) {
@@ -37,11 +36,11 @@ answers(
   },
   () => {
     // XXX mutable octopii :/
-    const octopuses = parseMap(load(11).lines, Number);
+    const octopuses = parseMap(load().lines, Number);
     let i = 1;
     while (true) {
       if (stepFlashes(octopuses) === octopuses.size) return i;
       ++i;
     }
   }
-);
+).expect(1642, 320);

@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { sum } from '../util';
 
 function alignCrabs(
@@ -14,9 +14,8 @@ function alignCrabs(
   return bestCost;
 }
 
-const crabs = load(7).raw.split(',').map(Number);
-answers.expect(357353, 104822130);
-answers(
+const crabs = load().raw.split(',').map(Number);
+export default solve(
   () => alignCrabs(crabs, (d) => d),
   () => alignCrabs(crabs, (d) => (d * (1 + d)) / 2)
-);
+).expect(357353, 104822130);
