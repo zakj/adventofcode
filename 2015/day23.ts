@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 type Registers = {
   a: bigint;
@@ -70,9 +70,8 @@ function compute(
   return registers;
 }
 
-const instructions = parse(load(23).lines);
-answers.expect(255n, 334n);
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => compute(instructions).b,
   () => compute(instructions, 1n).b
-);
+).expect(255n, 334n);

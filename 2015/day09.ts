@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { pairs, permutations } from '../util';
 
 type Graph = {
@@ -31,13 +31,12 @@ function allPaths(graph: Graph): number[] {
   );
 }
 
-const exampleRules = parse(load(9, 'ex').lines);
+const exampleRules = parse(load('ex').lines);
 example.equal(605, Math.min(...allPaths(exampleRules)));
 example.equal(982, Math.max(...allPaths(exampleRules)));
 
-const rules = parse(load(9).lines);
-answers.expect(141, 736);
-answers(
+const rules = parse(load().lines);
+export default solve(
   () => Math.min(...allPaths(rules)),
   () => Math.max(...allPaths(rules))
-);
+).expect(141, 736);

@@ -1,4 +1,4 @@
-import { answers } from '../advent';
+import { load, solve } from '../advent';
 
 type Effect = {
   turns: number;
@@ -97,19 +97,19 @@ function minManaToWin(
   return 0;
 }
 
+const [bossHp, bossDamage] = load().raw.match(/\d+/g).map(Number);
 const initialState: State = {
   hp: 50,
   mana: 500,
-  bossHp: 51,
-  bossDamage: 9,
+  bossHp,
+  bossDamage,
   manaUsed: 0,
   effectTimer: new Map<Effect, number>(),
   hardMode: false,
 };
 
-answers.expect(900, 1216);
-answers(
+export default solve(
   () => minManaToWin(initialState, { minFound: Infinity }),
   () =>
     minManaToWin({ ...initialState, hardMode: true }, { minFound: Infinity })
-);
+).expect(900, 1216);

@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 const tickerTape = new Map(
   Object.entries({
@@ -53,9 +53,8 @@ function findAunt2(aunts: Aunt[]): Aunt {
   );
 }
 
-const aunts = parse(load(16).lines);
-answers.expect(103, 405);
-answers(
+const aunts = parse(load().lines);
+export default solve(
   () => findAunt1(aunts).i,
   () => findAunt2(aunts).i
-);
+).expect(103, 405);

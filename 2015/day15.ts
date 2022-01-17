@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { product, range, sum } from '../util';
 
 class Cookie {
@@ -71,7 +71,7 @@ function highestScore(cookies: Cookie[]): number {
     .reduce((max, score) => (score > max ? score : max), -Infinity);
 }
 
-const exampleIngredients = parse(load(15, 'ex').lines);
+const exampleIngredients = parse(load('ex').lines);
 example.equal(highestScore(allCookies(exampleIngredients)), 62842880);
 example.equal(
   highestScore(
@@ -80,9 +80,8 @@ example.equal(
   57600000
 );
 
-const ingredients = parse(load(15).lines);
-answers.expect(222870, 117936);
-answers(
+const ingredients = parse(load().lines);
+export default solve(
   () => highestScore(allCookies(ingredients)),
   () => highestScore(allCookies(ingredients).filter((c) => c.calories === 500))
-);
+).expect(222870, 117936);

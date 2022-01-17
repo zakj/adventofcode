@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Rule = { src: string; dst: string };
 
@@ -31,12 +31,11 @@ function fabricate(start: string, target: string): number {
   return atoms.length - start.length;
 }
 
-const [exampleRules, exampleMolecule] = parse(load(19, 'ex').paragraphs);
+const [exampleRules, exampleMolecule] = parse(load('ex').paragraphs);
 example.equal(molecules(exampleRules, exampleMolecule).size, 7);
 
-const [rules, molecule] = parse(load(19).paragraphs);
-answers.expect(535, 212);
-answers(
+const [rules, molecule] = parse(load().paragraphs);
+export default solve(
   () => molecules(rules, molecule).size,
   () => fabricate('e', molecule)
-);
+).expect(535, 212);

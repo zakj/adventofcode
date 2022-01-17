@@ -1,4 +1,4 @@
-import { answers } from '../advent';
+import { load, solve } from '../advent';
 
 function visitHouses(
   target: number,
@@ -21,9 +21,8 @@ function visitHouses(
   return houses.findIndex((h) => h >= target);
 }
 
-const TARGET = 36000000;
-answers.expect(831600, 884520);
-answers(
-  () => visitHouses(TARGET, 10),
-  () => visitHouses(TARGET, 11, 50)
-);
+const target = load().numbers[0];
+export default solve(
+  () => visitHouses(target, 10),
+  () => visitHouses(target, 11, 50)
+).expect(831600, 884520);

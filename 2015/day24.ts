@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { product, sum } from '../util';
 
 function findSums(target: number, xs: number[]): number[][] {
@@ -27,9 +27,8 @@ function smallestGroup(target: number, packages: number[]): number {
   return min(smallestGroups.map(product));
 }
 
-const packages = load(24).numbers;
-answers.expect(11266889531, 77387711);
-answers(
+const packages = load().numbers;
+export default solve(
   () => smallestGroup(sum(packages) / 3, packages),
   () => smallestGroup(sum(packages) / 4, packages)
-);
+).expect(11266889531, 77387711);

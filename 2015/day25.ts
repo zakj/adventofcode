@@ -1,4 +1,4 @@
-import { answers } from '../advent';
+import { load, solve } from '../advent';
 
 function tableValue(startVal: number, goalRow: number, goalCol: number) {
   const nextVal = (prev: number): number => (prev * 252533) % 33554393;
@@ -18,5 +18,5 @@ function tableValue(startVal: number, goalRow: number, goalCol: number) {
   return table[goalRow - 1][goalCol - 1];
 }
 
-answers.expect(19980801);
-answers(() => tableValue(20151125, 2947, 3029));
+const [goalY, goalX] = load().raw.match(/\d+/g).map(Number);
+export default solve(() => tableValue(20151125, goalY, goalX)).expect(19980801);

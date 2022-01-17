@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 function combinations(containers: number[], target: number): number[][] {
   const [head, tail] = [containers[0], containers.slice(1)];
@@ -17,13 +17,12 @@ function combinations(containers: number[], target: number): number[][] {
   }
 }
 
-const containers = load(17).numbers;
-answers.expect(654, 57);
-answers(
+const containers = load().numbers;
+export default solve(
   () => combinations(containers, 150).length,
   () => {
     const combos = combinations(containers, 150);
     const minContainers = Math.min(...combos.map((c) => c.length));
     return combos.filter((c) => c.length === minContainers).length;
   }
-);
+).expect(654, 57);

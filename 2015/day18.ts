@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { range, sum } from '../util';
 
 class Life {
@@ -81,13 +81,12 @@ function run(life: Life, rounds: number): number {
   return sum(life.grid.map((row) => row.filter(Boolean).length));
 }
 
-const exampleGrid = parseGrid(load(18, 'ex').lines);
+const exampleGrid = parseGrid(load('ex').lines);
 example.equal(run(exampleGrid, 4), 4);
 example.equal(run(exampleGrid.stuck, 5), 17);
 
-const grid = parseGrid(load(18).lines);
-answers.expect(821, 886);
-answers(
+const grid = parseGrid(load().lines);
+export default solve(
   () => run(grid, 100),
   () => run(grid.stuck, 100)
-);
+).expect(821, 886);

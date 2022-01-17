@@ -1,4 +1,4 @@
-import { answers } from '../advent';
+import { load, solve } from '../advent';
 import { combinations, sum } from '../util';
 
 type Item = {
@@ -78,9 +78,9 @@ function allOptions(weapons: Item[], armors: Item[], rings: Item[]) {
 }
 
 const playerHp = 100;
-const makeBoss = () => new Character(109, 8, 2);
-answers.expect(111, 188);
-answers(
+const [bossHp, bossDamage, bossArmor] = load().raw.match(/\d+/g).map(Number);
+const makeBoss = () => new Character(bossHp, bossDamage, bossArmor);
+export default solve(
   () => {
     const options = allOptions(weapons, armors, rings);
     options.sort((a, b) => a.cost - b.cost);
@@ -96,4 +96,4 @@ answers(
         !playerWins(new Character(playerHp, opt.damage, opt.armor), makeBoss())
     ).cost;
   }
-);
+).expect(111, 188);
