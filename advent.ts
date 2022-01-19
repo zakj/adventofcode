@@ -90,7 +90,7 @@ export function load(day?: number | string, suffix: string = ''): Input {
   };
 }
 
-export function solve(...fns: (() => any)[]): Answers {
+export function solve(...fns: ((prev: any) => any)[]): Answers {
   const expected = [];
   let profile = false;
 

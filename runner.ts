@@ -28,9 +28,9 @@ async function runYear(dir: string) {
   }
 }
 
-function timedResult(fn: Function): [unknown, number] {
+function timedResult(fn: Function, prev: any): [unknown, number] {
   const start = performance.now();
-  const result = fn();
+  const result = fn(prev);
   const durationMs = performance.now() - start;
   return [result, durationMs];
 }
@@ -48,18 +48,19 @@ async function runDay(file: string, single = false) {
     return;
   }
 
+  let previousResult = undefined;
   for (let i = 0; i < solve.parts.length; ++i) {
     if (single) process.stdout.write(`${i + 1}: `);
     const [fn, expected] = solve.parts[i];
     const [result, duration] = await new Promise((resolve, reject) => {
       if (!solve.shouldProfile) {
-        resolve(timedResult(fn));
+        resolve(timedResult(fn, previousResult));
       } else {
         const session = new inspector.Session();
         session.connect();
         session.post('Profiler.enable', () => {
           session.post('Profiler.start', () => {
-            resolve(timedResult(fn));
+            resolve(timedResult(fn, previousResult));
             session.post('Profiler.stop', (err, { profile }) => {
               if (err) return;
               writeFileSync(
@@ -73,6 +74,7 @@ async function runDay(file: string, single = false) {
       }
     });
 
+    previousResult = result;
     if (single) printResult(result, expected, duration);
     else printSummary(i, result, expected, duration);
   }

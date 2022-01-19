@@ -84,12 +84,12 @@ export function pairs<T>(arr: T[]): T[][] {
 }
 
 export function partition<T>(
-  predicate: (v: T) => boolean,
+  predicate: (v: T, i: number) => boolean,
   xs: T[]
 ): [T[], T[]] {
   const rv: [T[], T[]] = [[], []];
-  xs.forEach((x) => {
-    rv[predicate(x) ? 0 : 1].push(x);
+  xs.forEach((x, i) => {
+    rv[predicate(x, i) ? 0 : 1].push(x);
   });
   return rv;
 }
@@ -132,6 +132,15 @@ export function range(start: number, stop: number): number[] {
 export function rotate<T>(xs: T[], n: number = 1): T[] {
   n %= xs.length;
   return [...xs.slice(n), ...xs.slice(0, n)];
+}
+
+export function scan<T, U>(
+  xs: T[],
+  f: (acc: U, value: T) => U,
+  initial: U
+): U[] {
+  let acc = initial;
+  return [initial, ...xs.map((x) => (acc = f(acc, x)))];
 }
 
 export const sum = (xs: number[]): number => xs.reduce((acc, x) => acc + x, 0);
