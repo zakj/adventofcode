@@ -1,8 +1,11 @@
 import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import inspector from 'inspector';
+import { color, makeTable } from 'lib/format';
 import { basename, resolve } from 'path';
 import * as advent from './advent';
 import { Answers } from './advent';
+
+type Result = { part: number; result: any; expected: any; duration: number };
 
 async function runAll() {
   const re = /^\d{4}$/;
@@ -17,15 +20,28 @@ async function runAll() {
 }
 
 async function runYear(dir: string) {
-  console.log(`-- ${basename(resolve(dir))} --`);
   const re = /^day\d\d\.ts$/;
   const days = readdirSync(dir)
     .filter((fn) => re.test(fn))
     .map((fn) => resolve(dir, fn))
     .sort();
+  const table = makeTable([6, 8, 8], process.stdout);
+  table.header(basename(resolve(dir)));
   for (const day of days) {
-    await runDay(day);
+    table.startRow();
+    table.cell(`Day ${day.replace(/.*day(\d\d)\.ts$/, '$1')}`);
+    await runDay(day, table.cell);
+    table.endRow();
   }
+  table.footer();
+}
+
+function isAnswers(obj: unknown): obj is Answers {
+  return (
+    typeof obj === 'object' &&
+    'parts' in obj &&
+    Array.isArray((obj as any).parts)
+  );
 }
 
 function timedResult(fn: Function, prev: any): [unknown, number] {
@@ -35,22 +51,18 @@ function timedResult(fn: Function, prev: any): [unknown, number] {
   return [result, durationMs];
 }
 
-async function runDay(file: string, single = false) {
+async function runDay(file: string, printer?: (s: string) => void) {
   const day = await import(resolve(file));
   const solve = day.default;
-  if (!single) {
-    process.stdout.write(`Day ${file.replace(/.*day(\d\d)\.ts$/, '$1')}`);
-  }
 
   if (!isAnswers(solve)) {
-    // TODO: remove this `if` after all files are ported
-    if (!single) console.log(color.red(' invalid default export'));
+    // TODO: rework this `if` after all files are ported
+    if (printer) printer(color.red('invalid export'));
     return;
   }
 
   let previousResult = undefined;
   for (let i = 0; i < solve.parts.length; ++i) {
-    if (single) process.stdout.write(`${i + 1}: `);
     const [fn, expected] = solve.parts[i];
     const [result, duration] = await new Promise((resolve, reject) => {
       if (!solve.shouldProfile) {
@@ -73,23 +85,12 @@ async function runDay(file: string, single = false) {
         session.disconnect();
       }
     });
-
     previousResult = result;
-    if (single) printResult(result, expected, duration);
-    else printSummary(i, result, expected, duration);
-  }
-  if (!single) process.stdout.write('\n');
-}
 
-const color = (() => {
-  const c = (n: number) => (text: string) => `\x1b[${n}m${text}\x1b[0m`;
-  return {
-    red: c(31),
-    yellow: c(33),
-    green: c(32),
-    grey: c(90),
-  };
-})();
+    if (printer) printer(fmtSummary({ part: i, result, expected, duration }));
+    else printResult({ part: i, result, expected, duration });
+  }
+}
 
 function humanDuration(d: number): string {
   return d >= 1000
@@ -99,7 +100,8 @@ function humanDuration(d: number): string {
     : `${d.toFixed(2)}ms`;
 }
 
-function printResult(result: any, expected: any, duration: number): void {
+function printResult({ part, result, expected, duration }: Result): void {
+  process.stdout.write(`${part + 1}: `);
   let output: string;
   if (typeof expected === 'undefined') {
     output = color.yellow(result?.toString());
@@ -119,33 +121,16 @@ function printResult(result: any, expected: any, duration: number): void {
   process.stdout.write(color.grey(hd) + '\n');
 }
 
-function printSummary(
-  i: number,
-  result: any,
-  expected: any,
-  duration: number
-): void {
-  const pColor =
-    typeof expected === 'undefined'
-      ? color.yellow
-      : result === expected
-      ? color.green
-      : color.red;
+function fmtSummary({ result, expected, duration }: Result): string {
   const dColor =
-    duration > 500 ? color.red : duration > 50 ? color.yellow : color.green;
-  process.stdout.write(
-    `  ${color.grey('•')}  ${pColor(`p${i + 1}`)} ${dColor(
-      humanDuration(duration).padStart(6)
-    )}`
-  );
-}
-
-function isAnswers(obj: unknown): obj is Answers {
-  return (
-    typeof obj === 'object' &&
-    'parts' in obj &&
-    Array.isArray((obj as any).parts)
-  );
+    duration > 500 ? color.red : duration > 50 ? color.yellow : color.grey;
+  const success =
+    typeof expected === 'undefined'
+      ? color.yellow('?')
+      : result === expected
+      ? color.green('✓')
+      : color.red('×');
+  return `${dColor(humanDuration(duration).padStart(6))} ${success}`;
 }
 
 (function main() {
@@ -162,7 +147,7 @@ function isAnswers(obj: unknown): obj is Answers {
     advent.answers = fakeAnswers;
   }
 
-  if (isFile) runDay(arg, true);
+  if (isFile) runDay(arg);
   else if (isDir) runYear(arg);
   else if (!arg) runAll();
   else throw `invalid argument ${arg}`;

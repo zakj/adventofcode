@@ -1,7 +1,14 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "esModuleInterop": true,
     "module": "commonjs",
-    "target": "esnext",
+    "paths": {
+      "lib/*": ["lib/*"]
+    },
+    "target": "esnext"
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
   }
 }
