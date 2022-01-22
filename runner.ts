@@ -133,7 +133,10 @@ function fmtSummary({ result, expected, duration }: Result): string {
   return `${dColor(humanDuration(duration).padStart(6))} ${success}`;
 }
 
-(function main() {
+(async function main() {
+  // TODO better input handling
+  // - https://github.com/tj/commander.js
+  // - add fast option for `ts-node -T`, quiet option?
   const arg = process.argv[2];
   const exists = arg && existsSync(arg);
   const isDir = exists && statSync(arg).isDirectory();
@@ -147,8 +150,12 @@ function fmtSummary({ result, expected, duration }: Result): string {
     advent.answers = fakeAnswers;
   }
 
-  if (isFile) runDay(arg);
-  else if (isDir) runYear(arg);
-  else if (!arg) runAll();
-  else throw `invalid argument ${arg}`;
+  try {
+    if (isFile) await runDay(arg);
+    else if (isDir) runYear(arg);
+    else if (!arg) runAll();
+    else throw `invalid argument ${arg}`;
+  } catch (e) {
+    console.error(color.red(e));
+  }
 })();
