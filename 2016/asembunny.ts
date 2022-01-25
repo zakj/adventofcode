@@ -1,4 +1,4 @@
-import { DefaultDict, range } from '../util';
+import { DefaultDict } from '../util';
 
 type Register = 'a' | 'b' | 'c' | 'd';
 type Value = number;
@@ -30,9 +30,27 @@ type Out = {
   type: 'out';
   arg1: Register;
 };
+type StandardInstruction = Cpy | Inc | Dec | Jnz | Tgl | Out;
 
-type Instruction = Cpy | Inc | Dec | Jnz | Tgl | Out;
+type Add = {
+  type: 'add';
+  to: Register;
+  from: Register;
+};
+type Mlt = {
+  type: 'mlt';
+  to: Register;
+  from1: Value | Register;
+  from2: Register;
+  tmp: Register;
+};
+type OptimizedInstruction = Add | Mlt;
+
 type Registers = Map<Register, number>;
+type ParseResult = {
+  instructions: StandardInstruction[];
+  optimized: Map<number, OptimizedInstruction>;
+};
 
 const isValue = (v: Value | Register): v is Value => typeof v === 'number';
 const isRegister = (v: string): v is Register =>
@@ -40,14 +58,16 @@ const isRegister = (v: string): v is Register =>
 const valueOf = (v: Value | Register, registers: Registers): number =>
   isValue(v) ? v : registers.get(v);
 
-export function parse(lines: string[]): Instruction[] {
+export function parse(lines: string[]): ParseResult {
   const asRegister = (v: string): Register => v as Register;
   const asValue = (v: string): Value => Number(v);
   const valueOrRegister = (v: string): Value | Register =>
     isRegister(v) ? asRegister(v) : asValue(v);
-  return lines.map((line) => {
+  let hasTgl = false;
+  const optimized = new Map<number, OptimizedInstruction>();
+  const instructions = lines.map((line) => {
     const args = line.split(' ');
-    const type = args.shift() as Instruction['type'];
+    const type = args.shift() as StandardInstruction['type'];
     switch (type) {
       case 'cpy':
         return {
@@ -66,15 +86,24 @@ export function parse(lines: string[]): Instruction[] {
           arg2: valueOrRegister(args[1]),
         };
       case 'tgl':
+        hasTgl = true;
         return { type, arg1: valueOrRegister(args[0]) };
       case 'out':
         return { type, arg1: asRegister(args[0]) };
     }
   });
+  if (!hasTgl) {
+    // tgl operation changes the instructions in flight, so we can't pre-optimize.
+    instructions.forEach((instr, i) => {
+      const opt = optimize(instructions, i);
+      if (opt) optimized.set(i, opt);
+    });
+  }
+  return { instructions, optimized };
 }
 
 export function* executeSignals(
-  instructions: Instruction[],
+  { instructions, optimized }: ParseResult,
   regInit: [Register, Value][] = []
 ): Generator<Signal, Registers> {
   const registers = new DefaultDict<Register, Value>(() => 0);
@@ -82,12 +111,9 @@ export function* executeSignals(
   let i = 0;
   instructions = [...instructions];
   while (i < instructions.length) {
-    const optSkips = optimize(instructions, i, registers);
-    if (optSkips) {
-      i += optSkips;
-      continue;
-    }
-    const instr = instructions[i];
+    const instr =
+      (optimized.size ? optimized.get(i) : optimize(instructions, i)) ||
+      instructions[i];
     switch (instr.type) {
       case 'cpy':
         if (!isValue(instr.arg2)) {
@@ -114,7 +140,7 @@ export function* executeSignals(
         const targetIndex = i + valueOf(instr.arg1, registers);
         const target = instructions[targetIndex];
         if (target) {
-          let toggled: Instruction;
+          let toggled: StandardInstruction;
           if (['inc', 'dec', 'tgl'].includes(target.type)) {
             toggled = {
               type: target.type === 'inc' ? 'dec' : 'inc',
@@ -135,66 +161,79 @@ export function* executeSignals(
         yield registers.get(instr.arg1);
         ++i;
         break;
+      case 'add':
+        registers.set(
+          instr.to,
+          registers.get(instr.to) + registers.get(instr.from)
+        );
+        registers.set(instr.from, 0);
+        i += 3;
+        break;
+      case 'mlt':
+        const [from, a, b] = [
+          registers.get(instr.to),
+          valueOf(instr.from1, registers),
+          registers.get(instr.from2),
+        ];
+        registers.set(instr.to, from + a * b);
+        registers.set(instr.from2, 0);
+        registers.set(instr.tmp, 0);
+        i += 6;
+        break;
     }
   }
   return registers;
 }
 
 export function execute(
-  instructions: Instruction[],
-  regInit: [Register, Value][] = [],
-  maxIterations: number = 1
+  parsed: ParseResult,
+  regInit: [Register, Value][] = []
 ): Registers {
-  let iterations = 0;
   let rv: IteratorResult<number, Registers>;
-  const it = executeSignals(instructions, regInit);
-  for (let i = 0; i < maxIterations; ++i) {
-    rv = it.next();
-    if (rv.done) break;
-  }
-  if (!rv.done) throw new Error('reached maxIterations');
+  const it = executeSignals(parsed, regInit);
+  rv = it.next();
+  if (!rv.done) throw new Error('executeSignals failed to complete');
   return rv.value;
 }
 
 function optimize(
-  instructions: Instruction[],
-  i: number,
-  registers: Registers
-): number {
-  type Add = [Inc, Dec, Jnz];
-  type Mlt = [Cpy, Inc, Dec, Jnz, Dec, Jnz];
-  const optimizations = {
-    add: ['inc', 'dec', 'jnz'],
-    mlt: ['cpy', 'inc', 'dec', 'jnz', 'dec', 'jnz'],
-  };
-  const optim = Object.entries(optimizations).find(([name, ops]) => {
-    if (range(0, ops.length).some((j) => instructions[i + j].type !== ops[j]))
-      return false;
-    if (name === 'add') {
-      // inc target, dec x, jnz x -2
-      // target += x
-      const [a, b, c] = instructions.slice(i, i + ops.length) as Add;
-      if (b.arg1 !== c.arg1 || valueOf(c.arg2, registers) !== -2) return false;
-      registers.set(a.arg1, registers.get(a.arg1) + valueOf(b.arg1, registers));
-      registers.set(b.arg1, 0);
-      return true;
-    }
-    if (name === 'mlt') {
-      // cpy x tmp, inc target, dec tmp, jnz tmp -2, dec y, jnz y - 5
-      // target += x * y
-      const [a, b, , d, e, f] = instructions.slice(i, i + ops.length) as Mlt;
-      const [op1, tmpReg, target, op2] = [a.arg1, a.arg2, b.arg1, e.arg1];
-      // TODO not comprehensive OR pretty
-      if (d.arg2 !== -2 || f.arg2 !== -5) return false;
-      registers.set(
-        target,
-        registers.get(target) +
-          valueOf(op1, registers) * valueOf(op2, registers)
-      );
-      registers.set(tmpReg as Register, 0);
-      registers.set(op2 as Register, 0);
-      return true;
-    }
-  });
-  return optim?.[1].length || 0;
+  instructions: StandardInstruction[],
+  i: number
+): OptimizedInstruction {
+  const instr = instructions[i];
+  if (instr.type === 'inc') {
+    // inc target, dec x, jnz x -2
+    // target += x; x = 0
+    const [a, b, c] = instructions.slice(i, i + 3);
+    if (
+      a.type === 'inc' &&
+      b.type === 'dec' &&
+      c.type === 'jnz' &&
+      c.arg2 === -2 &&
+      b.arg1 === c.arg1
+    )
+      return { type: 'add', to: a.arg1, from: b.arg1 };
+  } else if (instr.type === 'cpy') {
+    // cpy x tmp, inc target, dec tmp, jnz tmp -2, dec y, jnz y -5
+    // target += x * y; tmp = 0; y = 0
+    const [a, b, c, d, e, f] = instructions.slice(i, i + 6);
+    if (
+      a.type === 'cpy' &&
+      b.type === 'inc' &&
+      c.type === 'dec' &&
+      d.type === 'jnz' &&
+      e.type === 'dec' &&
+      f.type === 'jnz' &&
+      d.arg2 === -2 &&
+      f.arg2 === -5
+    )
+      return {
+        type: 'mlt',
+        to: b.arg1,
+        from1: a.arg1,
+        from2: e.arg1,
+        tmp: c.arg1,
+      };
+  }
+  return;
 }
