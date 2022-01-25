@@ -17,10 +17,18 @@ const allRolls = range(1, 4).flatMap((a) =>
 );
 const rollCounts = new Counter(allRolls);
 
+type State = { p1: Player; p2: Player; player1Turn: boolean };
+function hashState({ p1, p2, player1Turn }: State): string {
+  return `${p1.pos}:${p1.score}/${p2.pos}:${p2.score}/${player1Turn}`;
+}
+
+const cache = new Map<string, [number, number]>();
 function winsDirac(
   { p1, p2 }: { p1: Player; p2: Player },
   player1Turn = true
 ): [number, number] {
+  const hash = hashState({ p1, p2, player1Turn });
+  if (cache.has(hash)) return cache.get(hash);
   if (p1.score >= 21) return [1, 0];
   if (p2.score >= 21) return [0, 1];
 
@@ -32,7 +40,9 @@ function winsDirac(
     const next = player1Turn ? { p1: nextPlayer, p2 } : { p1, p2: nextPlayer };
     wins.push(winsDirac(next, !player1Turn).map((v) => v * count));
   }
-  return wins.reduce((a, b) => [a[0] + b[0], a[1] + b[1]]);
+  const rv = wins.reduce((a, b) => [a[0] + b[0], a[1] + b[1]]);
+  cache.set(hash, rv);
+  return rv;
 }
 
 const startPos = parse(load().lines);
