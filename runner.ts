@@ -2,6 +2,7 @@ import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import inspector from 'inspector';
 import { color, makeTable } from 'lib/format';
 import { basename, resolve } from 'path';
+import { performance } from 'perf_hooks';
 import * as advent from './advent';
 import { Answers } from './advent';
 

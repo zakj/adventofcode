@@ -3,6 +3,7 @@ import { execSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import inspector from 'inspector';
 import { dirname, resolve } from 'path';
+import { performance } from 'perf_hooks';
 import { zip } from './util';
 
 type Input = {
