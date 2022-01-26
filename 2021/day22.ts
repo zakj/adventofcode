@@ -110,15 +110,11 @@ function countOn(instructions: Instruction[]): number {
 }
 
 function initArea(instructions: Instruction[]): Instruction[] {
-  const clamp = (v: number): number => Math.min(Math.max(v, -50), 50);
-  return instructions.filter((instr) =>
-    ['min', 'max'].every((minMax) =>
-      ['x', 'y', 'z'].every(
-        (axis) =>
-          instr.rect[minMax][axis] > -50 && instr.rect[minMax][axis] < 50
-      )
-    )
-  );
+  const validArea = {
+    min: { x: -50, y: -50, z: -50 },
+    max: { x: 50, y: 50, z: 50 },
+  };
+  return instructions.filter((instr) => rect3dIntersect(validArea, instr.rect));
 }
 
 const instructions = parse(load().lines);
