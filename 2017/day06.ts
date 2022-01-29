@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 function cycle(banks: number[]): number[] {
   banks = [...banks];
@@ -38,9 +38,8 @@ example.deepEqual(cycle(exampleBanks), [2, 4, 1, 2]);
 example.equal(cyclesToDuplicate(exampleBanks), 5);
 example.equal(loopCycles(exampleBanks), 4);
 
-const banks = load(6).raw.trim().split(/\s+/).map(Number);
-answers.expect(5042, 1086);
-answers(
+const banks = load().raw.trim().split(/\s+/).map(Number);
+export default solve(
   () => cyclesToDuplicate(banks),
   () => loopCycles(banks)
-);
+).expect(5042, 1086);

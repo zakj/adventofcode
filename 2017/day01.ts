@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 function captcha(s: string, offset: number = 1): number {
@@ -21,9 +21,8 @@ example.equal(captcha('123425', 3), 4);
 example.equal(captcha('123123', 3), 12);
 example.equal(captcha('12131415', 4), 4);
 
-const input = load(1).raw.trim();
-answers.expect(1203, 1146);
-answers(
+const input = load().raw.trim();
+export default solve(
   () => captcha(input),
   () => captcha(input, input.length / 2)
-);
+).expect(1203, 1146);

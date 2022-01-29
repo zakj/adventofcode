@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { load, solve } from '../advent';
 import { DefaultDict } from '../util';
 
 type _Set = { op: 'set'; args: [Register, Value] };
@@ -91,9 +91,8 @@ function execute(
   return { mulCount, registers };
 }
 
-const instructions = parse(load(23).lines);
-answers.expect(3969, 917);
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => execute(instructions).mulCount,
   () => {
     const arg = (i: number) => instructions[i].args[1].get(null);
@@ -110,4 +109,4 @@ answers(
     }
     return h;
   }
-);
+).expect(3969, 917);

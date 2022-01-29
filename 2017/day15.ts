@@ -1,12 +1,11 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 const MOD = 2147483647;
 
 const [factorA, factorB] = [16807, 48271];
-const [prevA, prevB] = load(15).lines.map((l) => Number(l.split(/\s+/).pop()));
+const [prevA, prevB] = load().lines.map((l) => Number(l.split(/\s+/).pop()));
 
-answers.expect(573, 294);
-answers(
+export default solve(
   () => {
     // Generator approach is prettier but 8x slower.
     let a = prevA;
@@ -34,4 +33,4 @@ answers(
     }
     return hits;
   }
-);
+).expect(573, 294);

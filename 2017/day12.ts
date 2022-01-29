@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Node = number;
 type Nodes = Map<Node, Node[]>;
@@ -35,13 +35,12 @@ function groups(connections: Nodes): Set<Node>[] {
   return all;
 }
 
-const exampleConnections = parse(load(12, 'ex').lines);
+const exampleConnections = parse(load('ex').lines);
 example.equal(group(0, exampleConnections).size, 6);
 example.equal(groups(exampleConnections).length, 2);
 
-const connections = parse(load(12).lines);
-answers.expect(145, 207);
-answers(
+const connections = parse(load().lines);
+export default solve(
   () => group(0, connections).size,
   () => groups(connections).length
-);
+).expect(145, 207);

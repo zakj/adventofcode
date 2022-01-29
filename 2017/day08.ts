@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { DefaultDict } from '../util';
 
 type Register = string;
@@ -54,12 +54,11 @@ function execute(instructions: Instruction[]) {
   return { currentMax: Math.max(...registers.values()), historicalMax: max };
 }
 
-const exampleInstructions = parse(load(8, 'ex').lines);
+const exampleInstructions = parse(load('ex').lines);
 example.equal(execute(exampleInstructions).currentMax, 1);
 
-const instructions = parse(load(8).lines);
-answers.expect(5752, 6366);
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => execute(instructions).currentMax,
   () => execute(instructions).historicalMax
-);
+).expect(5752, 6366);

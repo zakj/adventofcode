@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { combinations, sum } from '../util';
 
 function parse(lines: string[]) {
@@ -21,9 +21,8 @@ function part2(sheet: number[][]): number {
   );
 }
 
-const spreadsheet = parse(load(2).lines);
-answers.expect(45972, 326);
-answers(
+const spreadsheet = parse(load().lines);
+export default solve(
   () => part1(spreadsheet),
   () => part2(spreadsheet)
-);
+).expect(45972, 326);

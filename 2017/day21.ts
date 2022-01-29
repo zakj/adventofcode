@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { chunks, zip } from '../util';
 
 type Grid = string;
@@ -71,12 +71,11 @@ function countPixels(grid: Grid): number {
 
 const start = '.#./..#/###';
 
-const exampleRules = augmentRules(parse(load(21, 'ex').lines));
+const exampleRules = augmentRules(parse(load('ex').lines));
 example.equal(countPixels(cycles(2, start, exampleRules)), 12);
 
-const rules = augmentRules(parse(load(21).lines));
-answers.expect(120, 2204099);
-answers(
+const rules = augmentRules(parse(load().lines));
+export default solve(
   () => countPixels(cycles(5, start, rules)),
   () => countPixels(cycles(18, start, rules))
-);
+).expect(120, 2204099);

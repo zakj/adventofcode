@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 function jumpsToExit(
   instructions: number[],
@@ -22,9 +22,8 @@ const part2 = (n: number): number => (n >= 3 ? n - 1 : n + 1);
 example.equal(jumpsToExit([0, 3, 0, 1, -3], part1), 5);
 example.equal(jumpsToExit([0, 3, 0, 1, -3], part2), 10);
 
-const instructions = load(5).numbers;
-answers.expect(376976, 29227751);
-answers(
+const instructions = load().numbers;
+export default solve(
   () => jumpsToExit(instructions, part1),
   () => jumpsToExit(instructions, part2)
-);
+).expect(376976, 29227751);

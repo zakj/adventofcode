@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum, zip } from '../util';
 
 type Direction = 'n' | 'ne' | 'se' | 's' | 'sw' | 'nw';
@@ -40,12 +40,11 @@ example.equal(distanceFromStart(walk(parse('ne,ne,sw,sw')).pop()), 0);
 example.equal(distanceFromStart(walk(parse('ne,ne,s,s')).pop()), 2);
 example.equal(distanceFromStart(walk(parse('se,sw,se,sw,sw')).pop()), 3);
 
-const directions = parse(load(11).raw.trim());
-answers.expect(784, 1558);
-answers(
+const directions = parse(load().raw.trim());
+export default solve(
   () => distanceFromStart(walk(directions).pop()),
   () =>
     walk(directions)
       .map((x) => distanceFromStart(x))
       .reduce((max, d) => (d > max ? d : max))
-);
+).expect(784, 1558);

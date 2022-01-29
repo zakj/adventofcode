@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { neighbors8, Point, PointMap } from '../coords';
 import { sum } from '../util';
 
@@ -37,9 +37,8 @@ example.equal(distanceTo(12), 3);
 example.equal(distanceTo(23), 2);
 example.equal(distanceTo(1024), 31);
 
-const input = Number(load(3).raw);
-answers.expect(371, 369601);
-answers(
+const input = Number(load().raw);
+export default solve(
   () => distanceTo(input),
   () => firstGreaterThan(input)
-);
+).expect(371, 369601);

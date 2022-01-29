@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { product, range } from '../util';
 import { knotHash, round } from './knot-hash';
 
@@ -8,12 +8,11 @@ example.equal(knotHash('AoC 2017'), '33efeb34ea91902bb2f59c9920caa6cd');
 example.equal(knotHash('1,2,3'), '3efbe78a8d82f29979031a4aa0b16a9d');
 example.equal(knotHash('1,2,4'), '63960835bcdc130f0b66d7ff4f6a5a8e');
 
-const input = load(10).raw.trim();
-answers.expect(38628, 'e1462100a34221a7f0906da15c1c979a');
-answers(
+const input = load().raw.trim();
+export default solve(
   () =>
     product(
       round(range(0, 256), input.split(',').map(Number)).list.slice(0, 2)
     ),
   () => knotHash(input)
-);
+).expect(38628, 'e1462100a34221a7f0906da15c1c979a');

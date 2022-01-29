@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type ScannerMap = Map<number, number>; // depth -> range
 
@@ -31,13 +31,12 @@ function safeDelay(scanners: ScannerMap): number {
   }
 }
 
-const exampleScanners = parse(load(13, 'ex').lines);
+const exampleScanners = parse(load('ex').lines);
 example.equal(severity(0, exampleScanners), 24);
 example.equal(safeDelay(exampleScanners), 10);
 
-const scanners = parse(load(13).lines);
-answers.expect(2160, 3907470);
-answers(
+const scanners = parse(load().lines);
+export default solve(
   () => severity(0, scanners),
   () => safeDelay(scanners)
-);
+).expect(2160, 3907470);

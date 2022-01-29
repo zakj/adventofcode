@@ -1,7 +1,4 @@
-import { setgroups } from 'process';
-
-import { answers, example, load } from '../advent';
-import { DefaultDict } from '../util';
+import { example, load, solve } from '../advent';
 
 type Instruction = {
   write: boolean;
@@ -47,9 +44,8 @@ function checksum(start: string, steps: number, states: States): number {
   return [...tape.values()].filter(Boolean).length;
 }
 
-const [exStart, exSteps, exStates] = parse(load(25, 'ex').paragraphs);
+const [exStart, exSteps, exStates] = parse(load('ex').paragraphs);
 example.equal(checksum(exStart, exSteps, exStates), 3);
 
-const [start, steps, states] = parse(load(25).paragraphs);
-answers.expect(3362);
-answers(() => checksum(start, steps, states));
+const [start, steps, states] = parse(load().paragraphs);
+export default solve(() => checksum(start, steps, states)).expect(3362);

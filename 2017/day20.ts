@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum, zip } from '../util';
 
 type Vector = [x: number, y: number, z: number];
@@ -63,14 +63,13 @@ function collide(particles: Particle[]): Particle[] {
   return [...pmap.values()];
 }
 
-const exampleParticles1 = parse(load(20, 'ex1').lines);
+const exampleParticles1 = parse(load('ex1').lines);
 example.equal(findClosest(exampleParticles1).id, 0);
-const exampleParticles2 = parse(load(20, 'ex2').lines);
+const exampleParticles2 = parse(load('ex2').lines);
 example.equal(collide(exampleParticles2).length, 1);
 
-const particles = parse(load(20).lines);
-answers.expect(161, 438);
-answers(
+const particles = parse(load().lines);
+export default solve(
   () => findClosest(particles).id,
   () => collide(particles).length
-);
+).expect(161, 438);

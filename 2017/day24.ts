@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 type Pipe = number[];
@@ -46,14 +46,13 @@ function strongestBridge(
   return best(options) || [];
 }
 
-const examplePipes = parse(load(24, 'ex').lines);
+const examplePipes = parse(load('ex').lines);
 example.equal(score(strongestBridge(examplePipes, 0, bySum)), 31);
 example.equal(score(strongestBridge(examplePipes, 0, byLengthAndSum)), 19);
 
-const pipes = parse(load(24).lines);
-answers.expect(1656, 1642);
-answers(
+const pipes = parse(load().lines);
+export default solve(
   // TODO speedup, 1.8s, 1s
   () => score(strongestBridge(pipes, 0, bySum)),
   () => score(strongestBridge(pipes, 0, byLengthAndSum))
-);
+).expect(1656, 1642);

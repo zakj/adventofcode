@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { Counter, sum } from '../util';
 
 type Input = {
@@ -61,19 +61,18 @@ function correctedNodeWeight(node: Node, goal: number, tree: Tree): number {
   return correctedNodeWeight(nextNode, childGoal, tree);
 }
 
-const exampleInput = parse(load(7, 'ex').lines);
+const exampleInput = parse(load('ex').lines);
 const exampleTree = makeTree(exampleInput);
 const exampleRootName = rootNodeName(exampleInput);
 example.equal(exampleRootName, 'tknk');
 const exampleRootNode = exampleTree.get(exampleRootName);
 example.equal(correctedNodeWeight(exampleRootNode, 0, exampleTree), 60);
 
-const input = parse(load(7).lines);
-answers.expect('dgoocsw', 1275);
-answers(
+const input = parse(load().lines);
+export default solve(
   () => rootNodeName(input),
   () => {
     const tree = makeTree(input);
     return correctedNodeWeight(tree.get(rootNodeName(input)), 0, tree);
   }
-);
+).expect('dgoocsw', 1275);

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { knotHash } from './knot-hash';
 
 type Grid = boolean[][];
@@ -65,9 +65,8 @@ const exampleKey = 'flqrgnkx';
 example.equal(buildGrid(exampleKey).flat().filter(Boolean).length, 8108);
 example.equal(countRegions(buildGrid(exampleKey)), 1242);
 
-const key = load(14).raw.trim();
-answers.expect(8304, 1018);
-answers(
+const key = load().raw.trim();
+export default solve(
   () => buildGrid(key).flat().filter(Boolean).length,
   () => countRegions(buildGrid(key))
-);
+).expect(8304, 1018);

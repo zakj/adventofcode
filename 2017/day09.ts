@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 type Token = {
@@ -116,9 +116,8 @@ example.equal(countGarbageLiterals(tokenize('{<<<<>}')), 3);
 example.equal(countGarbageLiterals(tokenize('{<{!>}>}')), 2);
 example.equal(countGarbageLiterals(tokenize('{<!!>}')), 0);
 
-const ast = tokenize(load(9).raw);
-answers.expect(10820, 5547);
-answers(
+const ast = tokenize(load().raw);
+export default solve(
   () => score(ast),
   () => countGarbageLiterals(ast)
-);
+).expect(10820, 5547);

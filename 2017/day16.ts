@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { rotate } from '../util';
 
 type Spin = {
@@ -77,10 +77,9 @@ const exampleInstructions = parse(['s1', 'x3/4', 'pe/b']);
 example.equal(dance('abcde', exampleInstructions), 'baedc');
 example.equal(nthDance(7, 'abcde', exampleInstructions), 'ecbda');
 
-const instructions = parse(load(16).raw.split(','));
+const instructions = parse(load().raw.split(','));
 const programs = 'abcdefghijklmnop';
-answers.expect('dcmlhejnifpokgba', 'ifocbejpdnklamhg');
-answers(
+export default solve(
   () => dance(programs, instructions),
   () => nthDance(1e9, programs, instructions)
-);
+).expect('dcmlhejnifpokgba', 'ifocbejpdnklamhg');

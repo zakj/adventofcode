@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { Counter } from '../util';
 
 function noRepeats(s: string): boolean {
@@ -17,9 +17,8 @@ example.equal(noRepeats('aa bb cc dd ee'), true);
 example.equal(noRepeats('aa bb cc dd aa'), false);
 example.equal(noRepeats('aa bb cc dd aaa'), true);
 
-const passphrases = load(4).lines;
-answers.expect(337, 231);
-answers(
+const passphrases = load().lines;
+export default solve(
   () => passphrases.filter(noRepeats).length,
   () => passphrases.filter(noRepeatAnagrams).length
-);
+).expect(337, 231);

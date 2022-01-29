@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Point = [x: number, y: number];
 type PointHash = string;
@@ -95,14 +95,13 @@ function part2(n: number, infectedGrid: Grid): number {
   return infections;
 }
 
-const exampleGrid = parse(load(22, 'ex').lines);
+const exampleGrid = parse(load('ex').lines);
 example.equal(part1(70, exampleGrid), 41);
 example.equal(part2(100, exampleGrid), 26);
 example.equal(part2(10e6, exampleGrid), 2511944);
 
-const grid = parse(load(22).lines);
-answers.expect(5399, 2511776);
-answers(
+const grid = parse(load().lines);
+export default solve(
   () => part1(10e3, grid),
   () => part2(10e6, grid)
-);
+).expect(5399, 2511776);

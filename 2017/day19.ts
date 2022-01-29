@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 enum Dir {
   D = 'D',
@@ -47,13 +47,12 @@ function walk(maze: string[][]): { letters: string; steps: number } {
   return { letters: letters.join(''), steps };
 }
 
-const exampleMaze = parse(load(19, 'ex').raw);
+const exampleMaze = parse(load('ex').raw);
 example.equal(walk(exampleMaze).letters, 'ABCDEF');
 example.equal(walk(exampleMaze).steps, 38);
 
-const maze = parse(load(19).raw);
-answers.expect('DWNBGECOMY', 17228);
-answers(
+const maze = parse(load().raw);
+export default solve(
   () => walk(maze).letters,
   () => walk(maze).steps
-);
+).expect('DWNBGECOMY', 17228);

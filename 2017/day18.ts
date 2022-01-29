@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { DefaultDict } from '../util';
 
 type Snd = { op: 'snd'; args: [Value] };
@@ -123,12 +123,11 @@ function lastSentFrequency(instructions: Instruction[]): Frequency {
   return chan.pop();
 }
 
-const exampleInstructions = parse(load(18, 'ex').lines);
+const exampleInstructions = parse(load('ex').lines);
 example.equal(lastSentFrequency(exampleInstructions), 4);
 
-const instructions = parse(load(18).lines);
-answers.expect(9423, 7620);
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => lastSentFrequency(instructions),
   () => {
     const chan0 = [];
@@ -142,4 +141,4 @@ answers(
         return r1.value;
     }
   }
-);
+).expect(9423, 7620);
