@@ -14,10 +14,11 @@ export const Dir = {
   Right: 1,
   Down: 2,
   Left: 3,
-};
+} as const;
 export type Dir = ValuesOf<typeof Dir>;
-export const turnLeft: (dir: Dir) => Dir = (dir) => (dir + 3) % 4;
-export const turnRight: (dir: Dir) => Dir = (dir) => (dir + 1) % 4;
+export const turnLeft: (dir: Dir) => Dir = (dir) => ((dir + 3) % 4) as Dir;
+export const turnAround: (dir: Dir) => Dir = (dir) => ((dir + 2) % 4) as Dir;
+export const turnRight: (dir: Dir) => Dir = (dir) => ((dir + 1) % 4) as Dir;
 
 // More performant version of PointMap for dense grids.
 export class PointGrid<T> {
@@ -163,13 +164,10 @@ export function move(p: Point, dir: Dir, n: number = 1): Point {
   }
 }
 
-export function findBounds<T>(points: PointMap<T>): { min: Point; max: Point };
-export function findBounds(points: PointSet): { min: Point; max: Point };
-export function findBounds(points: Point[]): { min: Point; max: Point };
-export function findBounds<T>(points: PointMap<T> | PointSet | Point[]): {
-  min: Point;
-  max: Point;
-} {
+export function findBounds<T>(points: PointMap<T>): Rect;
+export function findBounds(points: PointSet): Rect;
+export function findBounds(points: Point[]): Rect;
+export function findBounds<T>(points: PointMap<T> | PointSet | Point[]): Rect {
   if (points instanceof PointMap) points = points.keys();
   else if (points instanceof PointSet) points = [...points];
   return points.reduce(

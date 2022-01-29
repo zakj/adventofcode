@@ -1,79 +1,65 @@
 import { example, load, solve } from 'lib/advent';
+import {
+  Dir,
+  move,
+  parseMap,
+  Point,
+  PointMap,
+  turnAround,
+  turnLeft,
+  turnRight,
+} from 'lib/coords';
+import { ValuesOf } from 'lib/util';
 
-type Point = [x: number, y: number];
-type PointHash = string;
-type Grid = Map<PointHash, boolean>;
+type Start = { grid: PointMap<boolean>; pos: Point };
 
-function parse(lines: string[]): Grid {
+function parse(lines: string[]): Start {
   const midPoint = Math.floor(lines.length / 2);
-  return new Map(
-    lines.flatMap((line, y) =>
-      line
-        .split('')
-        .map((c, x) => [[x - midPoint, y - midPoint].join(','), c === '#'])
-    )
-  );
+  return {
+    grid: parseMap(lines, (c) => c === '#'),
+    pos: { x: midPoint, y: midPoint },
+  };
 }
 
-enum Dir {
-  U,
-  R,
-  D,
-  L,
-}
-
-const moves = new Map([
-  [Dir.U, [0, -1]],
-  [Dir.R, [1, 0]],
-  [Dir.D, [0, 1]],
-  [Dir.L, [-1, 0]],
-]);
-
-function move(pos: Point, dir: Dir): Point {
-  const move = moves.get(dir);
-  return [pos[0] + move[0], pos[1] + move[1]];
-}
-
-function part1(n: number, grid: Grid): number {
-  grid = new Map(grid);
+function part1(n: number, start: Start): number {
+  const grid = new PointMap(start.grid);
   let infections = 0;
-  let pos: Point = [0, 0];
-  let dir = Dir.U;
+  let pos: Point = start.pos;
+  let dir: Dir = Dir.Up;
   for (let i = 0; i < n; ++i) {
-    const key = pos.join(',');
-    const cur = grid.get(key);
-    dir = (dir + (cur ? 1 : 3)) % 4;
-    grid.set(key, !cur);
-    if (!cur) infections++;
+    const infected = grid.get(pos);
+    dir = infected ? turnRight(dir) : turnLeft(dir);
+    grid.set(pos, !infected);
+    if (!infected) infections++;
     pos = move(pos, dir);
   }
   return infections;
 }
 
-enum State {
-  Clean,
-  Weakened,
-  Infected,
-  Flagged,
-}
+const State = {
+  Clean: 0,
+  Weakened: 1,
+  Infected: 2,
+  Flagged: 3,
+} as const;
+type State = ValuesOf<typeof State>;
 
-function part2(n: number, infectedGrid: Grid): number {
-  const grid = new Map<PointHash, State>(
-    [...infectedGrid.entries()].map(([k, v]) => [
+function part2(n: number, start: Start): number {
+  const grid = new PointMap<State>(
+    [...start.grid.entries()].map(([k, v]) => [
       k,
       v ? State.Infected : State.Clean,
     ])
   );
   let infections = 0;
-  let pos: Point = [0, 0];
-  let dir = Dir.U;
+  let pos: Point = start.pos;
+  let dir: Dir = Dir.Up;
   for (let i = 0; i < n; ++i) {
-    const key = pos.join(',');
-    const state = grid.has(key) ? grid.get(key) : State.Clean;
+    const state = grid.get(pos) ?? State.Clean;
     let newState: State;
     switch (state) {
       case State.Clean:
-        dir = (dir + 3) % 4;
+        dir = turnLeft(dir);
         newState = State.Weakened;
         break;
       case State.Weakened:
@@ -81,15 +67,15 @@ function part2(n: number, infectedGrid: Grid): number {
         infections++;
         break;
       case State.Infected:
-        dir = (dir + 1) % 4;
+        dir = turnRight(dir);
         newState = State.Flagged;
         break;
       case State.Flagged:
-        dir = (dir + 2) % 4;
+        dir = turnAround(dir);
         newState = State.Clean;
         break;
     }
-    grid.set(key, newState);
+    grid.set(pos, newState);
     pos = move(pos, dir);
   }
   return infections;
