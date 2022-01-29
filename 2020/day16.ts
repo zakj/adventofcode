@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { product, range, sum } from '../util';
 
 type Field = {
@@ -94,17 +94,16 @@ function fieldIndexes(data: Data): { [k: string]: number } {
   );
 }
 
-const exampleData1 = parse(load(16, 'ex1').paragraphs);
+const exampleData1 = parse(load('ex1').paragraphs);
 example.equal(
   71,
   sum(invalidValues(exampleData1.fields, exampleData1.otherTickets))
 );
-const exampleData2 = parse(load(16, 'ex2').paragraphs);
+const exampleData2 = parse(load('ex2').paragraphs);
 example.deepEqual({ class: 1, row: 0, seat: 2 }, fieldIndexes(exampleData2));
 
-const data = parse(load(16).paragraphs);
-answers.expect(32835, 514662805187);
-answers(
+const data = parse(load().paragraphs);
+export default solve(
   () => sum(invalidValues(data.fields, data.otherTickets)),
   () => {
     return product(
@@ -113,4 +112,4 @@ answers(
         .map(([field, index]) => data.yourTicket[index])
     );
   }
-);
+).expect(32835, 514662805187);

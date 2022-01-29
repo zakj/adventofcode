@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 function uniqueCharacters(s: string[]): number {
@@ -13,13 +13,12 @@ function commonCharacters(group: string[]): number {
   }, 0);
 }
 
-const exampleGroups = load(6, 'ex').paragraphs;
+const exampleGroups = load('ex').paragraphs;
 example.equal(11, sum(exampleGroups.map(uniqueCharacters)));
 example.equal(6, sum(exampleGroups.map(commonCharacters)));
 
-const groups = load(6).paragraphs;
-answers.expect(6662, 3382);
-answers(
+const groups = load().paragraphs;
+export default solve(
   () => sum(groups.map(uniqueCharacters)),
   () => sum(groups.map(commonCharacters))
-);
+).expect(6662, 3382);

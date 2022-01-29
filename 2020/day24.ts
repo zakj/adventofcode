@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum, zip } from '../util';
 
 type Grid = Map<string, boolean>;
@@ -79,15 +79,14 @@ function life(grid: Grid, days: number): Grid {
 
 const countBlack = (grid: Grid) => [...grid.values()].filter(Boolean).length;
 
-const exampleInput = parse(load(24, 'ex').lines);
+const exampleInput = parse(load('ex').lines);
 const exampleStart = flipTiles(exampleInput);
 example.equal(10, countBlack(exampleStart));
 example.equal(15, countBlack(life(exampleStart, 1)));
 example.equal(2208, countBlack(life(exampleStart, 100)));
 
-const input = parse(load(24).lines);
-answers.expect(465, 4078);
-answers(
+const input = parse(load().lines);
+export default solve(
   () => countBlack(flipTiles(input)),
   () => countBlack(life(flipTiles(input), 100))
-);
+).expect(465, 4078);

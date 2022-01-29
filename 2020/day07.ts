@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Contents = {
   count: number;
@@ -46,15 +46,14 @@ function countContainedBags(container: string, rules: Rules): number {
   }, 0);
 }
 
-const exampleRules1 = parseRules(load(7, 'ex1').lines);
+const exampleRules1 = parseRules(load('ex1').lines);
 example.equal(4, whatCanContain('shiny gold', exampleRules1).length);
-const exampleRules2 = parseRules(load(7, 'ex2').lines);
+const exampleRules2 = parseRules(load('ex2').lines);
 example.equal(32, countContainedBags('shiny gold', exampleRules1));
 example.equal(126, countContainedBags('shiny gold', exampleRules2));
 
-const rules = parseRules(load(7).lines);
-answers.expect(326, 5635);
-answers(
+const rules = parseRules(load().lines);
+export default solve(
   () => whatCanContain('shiny gold', rules).length,
   () => countContainedBags('shiny gold', rules)
-);
+).expect(326, 5635);

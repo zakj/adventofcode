@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type SetMask = {
   action: 'mask';
@@ -93,14 +93,13 @@ function* floatingMasks(mask: string): Generator<string> {
   }
 }
 
-let exampleProgram = parseProgram(load(14, 'ex1').lines);
+let exampleProgram = parseProgram(load('ex1').lines);
 example.equal(165, sumOfMemoryValuesV1(exampleProgram));
-exampleProgram = parseProgram(load(14, 'ex2').lines);
+exampleProgram = parseProgram(load('ex2').lines);
 example.equal(208, sumOfMemoryValuesV2(exampleProgram));
 
-const program = parseProgram(load(14).lines);
-answers.expect(11179633149677, 4822600194774);
-answers(
+const program = parseProgram(load().lines);
+export default solve(
   () => sumOfMemoryValuesV1(program),
   () => sumOfMemoryValuesV2(program)
-);
+).expect(11179633149677, 4822600194774);

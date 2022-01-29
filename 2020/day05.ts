@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 function findSeatId(boardingPass: string): number {
   let minRow = 0;
@@ -38,9 +38,8 @@ const examples: [string, number][] = [
 ];
 examples.forEach((e) => example.equal(e[1], findSeatId(e[0])));
 
-const seatIds = load(5).lines.map(findSeatId);
-answers.expect(842, 617);
-answers(
+const seatIds = load().lines.map(findSeatId);
+export default solve(
   () => Math.max(...seatIds),
   () => findMissing(seatIds)
-);
+).expect(842, 617);

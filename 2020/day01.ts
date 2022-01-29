@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { product } from '../util';
 
 type TwoNumbers = [number, number];
@@ -35,9 +35,8 @@ example.deepEqual(
   find3ElementsWithSum(2020, [1721, 979, 366, 299, 675, 1456])
 );
 
-const data = load(1).numbers;
-answers.expect(1018944, 8446464);
-answers(
+const data = load().numbers;
+export default solve(
   () => product(find2ElementsWithSum(2020, data)),
   () => product(find3ElementsWithSum(2020, data))
-);
+).expect(1018944, 8446464);

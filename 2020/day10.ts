@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 function joltageJumps(adapters: number[]): { [key: number]: number } {
   adapters = [0].concat(adapters);
@@ -43,18 +43,17 @@ function countValidPaths(adapters: number[]): number {
   return result * pathsPerContiguousNumber[contiguousCount];
 }
 
-const exampleAdapters = load(10, 'ex').numbers;
+const exampleAdapters = load('ex').numbers;
 const exampleDiffs = joltageJumps(exampleAdapters);
 example.deepEqual([22, 10], [exampleDiffs[1], exampleDiffs[3]]);
 example.equal(8, countValidPaths([16, 10, 15, 5, 1, 11, 7, 19, 6, 12, 4]));
 example.equal(19208, countValidPaths(exampleAdapters));
 
-const adapters = load(10).numbers;
-answers.expect(2240, 99214346656768);
-answers(
+const adapters = load().numbers;
+export default solve(
   () => {
     const diffs = joltageJumps(adapters);
     return diffs[1] * diffs[3];
   },
   () => countValidPaths(adapters)
-);
+).expect(2240, 99214346656768);

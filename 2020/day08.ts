@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 enum Operator {
   Acc,
@@ -92,13 +92,12 @@ function findAccumulatorAfterNonLoopingChange(
   }
 }
 
-const exampleInstructions = parseInstructions(load(8, 'ex').lines);
+const exampleInstructions = parseInstructions(load('ex').lines);
 example.equal(5, accumulatorValueBeforeLoop(exampleInstructions));
 example.equal(8, findAccumulatorAfterNonLoopingChange(exampleInstructions));
 
-const instructions = parseInstructions(load(8).lines);
-answers.expect(1584, 920);
-answers(
+const instructions = parseInstructions(load().lines);
+export default solve(
   () => accumulatorValueBeforeLoop(instructions),
   () => findAccumulatorAfterNonLoopingChange(instructions)
-);
+).expect(1584, 920);

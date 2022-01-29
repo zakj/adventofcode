@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 type Hand = number[];
@@ -47,13 +47,12 @@ function playRecursive(hands: Hand[]): [number, number] {
   return [score(p1), score(p2)];
 }
 
-const exampleGame = parseGame(load(22, 'ex').paragraphs);
+const exampleGame = parseGame(load('ex').paragraphs);
 example.equal(306, Math.max(...play(exampleGame).map(score)));
 example.equal(291, Math.max(...playRecursive(exampleGame)));
 
-const game = parseGame(load(22).paragraphs);
-answers.expect(32629, 32519);
-answers(
+const game = parseGame(load().paragraphs);
+export default solve(
   () => Math.max(...play(game).map(score)),
   () => Math.max(...playRecursive(game))
-);
+).expect(32629, 32519);

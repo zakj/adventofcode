@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Passport = {
   byr?: string;
@@ -69,12 +69,11 @@ function isValid(passport: Passport): boolean {
   return true;
 }
 
-const exampleData = parsePassports(load(4, 'ex').paragraphs);
+const exampleData = parsePassports(load('ex').paragraphs);
 example.equal(2, exampleData.filter(containsRequiredFields).length);
 
-const passports = parsePassports(load(4).paragraphs);
-answers.expect(228, 175);
-answers(
+const passports = parsePassports(load().paragraphs);
+export default solve(
   () => passports.filter(containsRequiredFields).length,
   () => passports.filter(isValid).length
-);
+).expect(228, 175);

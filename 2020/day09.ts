@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 function isSumOfTwoElements(needle: number, haystack: number[]): boolean {
@@ -25,14 +25,13 @@ function contiguousSum(needle: number, haystack: number[]): number {
   }
 }
 
-const exampleData = load(9, 'ex').numbers;
+const exampleData = load('ex').numbers;
 example.equal(127, firstFailingNumber(exampleData, 5));
 example.equal(62, contiguousSum(127, exampleData));
 
-const data = load(9).numbers;
+const data = load().numbers;
 const part1 = firstFailingNumber(data, 25);
-answers.expect(104054607, 13935797);
-answers(
+export default solve(
   () => part1,
   () => contiguousSum(part1, data)
-);
+).expect(104054607, 13935797);

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 function spokenNumber(input: number[], n: number): number {
   const lastSaid = new Map<number, number>();
@@ -23,9 +23,8 @@ example.equal(78, spokenNumber([2, 3, 1], 2020));
 example.equal(438, spokenNumber([3, 2, 1], 2020));
 example.equal(1836, spokenNumber([3, 1, 2], 2020));
 
-const numbers = load(15).raw.trim().split(',').map(Number);
-answers.expect(253, 13710);
-answers(
+const numbers = load().raw.trim().split(',').map(Number);
+export default solve(
   () => spokenNumber(numbers, 2020),
   () => spokenNumber(numbers, 30000000)
-);
+).expect(253, 13710);

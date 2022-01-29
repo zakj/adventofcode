@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { product } from '../util';
 
 enum Tile {
@@ -46,7 +46,7 @@ const part2Slopes = [
   { right: 1, down: 2 },
 ];
 
-const exampleMap = new Map(load(3, 'ex').lines);
+const exampleMap = new Map(load('ex').lines);
 example.equal(
   7,
   exampleMap.countTilesForSlope({ right: 3, down: 1 }, Tile.Tree)
@@ -56,9 +56,8 @@ example.equal(
   product(part2Slopes.map((s) => exampleMap.countTilesForSlope(s, Tile.Tree)))
 );
 
-const map = new Map(load(3).lines);
-answers.expect(191, 1478615040);
-answers(
+const map = new Map(load().lines);
+export default solve(
   () => map.countTilesForSlope({ right: 3, down: 1 }, Tile.Tree),
   () => product(part2Slopes.map((s) => map.countTilesForSlope(s, Tile.Tree)))
-);
+).expect(191, 1478615040);

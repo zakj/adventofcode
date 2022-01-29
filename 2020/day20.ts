@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { product, range, sum } from '../util';
 
 enum Edge {
@@ -188,16 +188,15 @@ function roughness(tile: Tile): number {
   return sum(tile.image.flat().map((c) => (c === '#' ? 1 : 0)));
 }
 
-const exampleTiles = parseTiles(load(20, 'ex').paragraphs);
+const exampleTiles = parseTiles(load('ex').paragraphs);
 example.equal(
   20899048083289,
   product(findCorners(exampleTiles).map((t) => t.id))
 );
 example.equal(273, roughness(markMonsters(assembleImage(exampleTiles))));
 
-const tiles = parseTiles(load(20).paragraphs);
-answers.expect(5775714912743, 1836);
-answers(
+const tiles = parseTiles(load().paragraphs);
+export default solve(
   () => product(findCorners(tiles).map((t) => t.id)),
   () => roughness(markMonsters(assembleImage(tiles)))
-);
+).expect(5775714912743, 1836);

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { Point } from '../coords';
 
 enum PositionType {
@@ -150,7 +150,7 @@ function stabilize(grid: Grid, round: (grid: Grid) => Grid): Grid {
   return grid;
 }
 
-const exampleGrid = parseGrid(load(11, 'ex').lines);
+const exampleGrid = parseGrid(load('ex').lines);
 example.equal(
   37,
   stabilize(exampleGrid, runSeatingRoundPart1).layout.filter(
@@ -164,9 +164,8 @@ example.equal(
   ).length
 );
 
-const grid = parseGrid(load(11).lines);
-answers.expect(2263, 2002);
-answers(
+const grid = parseGrid(load().lines);
+export default solve(
   () =>
     stabilize(grid, runSeatingRoundPart1).layout.filter(
       (t) => t === PositionType.OccupiedSeat
@@ -175,4 +174,4 @@ answers(
     stabilize(grid, runSeatingRoundPart2).layout.filter(
       (t) => t === PositionType.OccupiedSeat
     ).length
-);
+).expect(2263, 2002);

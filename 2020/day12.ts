@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { Point } from '../coords';
 
 type Instruction = {
@@ -127,14 +127,13 @@ function manhattanDistance(point: Point): number {
   return Math.abs(point.x) + Math.abs(point.y);
 }
 
-const exampleInstructions = parseInstructions(load(12, 'ex').lines);
+const exampleInstructions = parseInstructions(load('ex').lines);
 const exampleOneEnd = executePartOne(exampleInstructions);
 example.equal(25, manhattanDistance(executePartOne(exampleInstructions)));
 example.equal(286, manhattanDistance(executePartTwo(exampleInstructions)));
 
-const instructions = parseInstructions(load(12).lines);
-answers.expect(2879, 178986);
-answers(
+const instructions = parseInstructions(load().lines);
+export default solve(
   () => manhattanDistance(executePartOne(instructions)),
   () => manhattanDistance(executePartTwo(instructions))
-);
+).expect(2879, 178986);

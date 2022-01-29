@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type RuleId = number;
 type RuleSequence = (string | RuleId)[];
@@ -36,7 +36,7 @@ function canStringMatchRules(
   }
 }
 
-const [exampleInput, exampleMessages] = load(19, 'ex').paragraphs;
+const [exampleInput, exampleMessages] = load('ex').paragraphs;
 const exampleRules = parseRules(exampleInput);
 example.equal(
   2,
@@ -44,14 +44,13 @@ example.equal(
     .length
 );
 
-const [input, messages] = load(19).paragraphs;
+const [input, messages] = load().paragraphs;
 const rules = parseRules(input);
-answers.expect(187, 392);
-answers(
+export default solve(
   () => messages.filter((m) => canStringMatchRules(m, rules, [0])).length,
   () => {
     rules.get(8).push([42, 8]);
     rules.get(11).push([42, 11, 31]);
     return messages.filter((m) => canStringMatchRules(m, rules, [0])).length;
   }
-);
+).expect(187, 392);

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Policy = {
   n1: number;
@@ -49,9 +49,8 @@ const exampleData = ['1-3 a: abcde', '1-3 b: cdefg', '2-9 c: ccccccccc'].map(
 example.equal(2, countValidPasswords1(exampleData));
 example.equal(1, countValidPasswords2(exampleData));
 
-const data = load(2).lines.map(parseData);
-answers.expect(640, 472);
-answers(
+const data = load().lines.map(parseData);
+export default solve(
   () => countValidPasswords1(data),
   () => countValidPasswords2(data)
-);
+).expect(640, 472);

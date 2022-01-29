@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Input = {
   timestamp: number;
@@ -38,13 +38,12 @@ function part2(input: Input): number {
   return timestamp;
 }
 
-const exampleInput = parseInput(load(13, 'ex').lines);
+const exampleInput = parseInput(load('ex').lines);
 example.equal(295, part1(exampleInput));
 example.equal(1068781, part2(exampleInput));
 
-const input = parseInput(load(13).lines);
-answers.expect(153, 471793476184394);
-answers(
+const input = parseInput(load().lines);
+export default solve(
   () => part1(input),
   () => part2(input)
-);
+).expect(153, 471793476184394);

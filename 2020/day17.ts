@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { cartesianProduct, sum } from '../util';
 
 type Bound = [number, number];
@@ -74,9 +74,9 @@ function countActiveNeighbors(grid: Grid, point: number[]): number {
   if (!deltas) {
     const toCombine: number[][] = [];
     for (let i = 0; i < point.length; ++i) toCombine.push([-1, 0, 1]);
-    deltas = deltaCache[point.length] = cartesianProduct(
-      ...toCombine
-    ).filter((delta) => delta.some((x) => x !== 0));
+    deltas = deltaCache[point.length] = cartesianProduct(...toCombine).filter(
+      (delta) => delta.some((x) => x !== 0)
+    );
   }
   return deltaCache[point.length].filter((delta) =>
     grid.get(zip(point, delta).map(sum))
@@ -128,13 +128,12 @@ function rounds(fn: (grid: Grid) => Grid, grid: Grid, n: number): Grid {
   return grid;
 }
 
-const exampleInput = load(17, 'ex').lines;
+const exampleInput = load('ex').lines;
 example.equal(112, rounds(round3d, parse(exampleInput), 6).size);
 example.equal(848, rounds(round4d, parse(exampleInput, 4), 6).size);
 
-const input = load(17).lines;
-answers.expect(426, 1892);
-answers(
+const input = load().lines;
+export default solve(
   () => rounds(round3d, parse(input), 6).size,
   () => rounds(round4d, parse(input, 4), 6).size
-);
+).expect(426, 1892);

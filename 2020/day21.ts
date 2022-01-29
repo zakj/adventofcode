@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Food = {
   ingredients: Set<string>;
@@ -75,7 +75,7 @@ function part2(foods: Food[]): string {
   return keys.map((k) => allergens.get(k)).join(',');
 }
 
-const exampleFoods = parseFoods(load(21, 'ex').lines);
+const exampleFoods = parseFoods(load('ex').lines);
 example.deepEqual(
   new Set(['kfcds', 'nhms', 'sbzzf', 'trh']),
   safeFoods(exampleFoods)
@@ -83,9 +83,8 @@ example.deepEqual(
 example.equal(5, part1(exampleFoods));
 example.equal('mxmxvkd,sqjhc,fvjkl', part2(exampleFoods));
 
-const foods = parseFoods(load(21).lines);
-answers.expect(2061, 'cdqvp,dglm,zhqjs,rbpg,xvtrfz,tgmzqjz,mfqgx,rffqhl');
-answers(
+const foods = parseFoods(load().lines);
+export default solve(
   () => part1(foods),
   () => part2(foods)
-);
+).expect(2061, 'cdqvp,dglm,zhqjs,rbpg,xvtrfz,tgmzqjz,mfqgx,rffqhl');
