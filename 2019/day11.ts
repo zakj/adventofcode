@@ -1,4 +1,4 @@
-import { answers, load, ocr } from '../advent';
+import { load, ocr, solve } from '../advent';
 import { XMap } from '../util';
 import { compile, parse, Program } from './intcode';
 
@@ -64,9 +64,8 @@ function toString(grid: Grid): string {
   return rows.join('\n');
 }
 
-const program = parse(load(11).raw);
-answers.expect(2252, 'AGALRGJE');
-answers(
+const program = parse(load().raw);
+export default solve(
   () => paint(program, Color.Black).size,
   () => ocr(toString(paint(program, Color.White)), '4x6')
-);
+).expect(2252, 'AGALRGJE');

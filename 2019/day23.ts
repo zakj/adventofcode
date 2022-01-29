@@ -1,10 +1,9 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { chunks, range } from '../util';
 import { compile, parse } from './intcode';
 
-const program = parse(load(23).raw);
-answers.expect(19530, 12725);
-answers(
+const program = parse(load().raw);
+export default solve(
   () => {
     const computers = range(0, 50).map((addr) => compile(program, addr));
     let packets: number[][] = [];
@@ -37,4 +36,4 @@ answers(
       packets = chunks(computers[0](nat.x, nat.y), 3);
     }
   }
-);
+).expect(19530, 12725);

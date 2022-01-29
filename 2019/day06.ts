@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import search from '../graph';
 import { sum } from '../util';
 
@@ -59,9 +59,8 @@ function parseGraph(lines: string[]): DiGraph<string> {
   );
 }
 
-const graph = parseGraph(load(6).lines);
-answers.expect(241064, 418);
-answers(
+const graph = parseGraph(load().lines);
+export default solve(
   () => sum([...graph.nodes].map((node) => graph.shortestPathUp(node, 'COM'))),
   () => graph.shortestPath('YOU', 'SAN') - 2
-);
+).expect(241064, 418);

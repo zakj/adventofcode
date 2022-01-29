@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { XMap, XSet } from '../util';
 
 type Point = { x: number; y: number };
@@ -20,9 +20,10 @@ function angleBetween(a: Point, b: Point): number {
   return (degrees + 360) % 360;
 }
 
-function monitoringStation(
-  asteroids: XSet<Point>
-): { station: Point; angles: Map<number, Point[]> } {
+function monitoringStation(asteroids: XSet<Point>): {
+  station: Point;
+  angles: Map<number, Point[]>;
+} {
   const anglesTo = new XMap<Point, Map<number, Point[]>>(h);
   for (const asteroid of asteroids) {
     const angles = new Map<number, Point[]>();
@@ -44,9 +45,8 @@ function distance(a: Point, b: Point): number {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
-const asteroids = parse(load(10).lines);
-answers.expect(347, 829);
-answers(
+const asteroids = parse(load().lines);
+export default solve(
   () => monitoringStation(asteroids).angles.size,
   () => {
     const { station, angles } = monitoringStation(asteroids);
@@ -64,4 +64,4 @@ answers(
     }
     return destroyed.x * 100 + destroyed.y;
   }
-);
+).expect(347, 829);

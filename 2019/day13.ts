@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { chunks, XMap } from '../util';
 import { compile, parse, Program } from './intcode';
 
@@ -64,11 +64,10 @@ function toString(grid: Grid): string {
   return rows.join('\n');
 }
 
-const program = parse(load(13).raw);
-answers.expect(318, 16309);
-answers(
+const program = parse(load().raw);
+export default solve(
   () =>
     chunks(compile(program)(), 3).filter(([x, y, t]) => t === Tile.Block)
       .length,
   () => play(program)
-);
+).expect(318, 16309);

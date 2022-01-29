@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { neighbors4, Point, pointHash, PointMap, PointSet } from '../coords';
 import { XMap } from '../util';
 
@@ -136,14 +136,13 @@ function shortestPath(
   return shortest;
 }
 
-const ex1 = parse(load(18, 'ex1').lines);
+const ex1 = parse(load('ex1').lines);
 example.equal(shortestPath(ex1), 132);
-const ex2 = parse(load(18, 'ex2').lines);
+const ex2 = parse(load('ex2').lines);
 example.equal(shortestPath(ex2), 136);
 
-const map = parse(load(18).lines);
-answers.expect(4668, 1910);
-answers(
+const map = parse(load().lines);
+export default solve(
   () => shortestPath(map),
   () => {
     map.paths.delete(map.start);
@@ -162,4 +161,4 @@ answers(
     }
     return shortestPath(map, starts);
   }
-);
+).expect(4668, 1910);

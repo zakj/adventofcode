@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { add, PointMap, PointSet } from '../coords';
 
 enum Dir {
@@ -64,9 +64,8 @@ function closestIntersectionBySteps(wires: Wire[]) {
     .reduce((min, p) => (p < min ? p : min));
 }
 
-const wires = parse(load(3).lines);
-answers.expect(280, 10554);
-answers(
+const wires = parse(load().lines);
+export default solve(
   () => closestIntersectionByDistance(wires),
   () => closestIntersectionBySteps(wires)
-);
+).expect(280, 10554);

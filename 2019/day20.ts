@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import {
   findBounds,
   neighbors4,
@@ -117,14 +117,13 @@ function shortestPathRecursive(map: Map): number {
   return search(start, end, rpHash, edgeWeights, heuristic);
 }
 
-const ex1Map = parse(load(20, 'ex1').raw);
+const ex1Map = parse(load('ex1').raw);
 example.equal(shortestPath(ex1Map), 23);
-const ex2Map = parse(load(20, 'ex2').raw);
+const ex2Map = parse(load('ex2').raw);
 example.equal(shortestPath(ex2Map), 58);
 
-const map = parse(load(20).raw);
-answers.expect(578, 6592);
-answers(
+const map = parse(load().raw);
+export default solve(
   () => shortestPath(map),
   () => shortestPathRecursive(map)
-);
+).expect(578, 6592);

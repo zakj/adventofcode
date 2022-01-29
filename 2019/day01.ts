@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { sum } from '../util';
 
 function fuelRequired(mass: number): number {
@@ -13,9 +13,8 @@ function fuelRequiredPlusFuel(mass: number): number {
   return totalFuel;
 }
 
-const data = load(1).numbers;
-answers.expect(3420719, 5128195);
-answers(
+const data = load().numbers;
+export default solve(
   () => sum(data.map(fuelRequired)),
   () => sum(data.map(fuelRequiredPlusFuel))
-);
+).expect(3420719, 5128195);

@@ -1,4 +1,4 @@
-import { answers, load, ocr } from '../advent';
+import { load, ocr, solve } from '../advent';
 import { chunks, Counter } from '../util';
 
 type Layer = number[];
@@ -42,9 +42,8 @@ function layerString(layer: Layer): string {
     .join('\n');
 }
 
-const layers = parse(load(8).lines[0]);
-answers.expect(1320, 'RCYKR');
-answers(
+const layers = parse(load().lines[0]);
+export default solve(
   () => {
     const counts = layers.map((l) => new Map(new Counter(l).mostCommon));
     const fewestZeros = counts.reduce((min, c) =>
@@ -53,4 +52,4 @@ answers(
     return fewestZeros.get(1) * fewestZeros.get(2);
   },
   () => ocr(layerString(flattenLayers(layers)), '4x6')
-);
+).expect(1320, 'RCYKR');

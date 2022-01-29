@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { combinations, product, sum } from '../util';
 
 type Point = {
@@ -58,9 +58,8 @@ function lcm(...xs: number[]): number {
   return product(xs) / Math.pow(hcf, xs.length - 1);
 }
 
-const moons = parse(load(12).lines);
-answers.expect(9127, 353620566035124);
-answers(
+const moons = parse(load().lines);
+export default solve(
   () => {
     for (let i = 0; i < 1000; ++i) step(moons);
     return sum(moons.map(moonEnergy));
@@ -82,4 +81,4 @@ answers(
     }
     return lcm(cycle.x, cycle.y, cycle.z);
   }
-);
+).expect(9127, 353620566035124);

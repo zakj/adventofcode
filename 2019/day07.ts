@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { permutations, range } from '../util';
 import { compile, parse, Program } from './intcode';
 
@@ -30,7 +30,7 @@ function maxThrusterFeedback(program: Program): number {
   return max;
 }
 
-const examples = load(7, 'ex').paragraphs;
+const examples = load('ex').paragraphs;
 for (const [program, max] of examples[0].map((l) => l.split(' '))) {
   example.equal(maxThrusterSignal(parse(program)), Number(max));
 }
@@ -38,9 +38,8 @@ for (const [program, max] of examples[1].map((l) => l.split(' '))) {
   example.equal(maxThrusterFeedback(parse(program)), Number(max));
 }
 
-const program = parse(load(7).raw);
-answers.expect(844468, 4215746);
-answers(
+const program = parse(load().raw);
+export default solve(
   () => maxThrusterSignal(program),
   () => maxThrusterFeedback(program)
-);
+).expect(844468, 4215746);

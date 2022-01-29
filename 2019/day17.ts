@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import {
   Dir,
   move,
@@ -134,9 +134,8 @@ function compress(path: string[]): {
   };
 }
 
-const program = parse(load(17).raw);
-answers.expect(2804, 833429);
-answers(
+const program = parse(load().raw);
+export default solve(
   () => {
     const robot = compile(program);
     const { walkable } = parseRobot(robot.ascii());
@@ -155,4 +154,4 @@ answers(
       'n' // continuous?
     ).pop();
   }
-);
+).expect(2804, 833429);

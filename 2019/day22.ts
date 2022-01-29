@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 enum Technique {
   Deal,
@@ -95,9 +95,8 @@ function shuffle2(
   return { offset, increment };
 }
 
-const instructions = parse(load(22).lines);
-answers.expect(7744, 57817797345992n);
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => shuffle(makeDeck(10007), instructions).findIndex((c) => c === 2019),
   () => {
     const deckSize = 119315717514047n;
@@ -111,4 +110,4 @@ answers(
       deckSize;
     return (offsetIter + 2020n * incrementIter) % deckSize;
   }
-);
+).expect(7744, 57817797345992n);

@@ -1,13 +1,12 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { compile, parse, Program } from './intcode';
 
 function hasBeam(program: Program, x: number, y: number): boolean {
   return compile(program)(x, y).pop() === 1;
 }
 
-const program = parse(load(19).raw);
-answers.expect(118, 18651593);
-answers(
+const program = parse(load().raw);
+export default solve(
   () => {
     let count = 0;
     for (let y = 0; y < 50; ++y) {
@@ -28,4 +27,4 @@ answers(
     }
     return x * 10e3 + y;
   }
-);
+).expect(118, 18651593);

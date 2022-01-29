@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { pairs, range } from '../util';
 
 function isValid1(n: number): boolean {
@@ -21,9 +21,8 @@ function isValid2(n: number): boolean {
   return [...runs.values()].includes(2);
 }
 
-const [low, high] = load(4).lines[0].split('-').map(Number);
-answers.expect(1640, 1126);
-answers(
+const [low, high] = load().lines[0].split('-').map(Number);
+export default solve(
   () => range(low, high + 1).filter(isValid1).length,
   () => range(low, high + 1).filter(isValid2).length
-);
+).expect(1640, 1126);

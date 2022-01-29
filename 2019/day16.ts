@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 const parse = (s: string): number[] => s.trim().split('').map(Number);
@@ -48,9 +48,8 @@ for (const [inp, exp] of examples) {
   example.equal(fft(parse(inp), 100), exp);
 }
 
-const digits = parse(load(16).raw);
-answers.expect('30369587', '27683551');
-answers(
+const digits = parse(load().raw);
+export default solve(
   // TODO optimize? 1.5s
   () => fft(digits, 100),
   () => {
@@ -59,4 +58,4 @@ answers(
     const n = Number(digits.slice(0, 7).join(''));
     return fftOffset(extendedDigits, 100, n);
   }
-);
+).expect('30369587', '27683551');

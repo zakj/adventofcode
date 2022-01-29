@@ -1,9 +1,8 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { compile, parse } from './intcode';
 
-const program = parse(load(21).raw);
-answers.expect(19362822, 1143625214);
-answers(
+const program = parse(load().raw);
+export default solve(
   () => {
     // jump if !(A & B & C) & D
     return compile(program)(
@@ -34,4 +33,4 @@ answers(
       'RUN'
     ).pop();
   }
-);
+).expect(19362822, 1143625214);

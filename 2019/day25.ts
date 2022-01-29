@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { compile, parse, Program } from './intcode';
 
 type Room = {
@@ -131,6 +131,5 @@ function play(program: Program) {
   }
 }
 
-const program = parse(load(25).raw);
-answers.expect(196872);
-answers(() => play(program));
+const program = parse(load().raw);
+export default solve(() => play(program)).expect(196872);

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { DefaultDict } from '../util';
 
 interface Chemical {
@@ -46,7 +46,7 @@ function oreToProduce(recipes: Recipes, req: Chemical): number {
   return ore;
 }
 
-const examples = load(14, 'ex').paragraphs.map((para) => {
+const examples = load('ex').paragraphs.map((para) => {
   const expected = Number(para.shift());
   return { expected, reactions: parse(para) };
 });
@@ -54,9 +54,8 @@ for (const { expected, reactions } of examples) {
   example.equal(oreToProduce(reactions, { type: 'FUEL', num: 1 }), expected);
 }
 
-const recipes = parse(load(14).lines);
-answers.expect(201324, 6326857);
-answers(
+const recipes = parse(load().lines);
+export default solve(
   () => oreToProduce(recipes, { num: 1, type: 'FUEL' }),
   () => {
     let low = 1e4;
@@ -69,4 +68,4 @@ answers(
     }
     return low;
   }
-);
+).expect(201324, 6326857);

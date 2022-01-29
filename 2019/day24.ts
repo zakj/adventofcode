@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { range, sum, XSet } from '../util';
 
 type Layer = boolean[];
@@ -172,13 +172,12 @@ function totalBugs(grid: InfiniteGrid): number {
   return [...grid.layers.values()].flat().filter(Boolean).length;
 }
 
-const exampleLayout = parse(load(24, 'ex').lines);
+const exampleLayout = parse(load('ex').lines);
 example.equal(biodiversity(firstRepeating(exampleLayout)), 2129920);
 example.equal(totalBugs(infiniteGrid(exampleLayout, 10)), 99);
 
-const layout = parse(load(24).lines);
-answers.expect(28903899, 1896);
-answers(
+const layout = parse(load().lines);
+export default solve(
   () => biodiversity(firstRepeating(layout)),
   () => totalBugs(infiniteGrid(layout, 200))
-);
+).expect(28903899, 1896);

@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { XMap, XSet } from '../util';
 import { compile, parse, Program } from './intcode';
 
@@ -96,9 +96,8 @@ function fill(grid: Grid): number {
   return maxMinutes;
 }
 
-const program = parse(load(15).raw);
-answers.expect(298, 346);
-answers(
+const program = parse(load().raw);
+export default solve(
   () => walk(buildGrid(program)),
   () => fill(buildGrid(program))
-);
+).expect(298, 346);
