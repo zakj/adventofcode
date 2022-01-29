@@ -1,9 +1,7 @@
 import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
-import inspector from 'inspector';
+import { readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
-import { performance } from 'perf_hooks';
 import { zip } from './util';
 
 type Input = {
@@ -13,9 +11,9 @@ type Input = {
   paragraphs: string[][];
 };
 
-export interface Answers {
-  expect: (...values: any[]) => Answers;
-  profile: () => Answers;
+export interface Solver {
+  expect: (...values: any[]) => Solver;
+  profile: () => Solver;
   shouldProfile: boolean;
   parts: [Function, any][];
 }
@@ -38,7 +36,7 @@ function findModule(): { dir: string; year: number; day: number } {
   );
   Error.prepareStackTrace = orig;
   const filename = caller.getFileName();
-  const match = /(?<year>\d{4})\/day(?<day>\d\d)\.ts$/.exec(filename);
+  const match = /(?<year>\d{4})\/day(?<day>\d\d)(?:-.*)?\.ts$/.exec(filename);
   return {
     dir: dirname(filename),
     year: Number(match.groups.year),
@@ -46,11 +44,7 @@ function findModule(): { dir: string; year: number; day: number } {
   };
 }
 
-// TODO: day is unused now
-export function load(day: number, suffix?: string): Input;
-export function load(suffix?: string): Input;
-export function load(day?: number | string, suffix: string = ''): Input {
-  if (typeof day === 'string') suffix = day; // XXX remove after removing first arg
+export function load(suffix: string = ''): Input {
   const module = findModule();
   const paddedDay = `0${module.day}`.slice(-2);
   const path = resolve(module.dir, 'input', `${paddedDay}${suffix}.txt`);
@@ -91,7 +85,7 @@ export function load(day?: number | string, suffix: string = ''): Input {
   };
 }
 
-export function solve(...fns: ((prev: any) => any)[]): Answers {
+export function solve(...fns: ((prev: any) => any)[]): Solver {
   const expected = [];
   let profile = false;
 
@@ -115,91 +109,6 @@ export function solve(...fns: ((prev: any) => any)[]): Answers {
     },
   };
 }
-
-// TODO remove after porting all existing days
-export async function answers(...fns: (() => any)[]): Promise<void> {
-  const c = (n: number) => (text: string) => `\x1b[${n}m${text}\x1b[0m`;
-  const color = {
-    red: c(31),
-    yellow: c(33),
-    green: c(32),
-    grey: c(90),
-  };
-
-  let success = true;
-  for (let i = 0; i < fns.length; ++i) {
-    const fn = fns[i];
-    const indexStr = `${i + 1}: `;
-    process.stdout.write(indexStr);
-
-    await new Promise((resolve, reject) => {
-      if (answers.profile) {
-        const session = new inspector.Session();
-        session.connect();
-        session.post('Profiler.enable', () => {
-          session.post('Profiler.start', () => {
-            const start = performance.now();
-            try {
-              const result = fn();
-              const durationMs = performance.now() - start;
-              resolve([result, durationMs]);
-            } catch (e) {
-              reject(e);
-            }
-            session.post('Profiler.stop', (err, { profile }) => {
-              if (err) return;
-              writeFileSync(
-                `./part${i + 1}.cpuprofile`,
-                JSON.stringify(profile)
-              );
-            });
-          });
-        });
-        session.disconnect();
-      } else {
-        const start = performance.now();
-        const result = fn();
-        const durationMs = performance.now() - start;
-        resolve([result, durationMs]);
-      }
-    })
-      .then(([result, durationMs]) => {
-        const duration =
-          durationMs > 1000
-            ? `${(durationMs / 1000).toFixed(3)}s`
-            : `${durationMs.toFixed(3)}ms`;
-        if (process.stdout.cursorTo) {
-          process.stdout.cursorTo(process.stdout.columns - duration.length);
-          process.stdout.write(color.grey(duration));
-          process.stdout.cursorTo(indexStr.length);
-        }
-
-        const expected = expectedAnswers[i];
-        if (expected === result) {
-          console.log(color.green(result?.toString()));
-        } else if (typeof expected === 'undefined') {
-          success = false;
-          console.log(color.yellow(result?.toString()));
-        } else {
-          success = false;
-          console.log(
-            color.red(result?.toString()),
-            color.grey('!=='),
-            color.green(expected)
-          );
-        }
-      })
-      .catch((e) => {
-        console.error(color.red(e));
-      });
-  }
-
-  if (!success) process.exit(1);
-}
-
-const expectedAnswers: any[] = [];
-answers.expect = (...args: any[]) => expectedAnswers.push(...args);
-answers.profile = false;
 
 const assertHandler: ProxyHandler<typeof assert> = {
   get: function (target, prop, receiver) {

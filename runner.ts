@@ -3,8 +3,7 @@ import inspector from 'inspector';
 import { color, makeTable } from 'lib/format';
 import { basename, resolve } from 'path';
 import { performance } from 'perf_hooks';
-import * as advent from './advent';
-import { Answers } from './advent';
+import { Solver } from './advent';
 
 type Result = { part: number; result: any; expected: any; duration: number };
 
@@ -37,7 +36,7 @@ async function runYear(dir: string) {
   table.footer();
 }
 
-function isAnswers(obj: unknown): obj is Answers {
+function isSolver(obj: unknown): obj is Solver {
   return (
     typeof obj === 'object' &&
     'parts' in obj &&
@@ -56,7 +55,7 @@ async function runDay(file: string, printer?: (s: string) => void) {
   const day = await import(resolve(file));
   const solve = day.default;
 
-  if (!isAnswers(solve)) {
+  if (!isSolver(solve)) {
     // TODO: rework this `if` after all files are ported
     if (printer) printer(color.red('invalid export'));
     return;
@@ -143,20 +142,13 @@ function fmtSummary({ result, expected, duration }: Result): string {
   const isDir = exists && statSync(arg).isDirectory();
   const isFile = exists && !isDir;
 
-  // TODO: remove this monkeypatch once I've ported all days to the new format.
-  if (!isFile) {
-    const fakeAnswers = () => {};
-    fakeAnswers.expect = () => {};
-    // @ts-ignore
-    advent.answers = fakeAnswers;
-  }
-
   try {
     if (isFile) await runDay(arg);
     else if (isDir) runYear(arg);
     else if (!arg) runAll();
     else throw `invalid argument ${arg}`;
   } catch (e) {
-    console.error(color.red(e));
+    // TODO maybe: console.error(color.red(e));
+    throw e;
   }
 })();
