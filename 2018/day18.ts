@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { XMap } from '../util';
 
 enum Cell {
@@ -84,12 +84,11 @@ function cycles(grid: Area, n: number): number {
   );
 }
 
-const exampleGrid = parse(load(18, 'ex').lines);
+const exampleGrid = parse(load('ex').lines);
 example.equal(cycles(exampleGrid, 10), 1147);
 
-const grid = parse(load(18).lines);
-answers.expect(560091, 202301);
-answers(
+const grid = parse(load().lines);
+export default solve(
   () => cycles(grid, 10),
   () => cycles(grid, 1e9)
-);
+).expect(560091, 202301);

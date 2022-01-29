@@ -1,4 +1,4 @@
-import { answers, load, ocr } from '../advent';
+import { load, ocr, solve } from '../advent';
 import { findBounds, Point, PointSet, toAscii } from '../coords';
 
 type PointRule = {
@@ -39,9 +39,8 @@ function converge(rules: PointRule[]): number {
   }
 }
 
-const rules = parse(load(10).lines);
-answers.expect('KFLBHXGK', 10659);
-answers(
+const rules = parse(load().lines);
+export default solve(
   () => ocr(toAscii(new PointSet(after(converge(rules), rules))), '6x10'),
   () => converge(rules)
-);
+).expect('KFLBHXGK', 10659);

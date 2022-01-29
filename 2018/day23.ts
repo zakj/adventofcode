@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Point = { x: number; y: number; z: number };
 type Bot = Point & { r: number };
@@ -85,14 +85,13 @@ function inRangeOfMost(bots: Bot[]): Point {
 }
 
 const pos = { x: 0, y: 0, z: 0 };
-const exampleBots1 = parse(load(23, 'ex').paragraphs[0]);
+const exampleBots1 = parse(load('ex').paragraphs[0]);
 example.equal(countInRangeOfLargest(exampleBots1), 7);
-const exampleBots2 = parse(load(23, 'ex').paragraphs[1]);
+const exampleBots2 = parse(load('ex').paragraphs[1]);
 example.equal(distance(pos, inRangeOfMost(exampleBots2)), 36);
 
-const bots = parse(load(23).lines);
-answers.expect(713, 104501042);
-answers(
+const bots = parse(load().lines);
+export default solve(
   () => countInRangeOfLargest(bots),
   () => distance(pos, inRangeOfMost(bots))
-);
+).expect(713, 104501042);

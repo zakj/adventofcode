@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { DefaultDict } from '../util';
 
 type Step = string;
@@ -89,13 +89,12 @@ function duration(
   return Math.max(...workers.map((w) => w.endTime));
 }
 
-const exampleReqs = parse(load(7, 'ex').lines);
+const exampleReqs = parse(load('ex').lines);
 example.equal(order(exampleReqs), 'CABDFE');
 example.equal(duration(exampleReqs, 2, 0), 15);
 
-const reqs = parse(load(7).lines);
-answers.expect('BDHNEGOLQASVWYPXUMZJIKRTFC', 1107);
-answers(
+const reqs = parse(load().lines);
+export default solve(
   () => order(reqs),
   () => duration(reqs, 5, 60)
-);
+).expect('BDHNEGOLQASVWYPXUMZJIKRTFC', 1107);

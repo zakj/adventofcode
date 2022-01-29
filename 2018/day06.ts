@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { findBounds, parseSet, Point } from '../coords';
 import { Counter, sum } from '../util';
 
@@ -44,13 +44,12 @@ function totalDistanceLessThan(coords: Point[], maxDistance: number): number {
   return size;
 }
 
-const exampleCoords = parse(load(6, 'ex').lines);
+const exampleCoords = parse(load('ex').lines);
 example.equal(largestArea(exampleCoords), 17);
 example.equal(totalDistanceLessThan(exampleCoords, 32), 16);
 
-const coords = parse(load(6).lines);
-answers.expect(4398, 39560);
-answers(
+const coords = parse(load().lines);
+export default solve(
   () => largestArea(coords),
   () => totalDistanceLessThan(coords, 10e3)
-);
+).expect(4398, 39560);

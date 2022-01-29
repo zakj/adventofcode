@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { PointMap, pointToString } from '../coords';
 
 function powerLevel(x: number, y: number, serial: number): number {
@@ -91,9 +91,8 @@ example.deepEqual(maxSquareValue(42), ['21,61', 30]);
 example.deepEqual(maxSquareValueAnySize(18), ['90,269,16', 113]);
 example.deepEqual(maxSquareValueAnySize(42), ['232,251,12', 119]);
 
-const serial = Number(load(11).raw);
-answers.expect('241,40', '166,75,12');
-answers(
+const serial = Number(load().raw);
+export default solve(
   () => maxSquareValue(serial)[0],
   () => maxSquareValueAnySize(serial)[0]
-);
+).expect('241,40', '166,75,12');

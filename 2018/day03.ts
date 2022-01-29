@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 type Claim = {
   id: number;
@@ -49,9 +49,8 @@ function withoutOverlaps(claims: Claim[]): number {
   ).id;
 }
 
-const claims = parse(load(3).lines);
-answers.expect(101781, 909);
-answers(
+const claims = parse(load().lines);
+export default solve(
   () => overlaps(claims).size,
   () => withoutOverlaps(claims)
-);
+).expect(101781, 909);

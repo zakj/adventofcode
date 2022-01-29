@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { XMap } from '../util';
 
 type Point = { x: number; y: number };
@@ -78,12 +78,11 @@ for (const [regex, expected] of testCases) {
   example.equal(maxSteps(walk(parse(regex))), expected);
 }
 
-const regex = parse(load(20).lines[0]);
-answers.expect(4214, 8492);
-answers(
+const regex = parse(load().lines[0]);
+export default solve(
   () => maxSteps(walk(regex)),
   () =>
     walk(regex)
       .values()
       .filter((s) => s >= 1000).length
-);
+).expect(4214, 8492);

@@ -1,6 +1,5 @@
 import { isDeepStrictEqual } from 'util';
-
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { range } from '../util';
 
 type Registers = number[];
@@ -14,9 +13,10 @@ type OpFn = (r: Registers, a: number, b: number) => number;
 type Ops = Record<string, OpFn>;
 type OpCodes = Map<number, string>;
 
-function parse(
-  paragraphs: string[][]
-): { testCases: TestCase[]; program: Instruction[] } {
+function parse(paragraphs: string[][]): {
+  testCases: TestCase[];
+  program: Instruction[];
+} {
   const program = paragraphs.pop().map((line) => line.split(/\s+/).map(Number));
   const testCases = paragraphs.map((para) => {
     const before = para[0].split(/[[\]]/)[1].split(', ').map(Number);
@@ -85,12 +85,11 @@ function execute(program: Instruction[], opCodes: OpCodes): Registers {
   return registers;
 }
 
-const { testCases, program } = parse(load(16).paragraphs);
-answers.expect(509, 496);
-answers(
+const { testCases, program } = parse(load().paragraphs);
+export default solve(
   () => testCases.filter((c) => validOps(c).length >= 3).length,
   () => {
     const opCodes = determineOpCodes(testCases);
     return execute(program, opCodes)[0];
   }
-);
+).expect(509, 496);

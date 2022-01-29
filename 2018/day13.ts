@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { Dir, move, Point, pointToString } from '../coords';
 import { Counter } from '../util';
 
@@ -125,12 +125,11 @@ function lastCart(map: Map): string {
   return pointToString(map.carts[0].loc);
 }
 
-example.equal(firstCrash(parse(load(13, 'ex1').raw)), '7,3');
-example.equal(lastCart(parse(load(13, 'ex2').raw)), '6,4');
+example.equal(firstCrash(parse(load('ex1').raw)), '7,3');
+example.equal(lastCart(parse(load('ex2').raw)), '6,4');
 
-const map = parse(load(13).raw);
-answers.expect('41,17', '134,117');
-answers(
+const map = parse(load().raw);
+export default solve(
   () => firstCrash(map),
   () => lastCart(map)
-);
+).expect('41,17', '134,117');

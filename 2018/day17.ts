@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { Point, PointMap, PointSet, pointToString } from '../coords';
 import { range } from '../util';
 
@@ -116,13 +116,12 @@ function countCells(grid: Grid, types: Cell[]): number {
   }).length;
 }
 
-const exampleGrid = parse(load(17, 'ex').lines);
+const exampleGrid = parse(load('ex').lines);
 example.equal(countCells(fill(exampleGrid), [Cell.Flow, Cell.Water]), 57);
 example.equal(countCells(fill(exampleGrid), [Cell.Water]), 29);
 
-const grid = parse(load(17).lines);
-answers.expect(35707, 29293);
-answers(
+const grid = parse(load().lines);
+export default solve(
   () => countCells(fill(grid), [Cell.Flow, Cell.Water]),
   () => countCells(fill(grid), [Cell.Water])
-);
+).expect(35707, 29293);

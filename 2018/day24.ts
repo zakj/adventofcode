@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { Counter, sum, XMap } from '../util';
 
 type DamageType = string;
@@ -21,7 +21,8 @@ const h = ({ type, id }: GroupKey) => `${type} ${id}`;
 const effectivePower = (g: Group): number => g.units * g.attackDamage;
 
 function parse(paragraphs: string[][]): Army {
-  const re = /^(?<units>\d+) units.* (?<hp>\d+) hit points (?<special>\(.*\))?.* does (?<dmg>\d+) (?<type>\w+) .* (?<init>\d+)$/;
+  const re =
+    /^(?<units>\d+) units.* (?<hp>\d+) hit points (?<special>\(.*\))?.* does (?<dmg>\d+) (?<type>\w+) .* (?<init>\d+)$/;
   function special(s: string) {
     const rv: Partial<{ weak: string[]; immune: string[] }> = {};
     s.slice(1, s.length - 1)
@@ -135,13 +136,12 @@ function remainingUnits(groups: Army | typeof Standoff): number {
   return sum(groups.values().map((g) => g.units));
 }
 
-const exampleArmies = parse(load(24, 'ex').paragraphs);
+const exampleArmies = parse(load('ex').paragraphs);
 example.equal(remainingUnits(fight(exampleArmies)), 5216);
 example.equal(remainingUnits(fight(exampleArmies, 1570)), 51);
 
-const armies = parse(load(24).paragraphs);
-answers.expect(18280, 4573);
-answers(
+const armies = parse(load().paragraphs);
+export default solve(
   () => remainingUnits(fight(armies)),
   () => {
     let low = 1;
@@ -155,4 +155,4 @@ answers(
     }
     return remainingUnits(fight(armies, low));
   }
-);
+).expect(18280, 4573);

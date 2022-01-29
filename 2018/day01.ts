@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { sum } from '../util';
 
 function firstDuplicate(frequencies: number[]): number {
@@ -13,9 +13,8 @@ function firstDuplicate(frequencies: number[]): number {
   }
 }
 
-const frequencies = load(1).numbers;
-answers.expect(411, 56360);
-answers(
+const frequencies = load().numbers;
+export default solve(
   () => sum(frequencies),
   () => firstDuplicate(frequencies)
-);
+).expect(411, 56360);

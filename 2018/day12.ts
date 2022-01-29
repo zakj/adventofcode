@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 const RULE_WIDTH = 5;
@@ -64,12 +64,11 @@ function score(state: State): number {
   );
 }
 
-const [exampleStart, exampleRules] = parse(load(12, 'ex').paragraphs);
+const [exampleStart, exampleRules] = parse(load('ex').paragraphs);
 example.equal(cycles(exampleStart, exampleRules, 20), 325);
 
-const [start, rules] = parse(load(12).paragraphs);
-answers.expect(3738, 3900000002467);
-answers(
+const [start, rules] = parse(load().paragraphs);
+export default solve(
   () => cycles(start, rules, 20),
   () => cycles(start, rules, 50e9)
-);
+).expect(3738, 3900000002467);

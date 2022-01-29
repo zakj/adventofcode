@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { Counter, range } from '../util';
 
 type Entry = {
@@ -56,9 +56,8 @@ function strategy2(logs: Entry[]): number {
   return mostAsleepOnSameMinute.id * mostAsleepOnSameMinute.mostCommon[0];
 }
 
-const logs = parse(load(4).lines);
-answers.expect(35184, 37886);
-answers(
+const logs = parse(load().lines);
+export default solve(
   () => strategy1(logs),
   () => strategy2(logs)
-);
+).expect(35184, 37886);

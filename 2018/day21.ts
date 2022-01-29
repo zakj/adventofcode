@@ -1,13 +1,14 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 type Registers = number[];
 type Instruction = [string, number, number, number];
 type OpFn = (r: Registers, a: number, b: number) => number;
 type Ops = Record<string, OpFn>;
 
-function parse(
-  lines: string[]
-): { ptrRegister: number; program: Instruction[] } {
+function parse(lines: string[]): {
+  ptrRegister: number;
+  program: Instruction[];
+} {
   const ptrRegister = Number(lines.shift().split(' ')[1]);
   return {
     ptrRegister,
@@ -57,9 +58,8 @@ function* execute(
   }
 }
 
-const input = parse(load(21).lines);
-answers.expect(11592302, 313035);
-answers(
+const input = parse(load().lines);
+export default solve(
   () => execute(input.ptrRegister, input.program).next().value,
   () => {
     // TODO: optimize. this is kind of ridiculous (2+ minutes)
@@ -71,7 +71,7 @@ answers(
       history.add(reg1);
     }
   }
-);
+).expect(11592302, 313035);
 
 // incomplete and probably incorrect so far :/
 function* optimized(): Generator<number> {

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 function createRecipes(n: number, needle?: string): number[] {
   const scores = [3, 7];
@@ -39,9 +39,8 @@ example.equal(toTheLeftOf('01245'), 5);
 example.equal(toTheLeftOf('92510'), 18);
 example.equal(toTheLeftOf('59414'), 2018);
 
-const input = load(14).raw;
-answers.expect('6289129761', 20207075);
-answers(
+const input = load().raw;
+export default solve(
   () => nextTenAfter(Number(input)),
   () => toTheLeftOf(input.trim())
-);
+).expect('6289129761', 20207075);

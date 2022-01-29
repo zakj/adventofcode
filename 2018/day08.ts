@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 function parse(s: string): number[] {
@@ -47,9 +47,8 @@ const exampleData = parse('2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2');
 example.equal(sum(walk(readNode(exampleData), (n) => n.metadata).flat()), 138);
 example.equal(value(readNode(exampleData)), 66);
 
-const data = parse(load(8).raw);
-answers.expect(40908, 25910);
-answers(
+const data = parse(load().raw);
+export default solve(
   () => sum(walk(readNode(data), (n) => n.metadata).flat()),
   () => value(readNode(data))
-);
+).expect(40908, 25910);

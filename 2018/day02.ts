@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 import { combinations, Counter, hammingDistance, zip } from '../util';
 
 function checksum(xs: string[]): number {
@@ -21,9 +21,8 @@ function commonLetters(xs: string[]): string {
   }
 }
 
-const boxIds = load(2).lines;
-answers.expect(5904, 'jiwamotgsfrudclzbyzkhlrvp');
-answers(
+const boxIds = load().lines;
+export default solve(
   () => checksum(boxIds),
   () => commonLetters(boxIds)
-);
+).expect(5904, 'jiwamotgsfrudclzbyzkhlrvp');

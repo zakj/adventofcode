@@ -1,4 +1,4 @@
-import { answers, load } from '../advent';
+import { load, solve } from '../advent';
 
 function react(polymer: string): string {
   const isPair = (l: string, r: string): boolean =>
@@ -18,9 +18,8 @@ function removingOneUnit(polymer: string): string {
     .reduce((min, p) => (p.length < min.length ? p : min));
 }
 
-const polymer = load(5).raw.trim();
-answers.expect(9808, 6484);
-answers(
+const polymer = load().raw.trim();
+export default solve(
   () => react(polymer).length,
   () => removingOneUnit(polymer).length
-);
+).expect(9808, 6484);

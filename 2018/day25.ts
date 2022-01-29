@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Star = [x: number, y: number, z: number, t: number];
 type Constellation = Star[];
@@ -39,7 +39,7 @@ function mergeConstellations(stars: Star[]): Constellation[] {
   return constellations;
 }
 
-const examples = load(25, 'ex').paragraphs.map((p) => ({
+const examples = load('ex').paragraphs.map((p) => ({
   count: Number(p.shift()),
   stars: parse(p),
 }));
@@ -48,6 +48,5 @@ for (const { count, stars } of examples) {
   break;
 }
 
-const stars = parse(load(25).lines);
-answers.expect(370);
-answers(() => mergeConstellations(stars).length);
+const stars = parse(load().lines);
+export default solve(() => mergeConstellations(stars).length).expect(370);

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { sum } from '../util';
 
 type Registers = number[];
@@ -25,9 +25,10 @@ const ops: Ops = {
   eqrr: (r, a, b) => (r[a] == r[b] ? 1 : 0),
 };
 
-function parse(
-  lines: string[]
-): { ptrRegister: number; program: Instruction[] } {
+function parse(lines: string[]): {
+  ptrRegister: number;
+  program: Instruction[];
+} {
   const ptrRegister = Number(lines.shift().split(' ')[1]);
   return {
     ptrRegister,
@@ -65,15 +66,14 @@ function factorsOf(n: number): number[] {
   return factors;
 }
 
-const exInput = parse(load(19, 'ex').lines);
+const exInput = parse(load('ex').lines);
 example.equal(execute(exInput.ptrRegister, exInput.program)[0], 6);
 
-const input = parse(load(19).lines);
-answers.expect(1536, 17540352);
-answers(
+const input = parse(load().lines);
+export default solve(
   () => execute(input.ptrRegister, input.program)[0],
   () => sum(factorsOf(10551387))
-);
+).expect(1536, 17540352);
 
 /*
 

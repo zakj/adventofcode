@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Marble = {
   value: number;
@@ -45,9 +45,8 @@ example.equal(playMarbles(17, 1104), 2764);
 example.equal(playMarbles(21, 6111), 54718);
 example.equal(playMarbles(30, 5807), 37305);
 
-const [players, lastMarble] = parse(load(9).raw);
-answers.expect(429943, 3615691746);
-answers(
+const [players, lastMarble] = parse(load().raw);
+export default solve(
   () => playMarbles(players, lastMarble),
   () => playMarbles(players, lastMarble * 100)
-);
+).expect(429943, 3615691746);

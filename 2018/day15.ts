@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { findBounds, neighbors4, Point, PointMap, PointSet } from '../coords';
 import { sum } from '../util';
 
@@ -177,7 +177,7 @@ function debug(characters: Characters, walls: Walls) {
   console.log();
 }
 
-const testCases: [number, Maze][] = load(15, 'ex').paragraphs.map((lines) => [
+const testCases: [number, Maze][] = load('ex').paragraphs.map((lines) => [
   Number(lines.shift()),
   parse(lines),
 ]);
@@ -185,9 +185,8 @@ for (const [result, exampleMaze] of testCases) {
   example.equal(play(exampleMaze), result);
 }
 
-const map = parse(load(15).lines);
-answers.expect(206236, 88537);
-answers(
+const map = parse(load().lines);
+export default solve(
   () => play(map),
   () => elfatePower(map)
-);
+).expect(206236, 88537);

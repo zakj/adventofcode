@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { neighbors4, Point } from '../coords';
 import search from '../graph';
 import { ValuesOf, XMap } from '../util';
@@ -104,9 +104,8 @@ const exampleDepth = 510;
 example.equal(totalRisk(exampleTarget, exampleDepth), 114);
 example.equal(rescue(exampleTarget, exampleDepth), 45);
 
-const { target, depth } = parse(load(22).lines);
-answers.expect(10115, 990);
-answers(
+const { target, depth } = parse(load().lines);
+export default solve(
   () => totalRisk(target, depth),
   () => rescue(target, depth)
-);
+).expect(10115, 990);
