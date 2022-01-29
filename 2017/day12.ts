@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 
 type Node = number;
 type Nodes = Map<Node, Node[]>;

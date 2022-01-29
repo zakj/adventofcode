@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { md5 } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { md5 } from 'lib/util';
 
 type Hasher<T, U> = (key: T) => U;
 

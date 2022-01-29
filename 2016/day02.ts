@@ -1,5 +1,5 @@
 import { Dir, move, parseGrid, Point, PointGrid } from 'coords';
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 
 const keypadGrid = parseGrid(['123', '456', '789'], (c) => c);
 const gStart = { x: 1, y: 1 };

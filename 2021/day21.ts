@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { Counter, range, sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { Counter, range, sum } from 'lib/util';
 
 type Player = {
   pos: number;

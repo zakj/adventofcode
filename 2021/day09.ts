@@ -1,6 +1,6 @@
-import { load, solve } from '../advent';
-import { neighbors4, parseMap, Point, PointMap, PointSet } from '../coords';
-import { product, sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { neighbors4, parseMap, Point, PointMap, PointSet } from 'lib/coords';
+import { product, sum } from 'lib/util';
 
 function lowPoints(heightmap: PointMap<number>): Point[] {
   return [...heightmap]

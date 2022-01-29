@@ -1,6 +1,6 @@
-import { example, load, solve } from '../advent';
-import { Point, pointToString } from '../coords';
-import { Counter } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { Point, pointToString } from 'lib/coords';
+import { Counter } from 'lib/util';
 
 type Vent = [Point, Point];
 

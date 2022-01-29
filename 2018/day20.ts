@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { XMap } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { XMap } from 'lib/util';
 
 type Point = { x: number; y: number };
 type PointHash = string;

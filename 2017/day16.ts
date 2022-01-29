@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { rotate } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { rotate } from 'lib/util';
 
 type Spin = {
   type: 'spin';

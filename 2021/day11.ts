@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { neighbors8, parseMap, PointMap, PointSet } from '../coords';
+import { load, solve } from 'lib/advent';
+import { neighbors8, parseMap, PointMap, PointSet } from 'lib/coords';
 
 function stepFlashes(octopuses: PointMap<number>): number {
   for (const [point, energy] of octopuses) {

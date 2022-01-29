@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 
 function joltageJumps(adapters: number[]): { [key: number]: number } {
   adapters = [0].concat(adapters);

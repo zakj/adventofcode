@@ -1,7 +1,7 @@
-import { load, solve } from '../advent';
-import { Point, PointMap } from '../coords';
-import search from '../graph';
-import { range, sum, ValuesOf } from '../util';
+import { load, solve } from 'lib/advent';
+import { Point, PointMap } from 'lib/coords';
+import search from 'lib/graph';
+import { range, sum, ValuesOf } from 'lib/util';
 
 const Type = {
   Amber: 'A',

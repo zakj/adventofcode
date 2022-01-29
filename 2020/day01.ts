@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { product } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { product } from 'lib/util';
 
 type TwoNumbers = [number, number];
 type ThreeNumbers = [number, number, number];

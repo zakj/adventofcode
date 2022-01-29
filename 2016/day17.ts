@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { md5, sum, zip } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { md5, sum, zip } from 'lib/util';
 
 type Point = [number, number];
 type Move = 'U' | 'D' | 'L' | 'R';

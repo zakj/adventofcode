@@ -1,5 +1,5 @@
+import { load, solve } from 'lib/advent';
 import { iter } from 'lib/iter';
-import { load, solve } from '../advent';
 
 const floorChanges: Record<string, number> = {
   '(': 1,

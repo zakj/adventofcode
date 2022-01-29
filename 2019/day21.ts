@@ -1,4 +1,4 @@
-import { load, solve } from '../advent';
+import { load, solve } from 'lib/advent';
 import { compile, parse } from './intcode';
 
 const program = parse(load().raw);

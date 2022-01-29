@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { chunks, range } from '../util';
+import { load, solve } from 'lib/advent';
+import { chunks, range } from 'lib/util';
 import { compile, parse } from './intcode';
 
 const program = parse(load().raw);

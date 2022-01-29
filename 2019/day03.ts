@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { add, PointMap, PointSet } from '../coords';
+import { load, solve } from 'lib/advent';
+import { add, PointMap, PointSet } from 'lib/coords';
 
 enum Dir {
   L = 'L',

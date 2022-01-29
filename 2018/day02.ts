@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { combinations, Counter, hammingDistance, zip } from '../util';
+import { load, solve } from 'lib/advent';
+import { combinations, Counter, hammingDistance, zip } from 'lib/util';
 
 function checksum(xs: string[]): number {
   let twos = 0;

@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { combinations, sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { combinations, sum } from 'lib/util';
 
 function parse(lines: string[]) {
   return lines.map((line) => line.split(/\s+/).map(Number));

@@ -1,4 +1,4 @@
-import { load, solve } from '../advent';
+import { load, solve } from 'lib/advent';
 import { compile, parse, Program } from './intcode';
 
 function hasBeam(program: Program, x: number, y: number): boolean {

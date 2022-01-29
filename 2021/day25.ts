@@ -1,6 +1,6 @@
-import { load, solve } from '../advent';
-import { parseGrid, PointGrid } from '../coords';
-import { ValuesOf } from '../util';
+import { load, solve } from 'lib/advent';
+import { parseGrid, PointGrid } from 'lib/coords';
+import { ValuesOf } from 'lib/util';
 
 const Cell = {
   Empty: '.',

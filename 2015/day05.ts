@@ -1,4 +1,4 @@
-import { load, solve } from '../advent';
+import { load, solve } from 'lib/advent';
 
 const threeVowels = /[aeiou].*[aeiou].*[aeiou]/;
 const repeatedLetter = /(.)\1/;

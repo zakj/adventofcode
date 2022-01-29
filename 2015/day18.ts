@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { range, sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { range, sum } from 'lib/util';
 
 class Life {
   public grid: Boolean[][];

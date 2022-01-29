@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { pairs, permutations } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { pairs, permutations } from 'lib/util';
 
 type Graph = {
   cities: Set<City>;

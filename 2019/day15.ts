@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { XMap, XSet } from '../util';
+import { load, solve } from 'lib/advent';
+import { XMap, XSet } from 'lib/util';
 import { compile, parse, Program } from './intcode';
 
 enum Move {

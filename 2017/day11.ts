@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { sum, zip } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { sum, zip } from 'lib/util';
 
 type Direction = 'n' | 'ne' | 'se' | 's' | 'sw' | 'nw';
 type Point = [x: number, y: number, z: number];

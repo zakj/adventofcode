@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { md5 } from '../util';
+import { load, solve } from 'lib/advent';
+import { md5 } from 'lib/util';
 
 function findHashPrefix(input: string, prefix: string): number {
   const re = new RegExp(`^${prefix}`);

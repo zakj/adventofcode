@@ -1,6 +1,6 @@
-import { load, solve } from '../advent';
-import { Point, PointGrid, Rect } from '../coords';
-import { range, sum, ValuesOf } from '../util';
+import { load, solve } from 'lib/advent';
+import { Point, PointGrid, Rect } from 'lib/coords';
+import { range, sum, ValuesOf } from 'lib/util';
 
 const Action = {
   Off: 0,

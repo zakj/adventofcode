@@ -1,6 +1,6 @@
-import { load, solve } from '../advent';
-import search from '../graph';
-import { sum } from '../util';
+import { load, solve } from 'lib/advent';
+import search from 'lib/graph';
+import { sum } from 'lib/util';
 
 interface Node {
   toString: () => string;

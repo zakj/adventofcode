@@ -1,5 +1,5 @@
-import { load, ocr, solve } from '../advent';
-import { parseSet, PointSet, toAscii } from '../coords';
+import { load, ocr, solve } from 'lib/advent';
+import { parseSet, PointSet, toAscii } from 'lib/coords';
 
 type FoldDir = 'x' | 'y';
 type Fold = { dir: 'x' | 'y'; n: number };

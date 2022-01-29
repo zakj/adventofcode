@@ -1,5 +1,5 @@
+import { example, load, solve } from 'lib/advent';
 import { Iter, iter } from 'lib/iter';
-import { example, load, solve } from '../advent';
 
 const isAbba = (s: string): boolean => /(.)(?!\1)(.)\2\1/.test(s);
 

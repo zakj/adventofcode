@@ -1,5 +1,5 @@
-import { load, ocr, solve } from '../advent';
-import { chunks, Counter } from '../util';
+import { load, ocr, solve } from 'lib/advent';
+import { chunks, Counter } from 'lib/util';
 
 type Layer = number[];
 enum Color {

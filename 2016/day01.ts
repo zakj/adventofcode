@@ -1,7 +1,7 @@
 import { Dir, move, Point, PointSet, turnLeft, turnRight } from 'coords';
+import { example, load, solve } from 'lib/advent';
 import { Iter, iter } from 'lib/iter';
-import { example, load, solve } from '../advent';
-import { range } from '../util';
+import { range } from 'lib/util';
 
 type Steps = Iter<[(dir: Dir) => Dir, number]>;
 

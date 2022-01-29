@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { DefaultDict, pairs, permutations, sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { DefaultDict, pairs, permutations, sum } from 'lib/util';
 
 type Guests = DefaultDict<string, Map<string, number>>;
 

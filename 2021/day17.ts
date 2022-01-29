@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { intersect, Point, Rect } from '../coords';
+import { example, load, solve } from 'lib/advent';
+import { intersect, Point, Rect } from 'lib/coords';
 
 function parse(s: string): Rect {
   const match = s

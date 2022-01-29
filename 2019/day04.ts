@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { pairs, range } from '../util';
+import { load, solve } from 'lib/advent';
+import { pairs, range } from 'lib/util';
 
 function isValid1(n: number): boolean {
   const digits = n.toString().split('');

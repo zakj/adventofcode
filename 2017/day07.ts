@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { Counter, sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { Counter, sum } from 'lib/util';
 
 type Input = {
   name: string;

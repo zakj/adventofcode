@@ -1,6 +1,6 @@
-import { example, load, solve } from '../advent';
-import { Point, PointMap, PointSet, pointToString } from '../coords';
-import { range } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { Point, PointMap, PointSet, pointToString } from 'lib/coords';
+import { range } from 'lib/util';
 
 enum Cell {
   Sand = '.',

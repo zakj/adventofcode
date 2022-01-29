@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 
 const INITIAL_SUBJECT = 7;
 

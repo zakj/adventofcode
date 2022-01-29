@@ -1,5 +1,5 @@
-import { load, ocr, solve } from '../advent';
-import { XMap } from '../util';
+import { load, ocr, solve } from 'lib/advent';
+import { XMap } from 'lib/util';
 import { compile, parse, Program } from './intcode';
 
 enum Color {

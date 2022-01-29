@@ -1,6 +1,6 @@
-import { example, load, solve } from '../advent';
-import { findBounds, neighbors4, Point, PointMap, PointSet } from '../coords';
-import { sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { findBounds, neighbors4, Point, PointMap, PointSet } from 'lib/coords';
+import { sum } from 'lib/util';
 
 type Character = {
   type: 'E' | 'G';

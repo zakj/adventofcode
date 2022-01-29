@@ -1,6 +1,6 @@
-import { example, load, solve } from '../advent';
-import { findBounds, parseSet, Point } from '../coords';
-import { Counter, sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { findBounds, parseSet, Point } from 'lib/coords';
+import { Counter, sum } from 'lib/util';
 
 function parse(lines: string[]): Point[] {
   return [...parseSet(lines)];

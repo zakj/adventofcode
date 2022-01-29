@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 
 type ScannerMap = Map<number, number>; // depth -> range
 

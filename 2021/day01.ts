@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { pairs, sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { pairs, sum } from 'lib/util';
 
 function countIncreases(xs: number[]): number {
   return pairs(xs).filter(([a, b]) => b > a).length;

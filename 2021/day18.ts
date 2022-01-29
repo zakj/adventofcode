@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 
 type RegularNode = { parent?: PairNode; value: number };
 type PairNode = { parent?: PairNode; left: Node; right: Node };

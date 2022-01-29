@@ -1,5 +1,5 @@
+import { load, solve } from 'lib/advent';
 import { iter, Iter, range } from 'lib/iter';
-import { load, solve } from '../advent';
 import { executeSignals, parse } from './asembunny';
 
 const signals = (i: number): Iter<number> =>

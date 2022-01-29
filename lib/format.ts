@@ -1,4 +1,4 @@
-import { sum } from '../util';
+import { sum } from 'lib/util';
 
 export const color = (() => {
   const c = (n: number) => (text: string) => `\x1b[${n}m${text}\x1b[0m`;

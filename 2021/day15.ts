@@ -1,6 +1,6 @@
-import { load, solve } from '../advent';
-import { neighbors4, parseGrid, Point, PointGrid, pointHash } from '../coords';
-import search from '../graph';
+import { load, solve } from 'lib/advent';
+import { neighbors4, parseGrid, Point, PointGrid, pointHash } from 'lib/coords';
+import search from 'lib/graph';
 
 type RiskGrid = PointGrid<number>;
 

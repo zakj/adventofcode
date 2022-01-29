@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { sum } from 'lib/util';
 
 function paperNeeded([l, w, h]): number {
   const surface = 2 * l * w + 2 * w * h + 2 * h * l;

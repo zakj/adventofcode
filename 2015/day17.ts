@@ -1,4 +1,4 @@
-import { load, solve } from '../advent';
+import { load, solve } from 'lib/advent';
 
 function combinations(containers: number[], target: number): number[][] {
   const [head, tail] = [containers[0], containers.slice(1)];

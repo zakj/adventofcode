@@ -1,6 +1,6 @@
+import { example, load, solve } from 'lib/advent';
 import { iter } from 'lib/iter';
-import { example, load, solve } from '../advent';
-import { Counter } from '../util';
+import { Counter } from 'lib/util';
 
 type Room = {
   name: string;

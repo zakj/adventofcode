@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { combinations, product, sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { combinations, product, sum } from 'lib/util';
 
 type Point = {
   x: number;

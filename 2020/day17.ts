@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { cartesianProduct, sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { cartesianProduct, sum } from 'lib/util';
 
 type Bound = [number, number];
 

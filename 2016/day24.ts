@@ -1,7 +1,7 @@
-import { example, load, solve } from '../advent';
-import { neighbors4, Point, pointHash, PointSet } from '../coords';
-import search from '../graph';
-import { combinations, permutations } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { neighbors4, Point, pointHash, PointSet } from 'lib/coords';
+import search from 'lib/graph';
+import { combinations, permutations } from 'lib/util';
 
 type TwoPointHash = string;
 const distanceHash = (a: Point, b: Point): TwoPointHash =>

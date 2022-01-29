@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { Counter, sum, XMap } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { Counter, sum, XMap } from 'lib/util';
 
 type DamageType = string;
 type GroupKey = {

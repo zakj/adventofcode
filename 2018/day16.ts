@@ -1,6 +1,6 @@
+import { load, solve } from 'lib/advent';
+import { range } from 'lib/util';
 import { isDeepStrictEqual } from 'util';
-import { load, solve } from '../advent';
-import { range } from '../util';
 
 type Registers = number[];
 type Instruction = number[];

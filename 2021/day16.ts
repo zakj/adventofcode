@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { product, sum, ValuesOf } from '../util';
+import { load, solve } from 'lib/advent';
+import { product, sum, ValuesOf } from 'lib/util';
 
 function parse(s: string): number[] {
   return s

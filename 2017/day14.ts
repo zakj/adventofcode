@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 import { knotHash } from './knot-hash';
 
 type Grid = boolean[][];

@@ -1,6 +1,6 @@
+import { load, solve } from 'lib/advent';
+import { Dir, move, pointHash } from 'lib/coords';
 import { concat, iter } from 'lib/iter';
-import { load, solve } from '../advent';
-import { Dir, move, pointHash } from '../coords';
 
 const directions: Record<string, Dir> = {
   '^': Dir.Up,

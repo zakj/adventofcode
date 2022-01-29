@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { Counter } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { Counter } from 'lib/util';
 
 function noRepeats(s: string): boolean {
   const counts = new Counter(s.split(/\s+/));

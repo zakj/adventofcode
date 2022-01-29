@@ -1,6 +1,6 @@
+import { example, load, solve } from 'lib/advent';
 import { iter } from 'lib/iter';
-import { example, load, solve } from '../advent';
-import { product, range, sum } from '../util';
+import { product, range, sum } from 'lib/util';
 
 class Cookie {
   constructor(private ingredients: Ingredient[], private tsps: number[]) {}

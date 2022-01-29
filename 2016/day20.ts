@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { pairs } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { pairs } from 'lib/util';
 
 type Blocklist = [from: bigint, to: bigint][];
 const MAX_IP = 4294967295n;

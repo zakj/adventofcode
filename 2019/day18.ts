@@ -1,6 +1,6 @@
-import { example, load, solve } from '../advent';
-import { neighbors4, Point, pointHash, PointMap, PointSet } from '../coords';
-import { XMap } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { neighbors4, Point, pointHash, PointMap, PointSet } from 'lib/coords';
+import { XMap } from 'lib/util';
 
 type MapData = {
   start: Point;

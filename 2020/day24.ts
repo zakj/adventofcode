@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { sum, zip } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { sum, zip } from 'lib/util';
 
 type Grid = Map<string, boolean>;
 

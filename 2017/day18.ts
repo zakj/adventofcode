@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { DefaultDict } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { DefaultDict } from 'lib/util';
 
 type Snd = { op: 'snd'; args: [Value] };
 type _Set = { op: 'set'; args: [Register, Value] };

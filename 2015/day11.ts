@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { pairs } from '../util';
+import { load, solve } from 'lib/advent';
+import { pairs } from 'lib/util';
 
 const A = 'a'.charCodeAt(0);
 const Z = 'z'.charCodeAt(0);

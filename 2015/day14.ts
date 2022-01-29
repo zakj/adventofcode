@@ -1,5 +1,5 @@
+import { load, solve } from 'lib/advent';
 import { iter, range } from 'lib/iter';
-import { load, solve } from '../advent';
 
 type Reindeer = { speed: number; on: number; off: number };
 

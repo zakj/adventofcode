@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { product, range, sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { product, range, sum } from 'lib/util';
 
 type Field = {
   name: string;

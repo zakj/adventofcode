@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { range } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { range } from 'lib/util';
 
 class Node<T> {
   value: T;

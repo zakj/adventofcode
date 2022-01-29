@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { range, sum, zip } from '../util';
+import { load, solve } from 'lib/advent';
+import { range, sum, zip } from 'lib/util';
 
 type Board = number[][];
 type Game = {

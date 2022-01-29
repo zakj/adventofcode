@@ -1,6 +1,6 @@
-import { example, load, solve } from '../advent';
-import { neighbors8, Point, PointMap } from '../coords';
-import { sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { neighbors8, Point, PointMap } from 'lib/coords';
+import { sum } from 'lib/util';
 
 function* gridCoords(): Generator<Point> {
   let x = 0;

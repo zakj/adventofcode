@@ -1,6 +1,6 @@
+import { example, load, solve } from 'lib/advent';
+import { cartesianProduct, combinations, permutations, XSet } from 'lib/util';
 import util from 'util';
-import { example, load, solve } from '../advent';
-import { cartesianProduct, combinations, permutations, XSet } from '../util';
 
 class Vector3 {
   x: number;

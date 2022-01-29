@@ -1,13 +1,13 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 import {
   findBounds,
   neighbors4,
   pointHash as pointHash2,
   PointMap,
   PointSet,
-} from '../coords';
-import search from '../graph';
-import { DefaultDict } from '../util';
+} from 'lib/coords';
+import search from 'lib/graph';
+import { DefaultDict } from 'lib/util';
 
 type Point = { x: number; y: number };
 type Map = {

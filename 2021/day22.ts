@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { cartesianProduct, pairs, sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { cartesianProduct, pairs, sum } from 'lib/util';
 
 type Instruction = {
   on: boolean;

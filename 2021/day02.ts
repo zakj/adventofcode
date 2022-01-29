@@ -1,4 +1,4 @@
-import { load, solve } from '../advent';
+import { load, solve } from 'lib/advent';
 
 const DIRECTIONS = ['forward', 'down', 'up'] as const;
 type Dir = typeof DIRECTIONS[number];

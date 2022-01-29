@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { product, range } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { product, range } from 'lib/util';
 import { knotHash, round } from './knot-hash';
 
 example.deepEqual(round(range(0, 5), [3, 4, 1, 5]).list, [3, 4, 2, 1, 0]);

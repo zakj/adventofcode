@@ -1,4 +1,4 @@
-import { load, solve } from '../advent';
+import { load, solve } from 'lib/advent';
 
 function react(polymer: string): string {
   const isPair = (l: string, r: string): boolean =>

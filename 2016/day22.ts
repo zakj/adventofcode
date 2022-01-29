@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { combinations } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { combinations } from 'lib/util';
 
 type Node = {
   x: number;

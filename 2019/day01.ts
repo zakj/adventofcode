@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { sum } from 'lib/util';
 
 function fuelRequired(mass: number): number {
   return Math.floor(mass / 3) - 2;

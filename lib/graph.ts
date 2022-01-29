@@ -1,4 +1,4 @@
-import { DefaultDict } from './util';
+import { DefaultDict } from 'lib/util';
 
 class PriorityQueue<T> {
   private heap: { value: T; cost: number }[] = [];

@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { sum } from 'lib/util';
 
 function uniqueCharacters(s: string[]): number {
   return new Set(s.join('').replace(/\s+/gm, '')).size;

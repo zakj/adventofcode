@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { range } from '../util';
+import { load, solve } from 'lib/advent';
+import { range } from 'lib/util';
 
 function lookAndSay(s: number[]) {
   const out = [];

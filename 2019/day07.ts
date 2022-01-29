@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { permutations, range } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { permutations, range } from 'lib/util';
 import { compile, parse, Program } from './intcode';
 
 function maxThrusterSignal(program: Program): number {

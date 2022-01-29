@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 import { execute, parse } from './asembunny';
 
 const exampleInstructions = parse(load('ex').lines);

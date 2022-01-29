@@ -1,9 +1,9 @@
 import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import inspector from 'inspector';
+import { Solver } from 'lib/advent';
 import { color, makeTable } from 'lib/format';
 import { basename, resolve } from 'path';
 import { performance } from 'perf_hooks';
-import { Solver } from './advent';
 
 type Result = { part: number; result: any; expected: any; duration: number };
 

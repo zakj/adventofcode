@@ -1,6 +1,6 @@
-import { example, load, solve } from '../advent';
-import search from '../graph';
-import { chunks, combinations, DefaultDict } from '../util';
+import { example, load, solve } from 'lib/advent';
+import search from 'lib/graph';
+import { chunks, combinations, DefaultDict } from 'lib/util';
 
 type State = {
   floor: number;

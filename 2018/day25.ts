@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 
 type Star = [x: number, y: number, z: number, t: number];
 type Constellation = Star[];

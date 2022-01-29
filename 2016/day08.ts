@@ -1,5 +1,5 @@
-import { example, load, ocr, solve } from '../advent';
-import { zip } from '../util';
+import { example, load, ocr, solve } from 'lib/advent';
+import { zip } from 'lib/util';
 
 type RectInstruction = {
   type: 'rect';

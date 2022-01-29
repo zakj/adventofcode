@@ -1,4 +1,4 @@
-import { range, ValuesOf, XMap, XSet } from './util';
+import { range, ValuesOf, XMap, XSet } from 'lib/util';
 
 export type Point = { x: number; y: number };
 export type PointHash = number;

@@ -4,7 +4,7 @@
   "scripts": {
     "start": "./bin/watch",
     "node": "ts-node",
-    "runner": "ts-node ./runner.ts"
+    "runner": "ts-node bin/runner.ts"
   },
   "dependencies": {
     "typescript": "^4.5.4"

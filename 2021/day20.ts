@@ -1,6 +1,6 @@
-import { load, solve } from '../advent';
-import { parseGrid, PointGrid } from '../coords';
-import { range } from '../util';
+import { load, solve } from 'lib/advent';
+import { parseGrid, PointGrid } from 'lib/coords';
+import { range } from 'lib/util';
 
 type Bit = 0 | 1;
 type Thing = {

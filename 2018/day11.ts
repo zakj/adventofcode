@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { PointMap, pointToString } from '../coords';
+import { example, load, solve } from 'lib/advent';
+import { PointMap, pointToString } from 'lib/coords';
 
 function powerLevel(x: number, y: number, serial: number): number {
   const rackId = x + 10;

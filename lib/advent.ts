@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
+import { zip } from 'lib/util';
 import { dirname, resolve } from 'path';
-import { zip } from './util';
 
 type Input = {
   raw: string;

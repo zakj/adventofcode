@@ -1,6 +1,6 @@
+import { example, load, solve } from 'lib/advent';
 import { iter } from 'lib/iter';
-import { example, load, solve } from '../advent';
-import { md5 } from '../util';
+import { md5 } from 'lib/util';
 
 const cache = {
   abc: [

@@ -1,7 +1,7 @@
-import { example, load, solve } from '../advent';
-import { neighbors4, Point } from '../coords';
-import search from '../graph';
-import { ValuesOf, XMap } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { neighbors4, Point } from 'lib/coords';
+import search from 'lib/graph';
+import { ValuesOf, XMap } from 'lib/util';
 
 type State = {
   point: Point;

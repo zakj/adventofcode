@@ -1,4 +1,4 @@
-import { load, solve } from '../advent';
+import { load, solve } from 'lib/advent';
 import {
   Dir,
   move,
@@ -8,8 +8,8 @@ import {
   PointSet,
   turnLeft,
   turnRight,
-} from '../coords';
-import { chunks, sum } from '../util';
+} from 'lib/coords';
+import { chunks, sum } from 'lib/util';
 import { compile, parse } from './intcode';
 
 let robotDirs: Map<string, Dir> = new Map([

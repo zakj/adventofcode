@@ -1,5 +1,5 @@
-import { load, ocr, solve } from '../advent';
-import { findBounds, Point, PointSet, toAscii } from '../coords';
+import { load, ocr, solve } from 'lib/advent';
+import { findBounds, Point, PointSet, toAscii } from 'lib/coords';
 
 type PointRule = {
   start: Point;

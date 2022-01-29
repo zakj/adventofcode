@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { chunks, XMap } from '../util';
+import { load, solve } from 'lib/advent';
+import { chunks, XMap } from 'lib/util';
 import { compile, parse, Program } from './intcode';
 
 enum Tile {

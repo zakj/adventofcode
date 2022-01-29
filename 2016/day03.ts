@@ -1,6 +1,6 @@
+import { load, solve } from 'lib/advent';
 import { iter } from 'lib/iter';
-import { load, solve } from '../advent';
-import { zip } from '../util';
+import { zip } from 'lib/util';
 
 function parse(lines: string[]): number[][] {
   return lines.map((line) => line.trim().split(/\s+/).map(Number));

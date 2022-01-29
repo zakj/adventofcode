@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { Point } from '../coords';
+import { example, load, solve } from 'lib/advent';
+import { Point } from 'lib/coords';
 
 enum PositionType {
   Floor = '.',

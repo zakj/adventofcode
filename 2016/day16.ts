@@ -1,5 +1,5 @@
+import { example, load, solve } from 'lib/advent';
 import { iter } from 'lib/iter';
-import { example, load, solve } from '../advent';
 
 function curve(a: number[]): number[] {
   const b = [...a].reverse().map((c) => (c === 0 ? 1 : 0));

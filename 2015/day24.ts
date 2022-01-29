@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { product, sum } from '../util';
+import { load, solve } from 'lib/advent';
+import { product, sum } from 'lib/util';
 
 function findSums(target: number, xs: number[]): number[][] {
   if (xs.length === 0) return [];

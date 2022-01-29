@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { range, sum, XSet } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { range, sum, XSet } from 'lib/util';
 
 type Layer = boolean[];
 const LAYER_SIZE = 5;

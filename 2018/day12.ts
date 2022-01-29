@@ -1,5 +1,5 @@
-import { example, load, solve } from '../advent';
-import { sum } from '../util';
+import { example, load, solve } from 'lib/advent';
+import { sum } from 'lib/util';
 
 const RULE_WIDTH = 5;
 type State = {

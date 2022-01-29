@@ -1,5 +1,5 @@
-import { load, solve } from '../advent';
-import { chunks, last, ValuesOf } from '../util';
+import { load, solve } from 'lib/advent';
+import { chunks, last, ValuesOf } from 'lib/util';
 
 const Type = {
   Push: 0,

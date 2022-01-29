@@ -1,4 +1,4 @@
-import { example, load, solve } from '../advent';
+import { example, load, solve } from 'lib/advent';
 
 function spokenNumber(input: number[], n: number): number {
   const lastSaid = new Map<number, number>();

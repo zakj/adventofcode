@@ -1,4 +1,4 @@
-import { load, solve } from '../advent';
+import { load, solve } from 'lib/advent';
 
 function tableValue(startVal: number, goalRow: number, goalCol: number) {
   const nextVal = (prev: number): number => (prev * 252533) % 33554393;

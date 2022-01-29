@@ -1,6 +1,6 @@
-import { example, load, solve } from '../advent';
-import { neighbors4, Point, pointHash, PointMap, PointSet } from '../coords';
-import search from '../graph';
+import { example, load, solve } from 'lib/advent';
+import { neighbors4, Point, pointHash, PointMap, PointSet } from 'lib/coords';
+import search from 'lib/graph';
 
 function isWall({ x, y }: Point, n: number): boolean {
   const num = x * x + 3 * x + 2 * x * y + y + y * y + n;
