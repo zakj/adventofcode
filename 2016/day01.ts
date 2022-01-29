@@ -1,35 +1,30 @@
-import { answers, example, load } from '../advent';
+import { Dir, move, Point, PointSet, turnLeft, turnRight } from 'coords';
+import { Iter, iter } from 'lib/iter';
+import { example, load, solve } from '../advent';
 import { range } from '../util';
 
-type Point = {
-  x: number;
-  y: number;
-  dir: number;
-};
+type Steps = Iter<[(dir: Dir) => Dir, number]>;
 
-function walk(path: string): Point[] {
-  const directions = {
-    0: { y: -1 },
-    90: { x: 1 },
-    180: { y: 1 },
-    270: { x: -1 },
+function parse(input: string): Steps {
+  const turns = {
+    R: turnRight,
+    L: turnLeft,
   };
-  let p: Point = { x: 0, y: 0, dir: 0 };
-  return path.split(', ').map((step) => {
-    const [turn, blocks] = [step[0], Number(step.slice(1))];
-    const dir = (turn === 'R' ? p.dir + 90 : p.dir - 90 + 360) % 360;
-    const delta = directions[dir];
-    return (p = {
-      dir,
-      x: p.x + (delta.x || 0) * blocks,
-      y: p.y + (delta.y || 0) * blocks,
-    });
-  });
+  return iter(input.split(', ')).map((s) => [turns[s[0]], Number(s.slice(1))]);
 }
 
-function distanceToEnd(path: string): number {
-  const route = walk(path);
-  const end = route[route.length - 1];
+function walk(steps: Steps): Iter<Point> {
+  return steps.scan(
+    (cur, [turn, steps]) => {
+      const dir = turn(cur.dir);
+      return { dir, ...move(cur, dir, steps) };
+    },
+    { x: 0, y: 0, dir: Dir.Up }
+  );
+}
+
+function distanceToEnd(steps: Steps): number {
+  const end = walk(steps).last();
   return Math.abs(end.x) + Math.abs(end.y);
 }
 
@@ -38,28 +33,26 @@ function pointsBetween(from: Point, to: Point): Point[] {
   return range(from[axis], to[axis]).map((val) => ({ ...from, [axis]: val }));
 }
 
-function distanceToFirstRepeat(path): number {
-  const route = walk(path);
-  const visited = new Set<string>();
-  let prev: Point = { x: 0, y: 0, dir: 0 };
-  for (const p of route) {
-    for (const btwn of pointsBetween(prev, p)) {
-      const key = [btwn.x, btwn.y].join(',');
-      if (visited.has(key)) return Math.abs(btwn.x) + Math.abs(btwn.y);
-      visited.add(key);
-    }
-    prev = p;
-  }
+function distanceToFirstRepeat(steps: Steps): number {
+  const visited = new PointSet();
+  const repeat = walk(steps)
+    .aperture(2)
+    .map(([prev, p]) => pointsBetween(prev, p))
+    .flat()
+    .find((p) => {
+      if (visited.has(p)) return true;
+      visited.add(p);
+    });
+  return Math.abs(repeat.x) + Math.abs(repeat.y);
 }
 
-example.equal(distanceToEnd('R2, L3'), 5);
-example.equal(distanceToEnd('R2, R2, R2'), 2);
-example.equal(distanceToEnd('R5, L5, R5, R3'), 12);
-example.equal(distanceToFirstRepeat('R8, R4, R4, R8'), 4);
+example.equal(distanceToEnd(parse('R2, L3')), 5);
+example.equal(distanceToEnd(parse('R2, R2, R2')), 2);
+example.equal(distanceToEnd(parse('R5, L5, R5, R3')), 12);
+example.equal(distanceToFirstRepeat(parse('R8, R4, R4, R8')), 4);
 
-const path = load(1).lines[0];
-answers.expect(298, 158);
-answers(
-  () => distanceToEnd(path),
-  () => distanceToFirstRepeat(path)
-);
+const steps = parse(load().lines[0]);
+export default solve(
+  () => distanceToEnd(steps),
+  () => distanceToFirstRepeat(steps)
+).expect(298, 158);

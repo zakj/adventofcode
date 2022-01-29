@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { pairs } from '../util';
 
 type Blocklist = [from: bigint, to: bigint][];
@@ -43,9 +43,8 @@ const exampleBlocklist = parse(['5-8', '0-2', '4-7']);
 example.equal(lowestNonBlocked(exampleBlocklist), 3n);
 example.equal(countAllowed(exampleBlocklist, 9n), 2n);
 
-const blocklist = parse(load(20).lines);
-answers.expect(22887907n, 109n);
-answers(
+const blocklist = parse(load().lines);
+export default solve(
   () => lowestNonBlocked(blocklist),
   () => countAllowed(blocklist, MAX_IP)
-);
+).expect(22887907n, 109n);

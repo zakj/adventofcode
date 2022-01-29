@@ -116,6 +116,7 @@ class Iter<T> implements Iterable<T> {
   scan<Acc>(fn: (acc: Acc, value: T) => Acc, initial: Acc): Iter<Acc> {
     const iter = this;
     return new Iter(function* scan() {
+      yield initial;
       let last = initial;
       for (const item of iter) {
         last = fn(last, item);
@@ -211,6 +212,12 @@ class Iter<T> implements Iterable<T> {
       if (predicate(item)) return i;
       ++i;
     }
+  }
+
+  last(): T {
+    let item: T;
+    for (item of this);
+    return item;
   }
 
   max(): number {

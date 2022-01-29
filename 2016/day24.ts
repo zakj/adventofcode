@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { neighbors4, Point, pointHash, PointSet } from '../coords';
 import search from '../graph';
 import { combinations, permutations } from '../util';
@@ -34,7 +34,7 @@ function shortestPath({ walls }: Map, start: Point, goal: Point): number {
   return search(start, goal, pointHash, edgeWeights);
 }
 
-function solve(map: Map, returnToStart = false): number {
+function clean(map: Map, returnToStart = false): number {
   const distances = new Map<TwoPointHash, number>();
   // Convert into traveling salesman problem.
   for (const [a, b] of combinations([].concat(map.start, map.goals))) {
@@ -59,12 +59,11 @@ function solve(map: Map, returnToStart = false): number {
   return min;
 }
 
-const exampleMap = parse(load(24, 'ex').lines);
-example.equal(solve(exampleMap), 14);
+const exampleMap = parse(load('ex').lines);
+example.equal(clean(exampleMap), 14);
 
-const map = parse(load(24).lines);
-answers.expect(500, 748);
-answers(
-  () => solve(map),
-  () => solve(map, true)
-);
+const map = parse(load().lines);
+export default solve(
+  () => clean(map),
+  () => clean(map, true)
+).expect(500, 748);

@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { combinations } from '../util';
 
 type Node = {
@@ -112,12 +112,11 @@ function shortestPath(fs: FS): number {
   }
 }
 
-const exampleFs = parse(load(22, 'ex').lines.slice(2));
+const exampleFs = parse(load('ex').lines.slice(2));
 example.equal(shortestPath(exampleFs), 7);
 
-const fs = parse(load(22).lines.slice(2));
-answers.expect(872, 211);
-answers(
+const fs = parse(load().lines.slice(2));
+export default solve(
   () => viablePairs(fs).length,
   () => shortestPath(fs)
-);
+).expect(872, 211);

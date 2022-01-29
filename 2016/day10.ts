@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { DefaultDict, product } from '../util';
 
 type ValueInstruction = {
@@ -66,12 +66,11 @@ function process(instructions: Instruction[]) {
   return { bots, output };
 }
 
-const exampleInstructions = parse(load(10, 'ex').lines);
+const exampleInstructions = parse(load('ex').lines);
 example.deepEqual(process(exampleInstructions).bots.get(2), new Set([2, 5]));
 
-const instructions = parse(load(10).lines);
-answers.expect(113, 12803);
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => {
     const { bots } = process(instructions);
     return [...bots.entries()].find(
@@ -82,4 +81,4 @@ answers(
     const { output } = process(instructions);
     return product([0, 1, 2].map((i) => [...output.get(i)][0]));
   }
-);
+).expect(113, 12803);

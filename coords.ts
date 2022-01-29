@@ -57,6 +57,15 @@ export class PointGrid<T> {
     return this._grid[y]?.[xOrPoint];
   }
 
+  has({ x, y }: Point): boolean;
+  has(x: number, y: number): boolean;
+  has(xOrPoint: number | Point, y?: number): boolean {
+    let x: number;
+    if (typeof xOrPoint === 'object') ({ x, y } = xOrPoint);
+    else x = xOrPoint;
+    return x >= 0 && x < this.width && y >= 0 && y < this.height;
+  }
+
   set({ x, y }: Point, value: T): void;
   set(x: number, y: number, value: T): void;
   set(xOrPoint: number | Point, yOrValue: number | T, value?: T): void {
@@ -141,16 +150,16 @@ export function add(a: Point, b: Partial<Point>): Point {
   return { x: a.x + (b.x || 0), y: a.y + (b.y || 0) };
 }
 
-export function move(p: Point, dir: Dir): Point {
+export function move(p: Point, dir: Dir, n: number = 1): Point {
   switch (dir) {
     case Dir.Up:
-      return add(p, { y: -1 });
+      return add(p, { y: -1 * n });
     case Dir.Right:
-      return add(p, { x: 1 });
+      return add(p, { x: 1 * n });
     case Dir.Down:
-      return add(p, { y: 1 });
+      return add(p, { y: 1 * n });
     case Dir.Left:
-      return add(p, { x: -1 });
+      return add(p, { x: -1 * n });
   }
 }
 

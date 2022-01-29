@@ -1,70 +1,40 @@
-import { answers, example, load } from '../advent';
+import { Dir, move, parseGrid, Point, PointGrid } from 'coords';
+import { example, load, solve } from '../advent';
 
-const keypadGrid = [
-  ['1', '2', '3'],
-  ['4', '5', '6'],
-  ['7', '8', '9'],
-];
+const keypadGrid = parseGrid(['123', '456', '789'], (c) => c);
+const gStart = { x: 1, y: 1 };
 
-const keypadDiamond = [
-  ['', '', '1', '', ''],
-  ['', '2', '3', '4', ''],
-  ['5', '6', '7', '8', '9'],
-  ['', 'A', 'B', 'C', ''],
-  ['', '', 'D', '', ''],
-];
+const keypadDiamond = parseGrid(
+  ['  1  ', ' 234 ', '56789', ' ABC ', '  D  '],
+  (c) => (c !== ' ' ? c : undefined)
+);
+const dStart = { x: 0, y: 2 };
 
-type Point = [number, number];
-type Clamp = (prev: Point, next: Point, arr: string[][]) => Point;
-
-function clampGrid<T>(prev: Point, next: Point, arr: T[][]): Point {
-  next[0] = Math.max(0, Math.min(next[0], arr.length - 1));
-  next[1] = Math.max(0, Math.min(next[1], arr[0].length - 1));
-  return next;
-}
-
-function clampDiamond<T>(prev: Point, next: Point, arr: T[][]): Point {
-  next = clampGrid(prev, next, arr);
-  if (!arr[next[0]][next[1]]) return prev;
-  return next;
-}
+const dirMap = { U: Dir.Up, R: Dir.Right, D: Dir.Down, L: Dir.Left };
 
 function doorCode(
   instructions: string[],
-  keypad: string[][],
-  clamp: Clamp
+  keypad: PointGrid<string>,
+  start: Point
 ): string {
-  const moves: { [key: string]: (p: Point) => Point } = {
-    U: (p) => [p[0] - 1, p[1]],
-    D: (p) => [p[0] + 1, p[1]],
-    L: (p) => [p[0], p[1] - 1],
-    R: (p) => [p[0], p[1] + 1],
-  };
-
-  const is5 = (v: string) => v === '5';
-  const startRow = keypad.findIndex((row) => row.findIndex(is5) !== -1);
-  let point: Point = [startRow, keypad[startRow].findIndex(is5)];
-  let digits = [];
-  for (let instr of instructions) {
-    point = instr.split('').reduce((pos, move) => {
-      return clamp(pos, moves[move](pos), keypad);
+  let point = start;
+  let digits = instructions.map((instr) => {
+    point = instr.split('').reduce((pos, dir) => {
+      const next = move(pos, dirMap[dir]);
+      return keypad.has(next) && keypad.get(next) ? next : pos;
     }, point);
-    digits.push(keypad[point[0]][point[1]]);
-  }
+    return keypad.get(point);
+  });
 
   return digits.join('');
 }
 
-const exampleInstructions = load(2, 'ex').lines;
-example.equal(doorCode(exampleInstructions, keypadGrid, clampGrid), '1985');
-example.equal(
-  doorCode(exampleInstructions, keypadDiamond, clampDiamond),
-  '5DB3'
-);
+const exampleInstructions = load('ex').lines;
+example.equal(doorCode(exampleInstructions, keypadGrid, gStart), '1985');
+example.equal(doorCode(exampleInstructions, keypadDiamond, dStart), '5DB3');
 
-const instructions = load(2).lines;
-answers.expect('33444', '446A6');
-answers(
-  () => doorCode(instructions, keypadGrid, clampGrid),
-  () => doorCode(instructions, keypadDiamond, clampDiamond)
-);
+const instructions = load().lines;
+export default solve(
+  () => doorCode(instructions, keypadGrid, gStart),
+  () => doorCode(instructions, keypadDiamond, dStart)
+).expect('33444', '446A6');

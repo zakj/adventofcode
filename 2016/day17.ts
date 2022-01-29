@@ -1,4 +1,4 @@
-import { answers, example } from '../advent';
+import { example, load, solve } from '../advent';
 import { md5, sum, zip } from '../util';
 
 type Point = [number, number];
@@ -20,6 +20,7 @@ function moves(passcode: string, p: Point, path: Move[]): Move[] {
     .filter(Boolean);
 }
 
+// TODO graph.search
 function shortestPath(passcode: string): string {
   const goal = [GRID_SIZE - 1, GRID_SIZE - 1];
   const q: { p: Point; path: Move[] }[] = [{ p: [0, 0] as Point, path: [] }];
@@ -61,9 +62,8 @@ example.equal(longestPath('ihgpwlah').length, 370);
 example.equal(longestPath('kglvqrro').length, 492);
 example.equal(longestPath('ulqzkmiv').length, 830);
 
-const input = 'mmsxrhfx';
-answers.expect('RLDUDRDDRR', 590);
-answers(
+const input = load().raw.trim();
+export default solve(
   () => shortestPath(input),
   () => longestPath(input).length
-);
+).expect('RLDUDRDDRR', 590);

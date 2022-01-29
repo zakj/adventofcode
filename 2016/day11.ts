@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import search from '../graph';
 import { chunks, combinations, DefaultDict } from '../util';
 
@@ -80,16 +80,15 @@ const goalFor = ({ locations }: State): State => ({
   locations: new Array(locations.length).fill(TOP_FLOOR),
 });
 
-const exampleStart = { floor: 1, locations: parse(load(11, 'ex').lines) };
+const exampleStart = { floor: 1, locations: parse(load('ex').lines) };
 example.equal(
   search(exampleStart, goalFor(exampleStart), serialize, edgeWeights),
   11
 );
 
-const start = { floor: 1, locations: parse(load(11).lines) };
+const start = { floor: 1, locations: parse(load().lines) };
 const start2 = { floor: 1, locations: [...start.locations, ...[1, 1, 1, 1]] };
-answers.expect(37, 61);
-answers(
+export default solve(
   () => search(start, goalFor(start), serialize, edgeWeights),
   () => search(start2, goalFor(start2), serialize, edgeWeights)
-);
+).expect(37, 61);

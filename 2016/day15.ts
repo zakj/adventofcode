@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Disc = { positions: number; time0: number };
 
@@ -17,17 +17,17 @@ function isOpenAt(d: Disc, t: number): boolean {
 
 function firstButtonPress(discs: Disc[]): number {
   let time = 0;
-  for (let time = 0; ; ++time) {
+  while (true) {
     if (discs.every((d, i) => isOpenAt(d, time + i + 1))) return time;
+    ++time;
   }
 }
 
-const exampleDiscs = parse(load(15, 'ex').lines);
+const exampleDiscs = parse(load('ex').lines);
 example.equal(firstButtonPress(exampleDiscs), 5);
 
-const discs = parse(load(15).lines);
-answers.expect(16824, 3543984);
-answers(
+const discs = parse(load().lines);
+export default solve(
   () => firstButtonPress(discs),
   () => firstButtonPress(discs.concat({ positions: 11, time0: 0 }))
-);
+).expect(16824, 3543984);

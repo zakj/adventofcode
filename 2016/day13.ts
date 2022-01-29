@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { neighbors4, Point, pointHash, PointMap, PointSet } from '../coords';
 import search from '../graph';
 
@@ -42,9 +42,8 @@ function mostVisitedIn(goal: number, n: number): number {
 
 example.equal(shortestPathTo({ x: 7, y: 4 }, 10), 11);
 
-const faveNum = load(13).numbers[0];
-answers.expect(96, 141);
-answers(
+const faveNum = load().numbers[0];
+export default solve(
   () => shortestPathTo({ x: 31, y: 39 }, faveNum),
   () => mostVisitedIn(50, faveNum)
-);
+).expect(96, 141);

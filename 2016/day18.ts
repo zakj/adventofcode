@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 import { range, sum } from '../util';
 
 function nextRow(row: string) {
@@ -25,9 +25,8 @@ function countSafeTiles(rows: string[]): number {
 
 example.equal(countSafeTiles(buildTiles('.^^.^.^^^^', 10)), 38);
 
-const firstRow = load(18).lines[0];
-answers.expect(1939, 19999535);
-answers(
+const firstRow = load().lines[0];
+export default solve(
   () => countSafeTiles(buildTiles(firstRow, 40)),
   () => countSafeTiles(buildTiles(firstRow, 400000))
-);
+).expect(1939, 19999535);

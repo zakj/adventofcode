@@ -1,5 +1,6 @@
-import { answers, example, load } from '../advent';
-import { Counter, sum } from '../util';
+import { iter } from 'lib/iter';
+import { example, load, solve } from '../advent';
+import { Counter } from '../util';
 
 type Room = {
   name: string;
@@ -39,27 +40,30 @@ function shiftCipher(room: Room): string {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
   return room.name
     .split('')
-    .map((c) => {
-      if (c === '-') return ' ';
-      const i = alphabet.findIndex((x) => x === c);
-      return alphabet[(i + room.id) % alphabet.length];
-    })
+    .map((c) =>
+      c === '-'
+        ? ' '
+        : alphabet[(alphabet.indexOf(c) + room.id) % alphabet.length]
+    )
     .join('');
 }
 
-const exampleRooms = parse(load(4, 'ex').lines);
+const exampleRooms = parse(load('ex').lines);
 example.equal(exampleRooms.filter(isValidRoom).length, 3);
 example.equal(
   shiftCipher(parse(['qzmt-zixmtkozy-ivhz-343[xxxxx]'])[0]),
   'very encrypted name'
 );
 
-const rooms = parse(load(4).lines);
-answers.expect(409147, 991);
-answers(
-  () => sum(rooms.filter(isValidRoom).map((r) => r.id)),
+const rooms = iter(parse(load().lines));
+export default solve(
+  () =>
+    rooms
+      .filter(isValidRoom)
+      .map((r) => r.id)
+      .sum(),
   () =>
     rooms
       .filter(isValidRoom)
       .find((room) => shiftCipher(room) === 'northpole object storage').id
-);
+).expect(409147, 991);

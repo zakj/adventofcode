@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 type Operation = (s: string, reverse?: boolean) => string;
 
@@ -93,12 +93,11 @@ function process(instructions: Operation[], s: string, reverse = false) {
   return s;
 }
 
-const exampleInstructions = parse(load(21, 'ex').lines);
+const exampleInstructions = parse(load('ex').lines);
 example.equal(process(exampleInstructions, 'abcde'), 'decab');
 
-const instructions = parse(load(21).lines);
-answers.expect('dbfgaehc', 'aghfcdeb');
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => process(instructions, 'abcdefgh'),
   () => process(instructions.reverse(), 'fbgdceah', true)
-);
+).expect('dbfgaehc', 'aghfcdeb');

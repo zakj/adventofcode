@@ -1,21 +1,25 @@
-import { answers, load } from '../advent';
-import { chunks, sum, zip } from '../util';
+import { iter } from 'lib/iter';
+import { load, solve } from '../advent';
+import { zip } from '../util';
 
 function parse(lines: string[]): number[][] {
   return lines.map((line) => line.trim().split(/\s+/).map(Number));
 }
 
-function isValidTriangle(sides: number[]): boolean {
-  return sides.every((s, i) => s < sum(sides.filter((_, j) => i !== j)));
+function isValidTriangle([a, b, c]: number[]): boolean {
+  return a < b + c && b < a + c && c < a + b;
 }
 
 function fromColumns(lines: number[][]): number[][] {
-  return chunks(zip(...lines).flat(), 3);
+  // TODO Iter.zip?
+  return iter(zip(...lines))
+    .flat()
+    .splitEvery(3)
+    .toArray();
 }
 
-const triangles = parse(load(3).lines);
-answers.expect(983, 1836);
-answers(
+const triangles = parse(load().lines);
+export default solve(
   () => triangles.filter(isValidTriangle).length,
   () => fromColumns(triangles).filter(isValidTriangle).length
-);
+).expect(983, 1836);

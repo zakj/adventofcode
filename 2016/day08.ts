@@ -1,5 +1,5 @@
-import { answers, example, load, ocr } from '../advent';
-import { sum, zip } from '../util';
+import { example, load, ocr, solve } from '../advent';
+import { zip } from '../util';
 
 type RectInstruction = {
   type: 'rect';
@@ -84,15 +84,14 @@ function toString(board: Board): string {
 }
 
 function count(board: Board): number {
-  return sum(board.map((row) => row.filter(Boolean).length));
+  return board.flat().filter(Boolean).length;
 }
 
-const exampleInstructions = parse(load(8, 'ex').lines);
+const exampleInstructions = parse(load('ex').lines);
 example.equal(count(run(exampleInstructions, 7, 3)), 6);
 
-const instructions = parse(load(8).lines);
-answers.expect(116, 'UPOJFLBCEZ');
-answers(
+const instructions = parse(load().lines);
+export default solve(
   () => count(run(instructions, 50, 6)),
   () => ocr(toString(run(instructions, 50, 6)), '4x6')
-);
+).expect(116, 'UPOJFLBCEZ');

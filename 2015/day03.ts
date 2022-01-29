@@ -1,6 +1,6 @@
+import { concat, iter } from 'lib/iter';
 import { load, solve } from '../advent';
-import { Dir, move, PointSet } from '../coords';
-import { partition, scan } from '../util';
+import { Dir, move, pointHash } from '../coords';
 
 const directions: Record<string, Dir> = {
   '^': Dir.Up,
@@ -9,18 +9,15 @@ const directions: Record<string, Dir> = {
   '<': Dir.Left,
 } as const;
 
-const dirs = load()
-  .raw.trim()
-  .split('')
+const dirs = iter(load().raw.trim().split(''))
   .filter((c) => c in directions)
   .map((c) => directions[c]);
 
 export default solve(
-  () => new PointSet(scan(dirs, move, { x: 0, y: 0 })).size,
+  () => dirs.scan(move, { x: 0, y: 0 }).uniqBy(pointHash).size,
   () =>
-    new PointSet(
-      partition((_, i) => i % 2 === 0, dirs).flatMap((ds) =>
-        scan(ds, move, { x: 0, y: 0 })
-      )
-    ).size
+    concat(dirs.partition((dir, i) => i % 2 === 0))
+      .map((gifter) => gifter.scan(move, { x: 0, y: 0 }))
+      .flat()
+      .uniqBy(pointHash).size
 ).expect(2572, 2631);

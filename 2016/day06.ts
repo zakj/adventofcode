@@ -1,5 +1,5 @@
-import { answers, example, load } from '../advent';
-import { Counter, zip } from '../util';
+import { example, load, solve } from '../advent';
+import { Counter, last, zip } from '../util';
 
 function errorCorrect(signals: string[]): string {
   return zip(...signals.map((x) => x.split('')))
@@ -9,19 +9,15 @@ function errorCorrect(signals: string[]): string {
 
 function errorCorrectLeast(signals: string[]): string {
   return zip(...signals.map((x) => x.split('')))
-    .map((column) => {
-      const leastCommon = new Counter(column).mostCommon.reverse();
-      return leastCommon[0][0];
-    })
+    .map((column) => last(new Counter(column).mostCommon)[0])
     .join('');
 }
 
-const exampleSignals = load(6, 'ex').lines;
+const exampleSignals = load('ex').lines;
 example.equal(errorCorrect(exampleSignals), 'easter');
 
-const signals = load(6).lines;
-answers.expect('qqqluigu', 'lsoypmia');
-answers(
+const signals = load().lines;
+export default solve(
   () => errorCorrect(signals),
   () => errorCorrectLeast(signals)
-);
+).expect('qqqluigu', 'lsoypmia');

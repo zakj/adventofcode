@@ -1,4 +1,4 @@
-import { answers, example, load } from '../advent';
+import { example, load, solve } from '../advent';
 
 function decompress(s: string): string {
   const output = [];
@@ -7,9 +7,7 @@ function decompress(s: string): string {
     const c = s[i];
     if (c === '(') {
       const chunk = repeatChunk(s.slice(i));
-      for (let i = 0; i < chunk.count; ++i) {
-        output.push(chunk.repeat);
-      }
+      output.push(chunk.repeat.repeat(chunk.count));
       i += chunk.offset;
     } else {
       output.push(c);
@@ -60,9 +58,8 @@ example.equal(
   445
 );
 
-const compressed = load(9).lines.join('');
-answers.expect(107035, 11451628995);
-answers(
+const compressed = load().lines.join('');
+export default solve(
   () => decompress(compressed).length,
   () => decompressV2Length(compressed)
-);
+).expect(107035, 11451628995);

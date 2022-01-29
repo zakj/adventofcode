@@ -1,3 +1,4 @@
+import { iter } from 'lib/iter';
 import { example, load, solve } from '../advent';
 import { product, range, sum } from '../util';
 
@@ -66,9 +67,7 @@ function allCookies(ingredients: Ingredient[], maxTsp: number = 100): Cookie[] {
 }
 
 function highestScore(cookies: Cookie[]): number {
-  return cookies
-    .map((c) => c.score)
-    .reduce((max, score) => (score > max ? score : max), -Infinity);
+  return iter(cookies).pluck('score').max();
 }
 
 const exampleIngredients = parse(load('ex').lines);
