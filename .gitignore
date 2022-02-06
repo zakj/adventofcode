@@ -1,6 +1,6 @@
 .DS_Store
-.aoc.ts
 node_modules
 .session
+.stignore
 .vscode
 *.cpuprofile
