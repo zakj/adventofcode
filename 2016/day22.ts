@@ -1,17 +1,17 @@
 import { example, load, solve } from 'lib/advent';
+import { neighbors4, parseGrid, Point, pointHash } from 'lib/coords';
+import { minDistance } from 'lib/graph';
+import { iter } from 'lib/iter';
 import { combinations } from 'lib/util';
 
-type Node = {
-  x: number;
-  y: number;
-};
-type FullNode = Node & {
+type FullNode = Point & {
   size: number;
   used: number;
   avail: number;
   pctUsed: number;
 };
 type FS = FullNode[];
+type State = { empty: Point; goal: Point };
 
 function parse(lines: string[]): FS {
   const num = (x: string): number => Number(x.replaceAll(/[^\d]/g, ''));
@@ -39,77 +39,42 @@ function viablePairs(fs: FS): [FullNode, FullNode][] {
   return pairs;
 }
 
-function simplify(node: FullNode): Node {
+function toPoint(node: FullNode): Point {
   return { x: node.x, y: node.y };
 }
 
-function hashify(...nodes: Node[]): string {
-  return JSON.stringify(nodes.map(({ x, y }) => [x, y]));
-}
-
-function neighbors(node: Node, w: number, h: number): Node[] {
-  return [-1, 1]
-    .flatMap((d) => [
-      { x: node.x + d, y: node.y },
-      { x: node.x, y: node.y + d },
-    ])
-    .filter((node) => node.x >= 0 && node.x < w && node.y >= 0 && node.y < h);
-}
-
-function same(a: Node, b: Node) {
+function isSamePoint(a: Point, b: Point): boolean {
   return a.x === b.x && a.y === b.y;
 }
 
-function printFs(
-  empty: Node,
-  goal: Node,
-  walls: Node[],
-  width: number,
-  height: number
-) {
-  for (let y = 0; y < width; ++y) {
-    const rr = [];
-    for (let x = 0; x < height; ++x) {
-      const v =
-        x === empty.x && y === empty.y
-          ? '_'
-          : x === goal.x && y === goal.y
-          ? 'G'
-          : walls.some((n) => n.x === x && n.y === y)
-          ? '#'
-          : '.';
-      rr.push(x === 0 && y === 0 ? `(${v})` : ` ${v} `);
-    }
-    console.log(rr.join(''));
-  }
-  console.log();
-}
-
 function shortestPath(fs: FS): number {
-  const width = fs.reduce((max, n) => (n.x > max ? n.x : max), 0) + 1;
-  const height = fs.reduce((max, n) => (n.y > max ? n.y : max), 0) + 1;
-  const goal = simplify(fs.find((n) => n.x === width - 1 && n.y === 0));
-  const emptySize = fs.find((n) => n.used === 0).size;
-  const empty = simplify(fs.find((n) => n.used === 0));
-  const walls = fs.filter((n) => n.used > emptySize).map(simplify);
+  const width = iter(fs).pluck('x').max() + 1;
+  const height = iter(fs).pluck('y').max() + 1;
+  const goal = { x: width - 1, y: 0 };
+  const emptyNode = fs.find((n) => n.used === 0);
+  const empty = toPoint(emptyNode);
+  const grid = parseGrid(
+    new Array(height).fill(0).map(() => '.'.repeat(width)),
+    () => true
+  );
+  fs.filter((n) => n.used > emptyNode.size).forEach((p) => grid.set(p, false));
 
-  const visited = new Set<string>();
-  const q = [{ goal, empty, steps: 0 }];
-  while (q.length) {
-    let { goal, empty, steps } = q.shift();
-    if (goal.x === 0 && goal.y === 0) return steps;
-    steps++;
-    for (let node of neighbors(empty, width, height)) {
-      let newGoal = same(node, goal) ? empty : goal;
-      let newEmpty = node;
-      const key = hashify(newEmpty, newGoal);
-      if (visited.has(key)) continue;
-      visited.add(key);
-      if (walls.some((wall) => wall.x === node.x && wall.y === node.y))
-        continue;
-      q.push({ empty: newEmpty, goal: newGoal, steps });
-    }
+  function edgeWeights({ empty, goal }: State): [State, number][] {
+    return neighbors4(empty)
+      .filter((node) => grid.get(node))
+      .map((node) => {
+        const newGoal = isSamePoint(node, goal) ? empty : goal;
+        return [{ empty: node, goal: newGoal }, 1];
+      });
   }
+
+  const hashState = ({ goal, empty }: State) =>
+    `${pointHash(goal)}|${pointHash(empty)}`;
+
+  return minDistance({ goal, empty }, null, hashState, edgeWeights, {
+    goalFn: ({ goal }) => goal.x === 0 && goal.y === 0,
+    heuristic: ({ goal }) => goal.x + goal.y,
+  });
 }
 
 const exampleFs = parse(load('ex').lines.slice(2));
