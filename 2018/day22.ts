@@ -1,6 +1,6 @@
 import { example, load, solve } from 'lib/advent';
 import { neighbors4, Point } from 'lib/coords';
-import search from 'lib/graph';
+import { minDistance } from 'lib/graph';
 import { ValuesOf, XMap } from 'lib/util';
 
 type State = {
@@ -21,7 +21,7 @@ const Tool = {
 } as const;
 type Tool = ValuesOf<typeof Tool>;
 
-function parse(lines: string[]): { target: any; depth: any } {
+function parse(lines: string[]): { target: Point; depth: number } {
   const depth = Number(lines[0].split(': ')[1]);
   const [x, y] = lines[1].split(': ')[1].split(',').map(Number);
   return { target: { x, y }, depth };
@@ -90,13 +90,10 @@ function rescue(target: Point, depth: number): number {
   const start = { point: { x: 0, y: 0 }, tool: Tool.Torch };
   const goal = { point: target, tool: Tool.Torch };
   erosionLevels.set({ p: target, depth }, 0); // hack to avoid passing target around
-  return search(
-    start,
-    goal,
-    serialize,
-    edgeWeights(depth),
-    ({ point }) => Math.abs(point.x - target.x) + Math.abs(point.y - target.y)
-  );
+  return minDistance(start, goal, serialize, edgeWeights(depth), {
+    heuristic: ({ point }) =>
+      Math.abs(point.x - target.x) + Math.abs(point.y - target.y),
+  });
 }
 
 const exampleTarget = { x: 10, y: 10 };

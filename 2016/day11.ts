@@ -1,5 +1,5 @@
 import { example, load, solve } from 'lib/advent';
-import search from 'lib/graph';
+import { minDistance } from 'lib/graph';
 import { chunks, combinations, DefaultDict } from 'lib/util';
 
 type State = {
@@ -27,7 +27,7 @@ function parse(lines: string[]): number[] {
   return [...elements.values()].flat().map(Number);
 }
 
-function isSafe({ floor, locations }: State): boolean {
+function isSafe({ locations }: State): boolean {
   // A microchip is safe if it is paired with its generator
   //   OR there are no generators on its floor.
   const generatorFloors = new Set(locations.filter((_, i) => i % 2 === 0));
@@ -45,7 +45,7 @@ function edgeWeights({ floor, locations }: State): [State, number][] {
   const currentFloorIndexes = locations
     .map((f, i) => [f, i])
     .filter(([f]) => f === floor)
-    .map(([f, i]) => i);
+    .map(([, i]) => i);
 
   // If we can move 2 elements up, skip moving 1. If we can move 1 element down,
   // skip moving 2.
@@ -82,13 +82,13 @@ const goalFor = ({ locations }: State): State => ({
 
 const exampleStart = { floor: 1, locations: parse(load('ex').lines) };
 example.equal(
-  search(exampleStart, goalFor(exampleStart), serialize, edgeWeights),
+  minDistance(exampleStart, goalFor(exampleStart), serialize, edgeWeights),
   11
 );
 
 const start = { floor: 1, locations: parse(load().lines) };
 const start2 = { floor: 1, locations: [...start.locations, ...[1, 1, 1, 1]] };
 export default solve(
-  () => search(start, goalFor(start), serialize, edgeWeights),
-  () => search(start2, goalFor(start2), serialize, edgeWeights)
+  () => minDistance(start, goalFor(start), serialize, edgeWeights),
+  () => minDistance(start2, goalFor(start2), serialize, edgeWeights)
 ).expect(37, 61);

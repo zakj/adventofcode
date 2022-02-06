@@ -2,11 +2,11 @@ import { example, load, solve } from 'lib/advent';
 import {
   findBounds,
   neighbors4,
-  pointHash as pointHash2,
+  pointHash,
   PointMap,
   PointSet,
 } from 'lib/coords';
-import search from 'lib/graph';
+import { minDistance } from 'lib/graph';
 import { DefaultDict } from 'lib/util';
 
 type Point = { x: number; y: number };
@@ -16,7 +16,6 @@ type Map = {
   start: Point;
   end: Point;
 };
-const pointHash = ({ x, y }: Point): string => `${x},${y}`;
 
 function parse(s: string): Map {
   const lines = s.split('\n');
@@ -83,12 +82,12 @@ function shortestPath(map: Map): number {
       ...(map.portals.has(p) ? [map.portals.get(p)] : []),
     ].map((p) => [p, 1]);
   }
-  return search(map.start, map.end, pointHash2, edgeWeights);
+  return minDistance(map.start, map.end, pointHash, edgeWeights);
 }
 
 function shortestPathRecursive(map: Map): number {
   type RecursivePoint = Point & { layer: number };
-  const rpHash = (rp: RecursivePoint) => [pointHash(rp), rp.layer].join(',');
+  const rpHash = (rp: RecursivePoint) => `${pointHash(rp)},${rp.layer}`;
   const bounds = findBounds(new PointMap(map.portals));
   const onBoundary = (p: Point) =>
     bounds.min.x === p.x ||
@@ -114,7 +113,7 @@ function shortestPathRecursive(map: Map): number {
 
   const start = { ...map.start, layer: 0 };
   const end = { ...map.end, layer: 0 };
-  return search(start, end, rpHash, edgeWeights, heuristic);
+  return minDistance(start, end, rpHash, edgeWeights, { heuristic });
 }
 
 const ex1Map = parse(load('ex1').raw);

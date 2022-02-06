@@ -1,6 +1,6 @@
 import { example, load, solve } from 'lib/advent';
 import { neighbors4, Point, pointHash, PointMap, PointSet } from 'lib/coords';
-import search from 'lib/graph';
+import { minDistance } from 'lib/graph';
 
 function isWall({ x, y }: Point, n: number): boolean {
   const num = x * x + 3 * x + 2 * x * y + y + y * y + n;
@@ -18,7 +18,7 @@ function shortestPathTo(goal: Point, n: number): number {
   const start = { x: 1, y: 1 };
   const edgeWeights = (cur: Point): [Point, number][] =>
     neighbors(cur, n).map((p) => [p, 1]);
-  return search(start, goal, pointHash, edgeWeights);
+  return minDistance(start, goal, pointHash, edgeWeights);
 }
 
 function mostVisitedIn(goal: number, n: number): number {
@@ -29,7 +29,7 @@ function mostVisitedIn(goal: number, n: number): number {
     cur = q.shift();
     const path = pathTo.get(cur);
     if (path.length === goal) return new PointSet(pathTo.keys()).size;
-    for (let neighbor of neighbors(cur, n)) {
+    for (const neighbor of neighbors(cur, n)) {
       const to = pathTo.get(neighbor);
       if (!to) {
         pathTo.set(neighbor, path.concat(cur));

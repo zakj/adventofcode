@@ -1,5 +1,5 @@
 import { load, solve } from 'lib/advent';
-import search from 'lib/graph';
+import { minDistance } from 'lib/graph';
 import { sum } from 'lib/util';
 
 interface Node {
@@ -40,7 +40,7 @@ class DiGraph<T extends Node> {
       const oneStep = (node: T): [T, number] => [node, 1];
       return [...pred.get(node), ...succ.get(node)].map(oneStep);
     }
-    return search(from, to, (x) => x.toString(), edgeWeights);
+    return minDistance(from, to, (x) => x.toString(), edgeWeights);
   }
 
   shortestPathUp(from: T, to: T): number {
@@ -49,7 +49,7 @@ class DiGraph<T extends Node> {
       const oneStep = (node: T): [T, number] => [node, 1];
       return [...pred.get(node)].map(oneStep);
     }
-    return search(from, to, (x) => x.toString(), edgeWeights);
+    return minDistance(from, to, (x) => x.toString(), edgeWeights);
   }
 }
 

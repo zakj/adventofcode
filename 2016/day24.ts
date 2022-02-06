@@ -1,6 +1,6 @@
 import { example, load, solve } from 'lib/advent';
 import { neighbors4, Point, pointHash, PointSet } from 'lib/coords';
-import search from 'lib/graph';
+import { minDistance } from 'lib/graph';
 import { combinations, permutations } from 'lib/util';
 
 type TwoPointHash = string;
@@ -31,7 +31,7 @@ function shortestPath({ walls }: Map, start: Point, goal: Point): number {
     neighbors4(cur)
       .filter((p) => !walls.has(p))
       .map((p) => [p, 1]);
-  return search(start, goal, pointHash, edgeWeights);
+  return minDistance(start, goal, pointHash, edgeWeights);
 }
 
 function clean(map: Map, returnToStart = false): number {

@@ -1,6 +1,6 @@
 import { load, solve } from 'lib/advent';
 import { Point, PointMap } from 'lib/coords';
-import search from 'lib/graph';
+import { minDistance } from 'lib/graph';
 import { range, sum, ValuesOf } from 'lib/util';
 
 const Type = {
@@ -60,7 +60,6 @@ function isHallwayClear(from: Point, to: Point, hallwayPods: Pods) {
 function move(pods: Pods, from: Pod, to: Point): [Pods, number] {
   const nextPods = pods.slice();
   nextPods[nextPods.indexOf(from)] = { x: to.x, y: to.y, type: from.type };
-  const steps = stepsToReach(from, to);
   return [nextPods, stepsToReach(from, to) * energyCost[from.type]];
 }
 
@@ -96,7 +95,7 @@ function edgeWeights(roomSize: 2 | 4): (pods: Pods) => [Pods, number][] {
           return rooms;
         }, new Map<number, Pods>()),
     ]
-      .map(([x, pods]) => {
+      .map(([, pods]) => {
         pods.sort((a, b) => a.y - b.y);
         return pods && pods.some((p) => p.x !== targetRoom[p.type])
           ? pods[0]
@@ -152,11 +151,13 @@ const final2 = parse(`#############
 
 const burrow = parse(load().raw);
 export default solve(
-  () => search(burrow, final1, serialize, edgeWeights(2), heuristic),
+  () => minDistance(burrow, final1, serialize, edgeWeights(2), { heuristic }),
   () => {
     const lines = load().lines;
     lines.splice(3, 0, '  #D#C#B#A#', '  #D#B#A#C#');
     const burrow = parse(lines.join('\n'));
-    return search(burrow, final2, serialize, edgeWeights(4), heuristic);
+    return minDistance(burrow, final2, serialize, edgeWeights(4), {
+      heuristic,
+    });
   }
 ).expect(16506, 48304);
