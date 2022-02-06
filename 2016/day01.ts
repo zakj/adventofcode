@@ -1,5 +1,5 @@
-import { Dir, move, Point, PointSet, turnLeft, turnRight } from 'coords';
 import { example, load, solve } from 'lib/advent';
+import { Dir, move, Point, PointSet, turnLeft, turnRight } from 'lib/coords';
 import { Iter, iter } from 'lib/iter';
 import { range } from 'lib/util';
 
@@ -19,7 +19,7 @@ function walk(steps: Steps): Iter<Point> {
       const dir = turn(cur.dir);
       return { dir, ...move(cur, dir, steps) };
     },
-    { x: 0, y: 0, dir: Dir.Up }
+    { x: 0, y: 0, dir: Dir.Up as Dir }
   );
 }
 
