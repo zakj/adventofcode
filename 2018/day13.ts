@@ -1,6 +1,6 @@
 import { example, load, solve } from 'lib/advent';
+import { Counter } from 'lib/collections';
 import { Dir, move, Point, pointToString } from 'lib/coords';
-import { Counter } from 'lib/util';
 
 type Map = {
   tracks: string[][];

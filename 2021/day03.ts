@@ -1,5 +1,6 @@
 import { load, solve } from 'lib/advent';
-import { Counter, partition, range } from 'lib/util';
+import { Counter } from 'lib/collections';
+import { partition, range } from 'lib/util';
 
 const data = load().lines;
 export default solve(

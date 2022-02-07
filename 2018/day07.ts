@@ -1,5 +1,5 @@
 import { example, load, solve } from 'lib/advent';
-import { DefaultDict } from 'lib/util';
+import { DefaultDict } from 'lib/collections';
 
 type Step = string;
 type Requirement = {
@@ -36,7 +36,7 @@ function constructPrereqs(reqs: Requirement[]): Prereqs {
 
 function nextStep(prereqs: Prereqs): Step | null {
   const stepEntry = [...prereqs.entries()]
-    .filter(([step, p]) => p.size === 0)
+    .filter(([, p]) => p.size === 0)
     .sort()
     .shift();
   return stepEntry ? stepEntry[0] : null;

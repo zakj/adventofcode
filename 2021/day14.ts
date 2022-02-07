@@ -1,5 +1,6 @@
 import { load, solve } from 'lib/advent';
-import { Counter, last, pairs, range } from 'lib/util';
+import { Counter } from 'lib/collections';
+import { last, pairs, range } from 'lib/util';
 
 function parse(paras: string[][]) {
   const template = paras.shift()[0];

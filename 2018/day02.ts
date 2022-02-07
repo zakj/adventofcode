@@ -1,13 +1,14 @@
 import { load, solve } from 'lib/advent';
-import { combinations, Counter, hammingDistance, zip } from 'lib/util';
+import { Counter } from 'lib/collections';
+import { combinations, hammingDistance, zip } from 'lib/util';
 
 function checksum(xs: string[]): number {
   let twos = 0;
   let threes = 0;
   xs.forEach((x) => {
     const counts = new Counter(x.split('')).mostCommon;
-    if (counts.some(([chr, cnt]) => cnt === 3)) threes++;
-    if (counts.some(([chr, cnt]) => cnt === 2)) twos++;
+    if (counts.some(([, cnt]) => cnt === 3)) threes++;
+    if (counts.some(([, cnt]) => cnt === 2)) twos++;
   });
   return twos * threes;
 }

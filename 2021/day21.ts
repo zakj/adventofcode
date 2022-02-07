@@ -1,5 +1,6 @@
 import { load, solve } from 'lib/advent';
-import { Counter, range, sum } from 'lib/util';
+import { Counter } from 'lib/collections';
+import { range, sum } from 'lib/util';
 
 type Player = {
   pos: number;
@@ -48,8 +49,8 @@ function winsDirac(
 const startPos = parse(load().lines);
 export default solve(
   () => {
-    let p1 = { pos: startPos[0], score: 0 };
-    let p2 = { pos: startPos[1], score: 0 };
+    const p1 = { pos: startPos[0], score: 0 };
+    const p2 = { pos: startPos[1], score: 0 };
     let rolls = 0;
     while (true) {
       let roll = wrap(++rolls, 100) + wrap(++rolls, 100) + wrap(++rolls, 100);

@@ -1,5 +1,6 @@
 import { example, load, solve } from 'lib/advent';
-import { DefaultDict, product } from 'lib/util';
+import { DefaultDict } from 'lib/collections';
+import { product } from 'lib/util';
 
 type ValueInstruction = {
   type: 'value';
@@ -74,7 +75,7 @@ export default solve(
   () => {
     const { bots } = process(instructions);
     return [...bots.entries()].find(
-      ([id, chips]) => chips.has(17) && chips.has(61)
+      ([, chips]) => chips.has(17) && chips.has(61)
     )[0];
   },
   () => {

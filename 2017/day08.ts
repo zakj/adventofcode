@@ -1,5 +1,5 @@
 import { example, load, solve } from 'lib/advent';
-import { DefaultDict } from 'lib/util';
+import { DefaultDict } from 'lib/collections';
 
 type Register = string;
 type Expression = string;
@@ -13,7 +13,7 @@ type Registers = Map<Register, number>;
 
 function parse(lines: string[]): Instruction[] {
   return lines.map((line) => {
-    const [register, op, val, _if, ...expression] = line.split(/\s+/);
+    const [register, op, val, , ...expression] = line.split(/\s+/);
     if (op !== 'inc' && op !== 'dec') throw new Error();
     return {
       register,
@@ -35,7 +35,6 @@ const operations = new Map<string, (a: number, b: number) => boolean>([
 
 function evaluate(exp: Expression, registers: Registers): boolean {
   const [reg, op, value] = exp.split(/\s+/);
-  const regValue = registers.get(reg);
   return operations.get(op)(registers.get(reg), Number(value));
 }
 

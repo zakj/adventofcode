@@ -1,5 +1,6 @@
 import { example, load, solve } from 'lib/advent';
-import { Counter, sum } from 'lib/util';
+import { Counter } from 'lib/collections';
+import { sum } from 'lib/util';
 
 type Input = {
   name: string;
@@ -56,7 +57,7 @@ function correctedNodeWeight(node: Node, goal: number, tree: Tree): number {
     return goal - childGoal * childWeights.size;
   }
   const nextNode = tree.get(
-    [...childWeights.entries()].find(([_, weight]) => weight !== childGoal)[0]
+    [...childWeights.entries()].find(([, weight]) => weight !== childGoal)[0]
   );
   return correctedNodeWeight(nextNode, childGoal, tree);
 }

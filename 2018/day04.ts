@@ -1,5 +1,6 @@
 import { load, solve } from 'lib/advent';
-import { Counter, range } from 'lib/util';
+import { Counter } from 'lib/collections';
+import { range } from 'lib/util';
 
 type Entry = {
   guard: number;

@@ -1,4 +1,4 @@
-import { DefaultDict } from 'lib/util';
+import { DefaultDict } from 'lib/collections';
 
 export type Program = number[];
 

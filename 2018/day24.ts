@@ -1,5 +1,6 @@
 import { example, load, solve } from 'lib/advent';
-import { Counter, sum, XMap } from 'lib/util';
+import { Counter } from 'lib/collections';
+import { sum, XMap } from 'lib/util';
 
 type DamageType = string;
 type GroupKey = {
@@ -79,7 +80,7 @@ function byDamageDealt(g: Group) {
   };
 }
 
-function fight(groups: Army, boost: number = 0): Army | typeof Standoff {
+function fight(groups: Army, boost = 0): Army | typeof Standoff {
   const withBoost = (g: Group): Group => ({
     ...g,
     attackDamage:

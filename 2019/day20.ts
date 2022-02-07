@@ -1,4 +1,5 @@
 import { example, load, solve } from 'lib/advent';
+import { DefaultDict } from 'lib/collections';
 import {
   findBounds,
   neighbors4,
@@ -7,7 +8,6 @@ import {
   PointSet,
 } from 'lib/coords';
 import { minDistance } from 'lib/graph';
-import { DefaultDict } from 'lib/util';
 
 type Point = { x: number; y: number };
 type Map = {

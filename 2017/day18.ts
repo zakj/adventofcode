@@ -1,5 +1,5 @@
 import { example, load, solve } from 'lib/advent';
-import { DefaultDict } from 'lib/util';
+import { DefaultDict } from 'lib/collections';
 
 type Snd = { op: 'snd'; args: [Value] };
 type _Set = { op: 'set'; args: [Register, Value] };
@@ -67,7 +67,6 @@ function* execute(
 ): Generator<number> {
   const registers = new DefaultDict<Register, number>(() => 0);
   if (p != null) registers.set('p', p);
-  let frequency: Frequency;
   let ptr = 0;
   let sendCount = 0;
   while (ptr >= 0 && ptr < instructions.length) {

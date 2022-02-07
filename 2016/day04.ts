@@ -1,6 +1,6 @@
 import { example, load, solve } from 'lib/advent';
+import { Counter } from 'lib/collections';
 import { iter } from 'lib/iter';
-import { Counter } from 'lib/util';
 
 type Room = {
   name: string;
@@ -30,7 +30,7 @@ function isValidRoom(room: Room): boolean {
       }
       return bCount - aCount;
     })
-    .map(([k, v]) => k)
+    .map(([k]) => k)
     .slice(0, 5)
     .join('');
   return checksum === room.checksum;

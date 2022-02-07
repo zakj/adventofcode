@@ -1,6 +1,7 @@
 import { example, load, solve } from 'lib/advent';
+import { DefaultDict } from 'lib/collections';
 import { minDistance } from 'lib/graph';
-import { chunks, combinations, DefaultDict } from 'lib/util';
+import { chunks, combinations } from 'lib/util';
 
 type State = {
   floor: number;

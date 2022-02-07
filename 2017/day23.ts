@@ -1,5 +1,5 @@
 import { load, solve } from 'lib/advent';
-import { DefaultDict } from 'lib/util';
+import { DefaultDict } from 'lib/collections';
 
 type _Set = { op: 'set'; args: [Register, Value] };
 type Sub = { op: 'sub'; args: [Register, Value] };
@@ -8,7 +8,6 @@ type Jnz = { op: 'jnz'; args: [Value, Value] };
 type Instruction = _Set | Sub | Mul | Jnz;
 type Register = string;
 type Registers = Map<string, number>;
-type Frequency = number;
 
 class Value {
   private register: string;
@@ -53,7 +52,7 @@ function parse(lines: string[]): Instruction[] {
 
 function execute(
   instructions: Instruction[],
-  debug: boolean = false
+  debug = false
 ): { mulCount: number; registers: Registers } {
   const registers = new DefaultDict<Register, number>(() => 0);
   if (debug) registers.set('a', 1);

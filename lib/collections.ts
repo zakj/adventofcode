@@ -1,3 +1,43 @@
+export class Counter<T> {
+  private counts: Map<T, number>;
+  private _mostCommon: [T, number][] = [];
+
+  constructor(xs: T[] = []) {
+    this.counts = new Map<T, number>();
+    xs.forEach((x) => this.incr(x));
+  }
+
+  get length() {
+    return this.counts.size;
+  }
+
+  incr(x: T, by = 1): void {
+    this._mostCommon = [];
+    if (!this.counts.has(x)) this.counts.set(x, 0);
+    this.counts.set(x, this.counts.get(x) + by);
+  }
+
+  entries() {
+    return this.counts.entries();
+  }
+
+  get mostCommon(): [T, number][] {
+    if (this._mostCommon.length === 0)
+      this._mostCommon = [...this.entries()].sort(([, a], [, b]) => b - a);
+    return this._mostCommon;
+  }
+}
+
+export class DefaultDict<K, V> extends Map<K, V> {
+  constructor(private init: () => V, iterable: Iterable<[K, V]> = []) {
+    super(iterable);
+  }
+  get(key: K): V {
+    if (!super.has(key)) super.set(key, this.init());
+    return super.get(key);
+  }
+}
+
 export class MinHeap<T> {
   private arr: { key: number; value: T }[] = [];
 

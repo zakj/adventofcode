@@ -24,46 +24,6 @@ export function* combinations<T>(arr: T[]): Generator<[T, T]> {
   }
 }
 
-export class Counter<T> {
-  private counts: Map<T, number>;
-  private _mostCommon: [T, number][] = [];
-
-  constructor(xs: T[] = []) {
-    this.counts = new Map<T, number>();
-    xs.forEach((x) => this.incr(x));
-  }
-
-  get length() {
-    return this.counts.size;
-  }
-
-  incr(x: T, by: number = 1): void {
-    this._mostCommon = [];
-    if (!this.counts.has(x)) this.counts.set(x, 0);
-    this.counts.set(x, this.counts.get(x) + by);
-  }
-
-  entries() {
-    return this.counts.entries();
-  }
-
-  get mostCommon(): [T, number][] {
-    if (this._mostCommon.length === 0)
-      this._mostCommon = [...this.entries()].sort(([_a, a], [_b, b]) => b - a);
-    return this._mostCommon;
-  }
-}
-
-export class DefaultDict<K, V> extends Map<K, V> {
-  constructor(private init: () => V, iterable: Iterable<[K, V]> = []) {
-    super(iterable);
-  }
-  get(key: K): V {
-    if (!super.has(key)) super.set(key, this.init());
-    return super.get(key);
-  }
-}
-
 export function hammingDistance(a: string, b: string): number {
   if (a.length !== b.length) throw new Error('lengths differ');
   return zip(a.split(''), b.split('')).reduce(
@@ -129,7 +89,7 @@ export function range(start: number, stop: number): number[] {
   return xs;
 }
 
-export function rotate<T>(xs: T[], n: number = 1): T[] {
+export function rotate<T>(xs: T[], n = 1): T[] {
   n %= xs.length;
   return [...xs.slice(n), ...xs.slice(0, n)];
 }

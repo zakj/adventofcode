@@ -1,5 +1,4 @@
-import { DefaultDict } from 'lib/util';
-import { MinHeap } from './collections';
+import { DefaultDict, MinHeap } from 'lib/collections';
 
 type SearchOptions<T> = {
   heuristic?: (state: T) => number;

@@ -1,5 +1,5 @@
 import { example, load, solve } from 'lib/advent';
-import { DefaultDict } from 'lib/util';
+import { DefaultDict } from 'lib/collections';
 
 interface Chemical {
   num: number;
