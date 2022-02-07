@@ -1,11 +1,6 @@
-import { chunks, range, rotate } from '../util';
+import { chunks, range, rotate } from 'lib/util';
 
-export function round(
-  list: number[],
-  lengths: number[],
-  ptr: number = 0,
-  skip: number = 0
-) {
+export function round(list: number[], lengths: number[], ptr = 0, skip = 0) {
   for (const length of lengths) {
     const rotated = rotate(list, ptr);
     const subset = rotated.slice(0, length).reverse();

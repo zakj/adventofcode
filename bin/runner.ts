@@ -1,17 +1,23 @@
 import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import inspector from 'inspector';
-import { Solver } from 'lib/advent';
+import { Solver, SolverFn, SolverResult } from 'lib/advent';
 import { color, makeTable } from 'lib/format';
-import { basename, resolve } from 'path';
+import { basename, join, resolve } from 'path';
 import { performance } from 'perf_hooks';
 
-type Result = { part: number; result: any; expected: any; duration: number };
+type Result = {
+  part: number;
+  result: SolverResult;
+  expected: SolverResult;
+  duration: number;
+};
 
 async function runAll() {
   const re = /^\d{4}$/;
-  const years = readdirSync(__dirname)
+  const rootDir = join(__dirname, '..');
+  const years = readdirSync(rootDir)
     .filter((dir) => re.test(dir))
-    .map((dir) => resolve(__dirname, dir))
+    .map((dir) => resolve(rootDir, dir))
     .sort();
   for (const year of years) {
     await runYear(year);
@@ -44,7 +50,7 @@ function isSolver(obj: unknown): obj is Solver {
   );
 }
 
-function timedResult(fn: Function, prev: any): [unknown, number] {
+function timedResult(fn: SolverFn, prev: SolverResult): [unknown, number] {
   const start = performance.now();
   const result = fn(prev);
   const durationMs = performance.now() - start;
@@ -64,7 +70,7 @@ async function runDay(file: string, printer?: (s: string) => void) {
   let previousResult = undefined;
   for (let i = 0; i < solve.parts.length; ++i) {
     const [fn, expected] = solve.parts[i];
-    const [result, duration] = await new Promise((resolve, reject) => {
+    const [result, duration] = await new Promise((resolve) => {
       if (!solve.shouldProfile) {
         resolve(timedResult(fn, previousResult));
       } else {

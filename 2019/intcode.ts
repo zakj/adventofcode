@@ -1,4 +1,4 @@
-import { DefaultDict } from '../util';
+import { DefaultDict } from 'lib/util';
 
 export type Program = number[];
 
@@ -66,7 +66,7 @@ export function compile(program: Program, ...input: Input): Computer {
   const memory = new DefaultDict(() => 0, [...program].entries());
   let relBase = 0;
   let inputs: number[] = deAscii(input);
-  let ptr: number = 0;
+  let ptr = 0;
 
   function instructionAt(ptr: number): [OpCode, Param[]] {
     let value = memory.get(ptr);
@@ -109,7 +109,7 @@ export function compile(program: Program, ...input: Input): Computer {
         case OpCode.Multiply:
           set(params[2], p(0) * p(1));
           break;
-        case OpCode.Input:
+        case OpCode.Input: {
           const input = inputs.shift();
           if (input === undefined) {
             // Rewind pointer and pause.
@@ -118,6 +118,7 @@ export function compile(program: Program, ...input: Input): Computer {
           }
           set(params[0], input);
           break;
+        }
         case OpCode.Output:
           outputs.push(p(0));
           break;

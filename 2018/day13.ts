@@ -31,7 +31,9 @@ function parse(input: string): Map {
     return carts;
   });
   for (const cart of carts) {
-    tracks[cart.loc.y][cart.loc.x] = [Dir.Up, Dir.Down].includes(cart.dir)
+    tracks[cart.loc.y][cart.loc.x] = ([Dir.Up, Dir.Down] as Dir[]).includes(
+      cart.dir
+    )
       ? '|'
       : '-';
   }
@@ -101,8 +103,8 @@ function tick(map: Map): Map {
     }
     const locs = new Counter(map.carts.map((c) => pointToString(c.loc)));
     const crashes = locs.mostCommon
-      .filter(([loc, count]) => count > 1)
-      .map(([loc, count]) => loc);
+      .filter(([, count]) => count > 1)
+      .map(([loc]) => loc);
     for (const crash of crashes) {
       map.crashes.push(crash);
       map.carts = map.carts.filter((c) => pointToString(c.loc) !== crash);

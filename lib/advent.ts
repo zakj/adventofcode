@@ -11,11 +11,13 @@ type Input = {
   paragraphs: string[][];
 };
 
+export type SolverResult = any;
+export type SolverFn = (prev: SolverResult) => SolverResult;
 export interface Solver {
-  expect: (...values: any[]) => Solver;
+  expect: (...values: SolverResult[]) => Solver;
   profile: () => Solver;
   shouldProfile: boolean;
-  parts: [Function, any][];
+  parts: [SolverFn, SolverResult][];
 }
 
 function downloadInput(year: number, day: number, path: string): void {
@@ -44,7 +46,7 @@ function findModule(): { dir: string; year: number; day: number } {
   };
 }
 
-export function load(suffix: string = ''): Input {
+export function load(suffix = ''): Input {
   const module = findModule();
   const paddedDay = `0${module.day}`.slice(-2);
   const path = resolve(module.dir, 'input', `${paddedDay}${suffix}.txt`);
@@ -85,12 +87,12 @@ export function load(suffix: string = ''): Input {
   };
 }
 
-export function solve(...fns: ((prev: any) => any)[]): Solver {
+export function solve(...fns: SolverFn[]): Solver {
   const expected = [];
   let profile = false;
 
   return {
-    expect(...values: any[]) {
+    expect(...values: SolverResult[]) {
       expected.push(...values);
       return this;
     },
@@ -105,7 +107,7 @@ export function solve(...fns: ((prev: any) => any)[]): Solver {
     },
 
     get parts() {
-      return fns.map((f, i) => [f, expected[i]] as [Function, any]);
+      return fns.map((f, i) => [f, expected[i]] as [SolverFn, SolverResult]);
     },
   };
 }

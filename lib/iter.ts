@@ -1,3 +1,5 @@
+/* eslint-disable no-constant-condition */ // We often want to loop forever.
+/* eslint-disable @typescript-eslint/no-this-alias */ // We cannot yield from arrow functions.
 import util from 'util';
 
 class Iter<T> implements Iterable<T> {
@@ -80,7 +82,7 @@ class Iter<T> implements Iterable<T> {
     });
   }
 
-  forEach(fn: (value: T, i: number) => any): Iter<T> {
+  forEach(fn: (value: T, i: number) => void): Iter<T> {
     let i = 0;
     for (const item of this) fn(item, i++);
     return this;
@@ -168,7 +170,7 @@ class Iter<T> implements Iterable<T> {
     const iter = this;
     return new Iter(function* uniq() {
       const seen = new Set<T>();
-      for (let item of iter) {
+      for (const item of iter) {
         if (!seen.has(item)) {
           seen.add(item);
           yield item;
@@ -181,7 +183,7 @@ class Iter<T> implements Iterable<T> {
     const iter = this;
     return new Iter(function* uniqBy() {
       const seen = new Set<U>();
-      for (let item of iter) {
+      for (const item of iter) {
         const key = keyFn(item);
         if (!seen.has(key)) {
           seen.add(key);
@@ -275,16 +277,12 @@ type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N
 
 export function concat<T>(...iters: Iterable<T>[]): Iter<T> {
   return new Iter(function* concat() {
-    for (let iter of iters) yield* iter;
+    for (const iter of iters) yield* iter;
   });
 }
 
 export function range(end: number, step?: number): Iter<number>;
-export function range(
-  start: number,
-  end?: number,
-  step: number = 1
-): Iter<number> {
+export function range(start: number, end?: number, step = 1): Iter<number> {
   if (typeof end === 'undefined') {
     end = start;
     start = 0;
@@ -296,6 +294,6 @@ export function range(
 }
 
 // Expose a consistent interface that doesn't depend on class-based implementation.
-interface IterType<T> extends Iter<T> {}
+type IterType<T> = Iter<T>;
 export { IterType as Iter };
 export const iter = <T>(iterable: Iterable<T>): Iter<T> => new Iter(iterable);

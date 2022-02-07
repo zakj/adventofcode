@@ -1,5 +1,5 @@
-import { Dir, move, parseGrid, Point, PointGrid } from 'coords';
 import { example, load, solve } from 'lib/advent';
+import { Dir, move, parseGrid, Point, PointGrid } from 'lib/coords';
 
 const keypadGrid = parseGrid(['123', '456', '789'], (c) => c);
 const gStart = { x: 1, y: 1 };
@@ -18,15 +18,15 @@ function doorCode(
   start: Point
 ): string {
   let point = start;
-  let digits = instructions.map((instr) => {
-    point = instr.split('').reduce((pos, dir) => {
-      const next = move(pos, dirMap[dir]);
-      return keypad.has(next) && keypad.get(next) ? next : pos;
-    }, point);
-    return keypad.get(point);
-  });
-
-  return digits.join('');
+  return instructions
+    .map((instr) => {
+      point = instr.split('').reduce((pos, dir) => {
+        const next = move(pos, dirMap[dir]);
+        return keypad.has(next) && keypad.get(next) ? next : pos;
+      }, point);
+      return keypad.get(point);
+    })
+    .join('');
 }
 
 const exampleInstructions = load('ex').lines;

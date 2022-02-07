@@ -1,4 +1,4 @@
-import { DefaultDict } from '../util';
+import { DefaultDict } from 'lib/util';
 
 type Register = 'a' | 'b' | 'c' | 'd';
 type Value = number;
@@ -136,7 +136,7 @@ export function* executeSignals(
           ++i;
         }
         break;
-      case 'tgl':
+      case 'tgl': {
         const targetIndex = i + valueOf(instr.arg1, registers);
         const target = instructions[targetIndex];
         if (target) {
@@ -157,6 +157,7 @@ export function* executeSignals(
         }
         ++i;
         break;
+      }
       case 'out':
         yield registers.get(instr.arg1);
         ++i;
@@ -169,7 +170,7 @@ export function* executeSignals(
         registers.set(instr.from, 0);
         i += 3;
         break;
-      case 'mlt':
+      case 'mlt': {
         const [from, a, b] = [
           registers.get(instr.to),
           valueOf(instr.from1, registers),
@@ -180,6 +181,7 @@ export function* executeSignals(
         registers.set(instr.tmp, 0);
         i += 6;
         break;
+      }
     }
   }
   return registers;
@@ -189,9 +191,7 @@ export function execute(
   parsed: ParseResult,
   regInit: [Register, Value][] = []
 ): Registers {
-  let rv: IteratorResult<number, Registers>;
-  const it = executeSignals(parsed, regInit);
-  rv = it.next();
+  const rv = executeSignals(parsed, regInit).next();
   if (!rv.done) throw new Error('executeSignals failed to complete');
   return rv.value;
 }
