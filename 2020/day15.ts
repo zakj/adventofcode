@@ -1,15 +1,12 @@
 import { example, load, solve } from 'lib/advent';
 
 function spokenNumber(input: number[], n: number): number {
-  const lastSaid = new Map<number, number>();
-  input.slice(0, input.length - 1).forEach((x, i) => {
-    lastSaid.set(x, i);
-  });
+  const lastSaid = new Array(n);
+  input.forEach((x, i) => (lastSaid[x] = i + 1));
   let last = input[input.length - 1];
   for (let i = input.length; i < n; ++i) {
-    let speak = 0;
-    if (lastSaid.has(last)) speak = i - 1 - lastSaid.get(last);
-    lastSaid.set(last, i - 1);
+    const speak = last in lastSaid ? i - lastSaid[last] : 0;
+    lastSaid[last] = i;
     last = speak;
   }
   return last;
