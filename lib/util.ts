@@ -43,6 +43,17 @@ export function pairs<T>(arr: T[]): T[][] {
   return a.map((x, i) => [x, b[i]]);
 }
 
+// http://szudzik.com/ElegantPairing.pdf
+export function pairingSzudzik(a: number, b: number): number {
+  return a >= b ? a * a + a + b : b * b + a;
+}
+
+export function pairingSzudzikSigned(a: number, b: number): number {
+  a = a >= 0 ? a * 2 : a * -2 - 1;
+  b = b >= 0 ? b * 2 : b * -2 - 1;
+  return pairingSzudzik(a, b);
+}
+
 export function partition<T>(
   predicate: (v: T, i: number) => boolean,
   xs: T[]

@@ -1,4 +1,4 @@
-import { range, ValuesOf, XMap, XSet } from 'lib/util';
+import { pairingSzudzikSigned, range, ValuesOf, XMap, XSet } from 'lib/util';
 
 export type Point = { x: number; y: number };
 export type PointHash = number;
@@ -80,13 +80,8 @@ export class PointGrid<T> {
   }
 }
 
-/**
- * Cantor's pairing function, see <https://en.wikipedia.org/wiki/Pairing_function>.
- */
 export function pointHash({ x, y }: Point): number {
-  const a = x >= 0 ? 2 * x : -2 * x - 1;
-  const b = y >= 0 ? 2 * y : -2 * y - 1;
-  return 0.5 * (a + b) * (a + b + 1) + b;
+  return pairingSzudzikSigned(x, y);
 }
 
 export class PointMap<T> extends XMap<Point, T, PointHash> {
@@ -151,7 +146,7 @@ export function add(a: Point, b: Partial<Point>): Point {
   return { x: a.x + (b.x || 0), y: a.y + (b.y || 0) };
 }
 
-export function move(p: Point, dir: Dir, n: number = 1): Point {
+export function move(p: Point, dir: Dir, n = 1): Point {
   switch (dir) {
     case Dir.Up:
       return add(p, { y: -1 * n });
@@ -202,9 +197,9 @@ export function toAscii(set: PointSet, char?: string): string;
 export function toAscii<T>(map: PointMap<T>): string;
 export function toAscii<T>(
   mapOrSet: PointMap<T> | PointSet,
-  char: string = '#'
+  char = '#'
 ): string {
-  let map = mapOrSet instanceof PointMap ? mapOrSet : setToMap(mapOrSet);
+  const map = mapOrSet instanceof PointMap ? mapOrSet : setToMap(mapOrSet);
   const { min, max } = findBounds(map.keys());
   return range(min.y, max.y + 1)
     .map((y) =>
