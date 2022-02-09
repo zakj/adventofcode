@@ -20,16 +20,32 @@ export const turnLeft: (dir: Dir) => Dir = (dir) => ((dir + 3) % 4) as Dir;
 export const turnAround: (dir: Dir) => Dir = (dir) => ((dir + 2) % 4) as Dir;
 export const turnRight: (dir: Dir) => Dir = (dir) => ((dir + 1) % 4) as Dir;
 
-// More performant version of PointMap for dense grids.
+// More performant version of PointMap for dense, stably-sized grids.
 export class PointGrid<T> {
-  private _grid: T[][] = [];
+  width: number;
+  height: number;
+  private _arr: T[] = [];
   private _xs: number[] = [];
   private _ys: number[] = [];
 
   static from<T>(grid: T[][]): PointGrid<T> {
     const g = new PointGrid<T>();
-    g._grid = JSON.parse(JSON.stringify(grid));
+    g.width = grid[0].length;
+    g.height = grid.length;
+    g._arr = grid.flat(1);
     return g;
+  }
+
+  copy(): PointGrid<T> {
+    const g = new PointGrid<T>();
+    g.width = this.width;
+    g.height = this.height;
+    g._arr = this._arr.slice();
+    return g;
+  }
+
+  private _index(point: Point): number {
+    return point.y * this.width + point.x;
   }
 
   get xs(): number[] {
@@ -42,41 +58,32 @@ export class PointGrid<T> {
     return this._ys;
   }
 
-  get width(): number {
-    return this._grid[0]?.length || 0;
-  }
-
-  get height(): number {
-    return this._grid?.length;
-  }
-
   get({ x, y }: Point): T;
   get(x: number, y: number): T;
   get(xOrPoint: number | Point, y?: number): T {
-    if (typeof xOrPoint === 'object')
-      return this._grid[xOrPoint.y]?.[xOrPoint.x];
-    return this._grid[y]?.[xOrPoint];
+    if (typeof xOrPoint === 'number') xOrPoint = { x: xOrPoint, y };
+    return this._arr[this._index(xOrPoint)];
   }
 
   has({ x, y }: Point): boolean;
   has(x: number, y: number): boolean;
   has(xOrPoint: number | Point, y?: number): boolean {
-    let x: number;
-    if (typeof xOrPoint === 'object') ({ x, y } = xOrPoint);
-    else x = xOrPoint;
-    return x >= 0 && x < this.width && y >= 0 && y < this.height;
+    if (typeof xOrPoint === 'number') xOrPoint = { x: xOrPoint, y };
+    const i = this._index(xOrPoint);
+    return i >= 0 && i < this._arr.length;
   }
 
   set({ x, y }: Point, value: T): void;
   set(x: number, y: number, value: T): void;
   set(xOrPoint: number | Point, yOrValue: number | T, value?: T): void {
-    if (typeof xOrPoint === 'object')
-      this._grid[xOrPoint.y][xOrPoint.x] = yOrValue as T;
-    else this._grid[yOrValue as number][xOrPoint] = value;
+    if (typeof xOrPoint === 'number')
+      xOrPoint = { x: xOrPoint, y: yOrValue as number };
+    else value = yOrValue as T;
+    this._arr[this._index(xOrPoint)] = value;
   }
 
   filter(predicate: (value: T) => boolean): T[] {
-    return this._grid.flat().filter(predicate);
+    return this._arr.filter(predicate);
   }
 }
 
@@ -134,7 +141,10 @@ export function neighbors4({ x, y }: Point): Point[] {
 
 export function neighbors8({ x, y }: Point): Point[] {
   return [
-    ...neighbors4({ x, y }),
+    { x: x + 1, y },
+    { x: x - 1, y },
+    { x, y: y + 1 },
+    { x, y: y - 1 },
     { x: x - 1, y: y - 1 },
     { x: x - 1, y: y + 1 },
     { x: x + 1, y: y - 1 },
