@@ -1,17 +1,10 @@
 import { load, solve } from 'lib/advent';
-import { XMap, XSet } from 'lib/util';
+import { parseMap, Point, PointMap, PointSet } from 'lib/coords';
 
-type Point = { x: number; y: number };
-const h = ({ x, y }: Point) => `${x},${y}`;
-
-function parse(lines: string[]): XSet<Point> {
-  const asteroids = new XSet(h);
-  lines.forEach((line, y) => {
-    line.split('').forEach((c, x) => {
-      if (c === '#') asteroids.add({ x, y });
-    });
-  });
-  return asteroids;
+function parse(lines: string[]): PointSet {
+  return new PointSet(
+    [...parseMap(lines, (c) => c === '#')].filter(([, c]) => c).map(([p]) => p)
+  );
 }
 
 function angleBetween(a: Point, b: Point): number {
@@ -20,11 +13,11 @@ function angleBetween(a: Point, b: Point): number {
   return (degrees + 360) % 360;
 }
 
-function monitoringStation(asteroids: XSet<Point>): {
+function monitoringStation(asteroids: PointSet): {
   station: Point;
   angles: Map<number, Point[]>;
 } {
-  const anglesTo = new XMap<Point, Map<number, Point[]>>(h);
+  const anglesTo = new PointMap<Map<number, Point[]>>();
   for (const asteroid of asteroids) {
     const angles = new Map<number, Point[]>();
     for (const other of asteroids) {
@@ -54,7 +47,6 @@ export default solve(
       asteroids.sort((a, b) => distance(station, a) - distance(station, b))
     );
     const list = [...angles.keys()].sort((a, b) => a - b);
-    let i = 0;
     let count = 0;
     let destroyed: Point;
     for (let i = 0; count < 200; ++i) {
