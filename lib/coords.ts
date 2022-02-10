@@ -153,7 +153,7 @@ export function neighbors8({ x, y }: Point): Point[] {
 }
 
 export function add(a: Point, b: Partial<Point>): Point {
-  return { x: a.x + (b.x || 0), y: a.y + (b.y || 0) };
+  return { x: a.x + (b.x ?? 0), y: a.y + (b.y ?? 0) };
 }
 
 export function move(p: Point, dir: Dir, n = 1): Point {

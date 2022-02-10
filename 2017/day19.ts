@@ -1,46 +1,40 @@
 import { example, load, solve } from 'lib/advent';
+import { Dir, move, parseGrid, Point, PointGrid } from 'lib/coords';
 
-enum Dir {
-  D = 'D',
-  U = 'U',
-  R = 'R',
-  L = 'L',
-}
-type Point = { x: number; y: number };
-type Maze = string[][];
+type Maze = {
+  grid: PointGrid<string>;
+  start: Point;
+};
 
 function parse(input: string): Maze {
-  return input.split('\n').map((line) => line.split(''));
+  const grid = parseGrid(input.split('\n'), (c) => c);
+  const start = { x: grid.xs.findIndex((x) => grid.get(x, 0) === '|'), y: 0 };
+  return { grid, start };
 }
 
-const directions = new Map<Dir, (p: Point) => Point>([
-  [Dir.D, (p) => ({ ...p, y: p.y + 1 })],
-  [Dir.U, (p) => ({ ...p, y: p.y - 1 })],
-  [Dir.R, (p) => ({ ...p, x: p.x + 1 })],
-  [Dir.L, (p) => ({ ...p, x: p.x - 1 })],
-]);
-function walk(maze: string[][]): { letters: string; steps: number } {
+const turns: Record<Dir, Dir[]> = {
+  [Dir.Up]: [Dir.Left, Dir.Right],
+  [Dir.Right]: [Dir.Up, Dir.Down],
+  [Dir.Down]: [Dir.Left, Dir.Right],
+  [Dir.Left]: [Dir.Up, Dir.Down],
+};
+
+function walk({ grid, start }: Maze): { letters: string; steps: number } {
   const letters: string[] = [];
-  let cur = { x: maze[0].findIndex((x) => x === '|'), y: 0 };
-  let dir = Dir.D;
+  let cur = start;
+  let dir: Dir = Dir.Down;
   const letterRe = /[a-zA-Z]/;
-  const mazeAt = (p: Point): string => maze[p.y][p.x];
-  const isWalkable = (p: Point): boolean => maze[p.y][p.x] !== ' ';
   let steps = 0;
-  while (true) {
+  for (;;) {
     steps++;
-    cur = directions.get(dir)(cur);
-    const chr = mazeAt(cur);
+    cur = move(cur, dir);
+    const chr = grid.get(cur);
     if (chr === ' ') {
       break;
     } else if (chr.match(letterRe)) {
       letters.push(chr);
     } else if (chr === '+') {
-      if ([Dir.D, Dir.U].includes(dir)) {
-        dir = [Dir.L, Dir.R].find((d) => isWalkable(directions.get(d)(cur)));
-      } else if ([Dir.L, Dir.R].includes(dir)) {
-        dir = [Dir.U, Dir.D].find((d) => isWalkable(directions.get(d)(cur)));
-      }
+      dir = turns[dir].find((d) => grid.get(move(cur, d)) !== ' ');
     }
   }
 
