@@ -36,20 +36,14 @@ class DiGraph<T extends Node> {
   shortestPath(from: T, to: T): number {
     const pred = this.pred;
     const succ = this.succ;
-    function edgeWeights(node: T): [T, number][] {
-      const oneStep = (node: T): [T, number] => [node, 1];
-      return [...pred.get(node), ...succ.get(node)].map(oneStep);
-    }
-    return minDistance(from, to, (x) => x.toString(), edgeWeights);
+    const edges = (node: T) => [...pred.get(node), ...succ.get(node)];
+    return minDistance(from, (x) => x.toString(), { goal: to, edges });
   }
 
   shortestPathUp(from: T, to: T): number {
     const pred = this.pred;
-    function edgeWeights(node: T): [T, number][] {
-      const oneStep = (node: T): [T, number] => [node, 1];
-      return [...pred.get(node)].map(oneStep);
-    }
-    return minDistance(from, to, (x) => x.toString(), edgeWeights);
+    const edges = (node: T) => [...pred.get(node)];
+    return minDistance(from, (x) => x.toString(), { goal: to, edges });
   }
 }
 

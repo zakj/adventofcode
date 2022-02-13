@@ -76,13 +76,11 @@ function parse(s: string): Map {
 }
 
 function shortestPath(map: Map): number {
-  function edgeWeights(p: Point): [Point, number][] {
-    return [
-      ...neighbors4(p).filter((p) => map.paths.has(p)),
-      ...(map.portals.has(p) ? [map.portals.get(p)] : []),
-    ].map((p) => [p, 1]);
-  }
-  return minDistance(map.start, map.end, pointHash, edgeWeights);
+  const edges = (p: Point) => [
+    ...neighbors4(p).filter((p) => map.paths.has(p)),
+    ...(map.portals.has(p) ? [map.portals.get(p)] : []),
+  ];
+  return minDistance(map.start, pointHash, { goal: map.end, edges });
 }
 
 function shortestPathRecursive(map: Map): number {
@@ -108,12 +106,12 @@ function shortestPathRecursive(map: Map): number {
   }
 
   function heuristic(rp: RecursivePoint): number {
-    return Math.abs(rp.x - end.x) + Math.abs(rp.y - end.y) + rp.layer * 100;
+    return Math.abs(rp.x - goal.x) + Math.abs(rp.y - goal.y) + rp.layer * 100;
   }
 
   const start = { ...map.start, layer: 0 };
-  const end = { ...map.end, layer: 0 };
-  return minDistance(start, end, rpHash, edgeWeights, { heuristic });
+  const goal = { ...map.end, layer: 0 };
+  return minDistance(start, rpHash, { goal, edgeWeights, heuristic });
 }
 
 const ex1Map = parse(load('ex1').raw);

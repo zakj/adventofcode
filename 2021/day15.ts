@@ -14,9 +14,11 @@ function edgeWeights(end: Point, grid: RiskGrid) {
 
 function leastRisk(grid: RiskGrid): number {
   const start = { x: 0, y: 0 };
-  const end = { x: grid.width - 1, y: grid.height - 1 };
-  const heuristic = (p) => end.x - p.x + (end.y - p.y);
-  return minDistance(start, end, pointHash, edgeWeights(end, grid), {
+  const goal = { x: grid.width - 1, y: grid.height - 1 };
+  const heuristic = (p) => goal.x - p.x + (goal.y - p.y);
+  return minDistance(start, pointHash, {
+    goal,
+    edgeWeights: edgeWeights(goal, grid),
     heuristic,
   });
 }

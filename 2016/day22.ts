@@ -39,10 +39,6 @@ function viablePairs(fs: FS): [FullNode, FullNode][] {
   return pairs;
 }
 
-function toPoint(node: FullNode): Point {
-  return { x: node.x, y: node.y };
-}
-
 function isSamePoint(a: Point, b: Point): boolean {
   return a.x === b.x && a.y === b.y;
 }
@@ -52,7 +48,7 @@ function shortestPath(fs: FS): number {
   const height = iter(fs).pluck('y').max() + 1;
   const goal = { x: width - 1, y: 0 };
   const emptyNode = fs.find((n) => n.used === 0);
-  const empty = toPoint(emptyNode);
+  const empty: Point = emptyNode;
   const grid = parseGrid(
     new Array(height).fill(0).map(() => '.'.repeat(width)),
     () => true
@@ -71,8 +67,9 @@ function shortestPath(fs: FS): number {
   const hashState = ({ goal, empty }: State) =>
     `${pointHash(goal)}|${pointHash(empty)}`;
 
-  return minDistance({ goal, empty }, null, hashState, edgeWeights, {
+  return minDistance({ goal, empty }, hashState, {
     goalFn: ({ goal }) => goal.x === 0 && goal.y === 0,
+    edgeWeights,
     heuristic: ({ goal }) => goal.x + goal.y,
   });
 }

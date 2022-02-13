@@ -41,7 +41,7 @@ function serialize({ floor, locations }: State): string {
   return [floor, ...locations].join('');
 }
 
-function edgeWeights({ floor, locations }: State): [State, number][] {
+function edges({ floor, locations }: State): State[] {
   const lowestComponent = Math.min(...locations);
   const currentFloorIndexes = locations
     .map((f, i) => [f, i])
@@ -73,7 +73,7 @@ function edgeWeights({ floor, locations }: State): [State, number][] {
       if (found) break;
     }
   }
-  return candidates.map((state) => [state, 1]);
+  return candidates;
 }
 
 const goalFor = ({ locations }: State): State => ({
@@ -83,13 +83,13 @@ const goalFor = ({ locations }: State): State => ({
 
 const exampleStart = { floor: 1, locations: parse(load('ex').lines) };
 example.equal(
-  minDistance(exampleStart, goalFor(exampleStart), serialize, edgeWeights),
+  minDistance(exampleStart, serialize, { goal: goalFor(exampleStart), edges }),
   11
 );
 
 const start = { floor: 1, locations: parse(load().lines) };
 const start2 = { floor: 1, locations: [...start.locations, ...[1, 1, 1, 1]] };
 export default solve(
-  () => minDistance(start, goalFor(start), serialize, edgeWeights),
-  () => minDistance(start2, goalFor(start2), serialize, edgeWeights)
+  () => minDistance(start, serialize, { goal: goalFor(start), edges }),
+  () => minDistance(start2, serialize, { goal: goalFor(start2), edges })
 ).expect(37, 61);

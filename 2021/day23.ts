@@ -151,12 +151,19 @@ const final2 = parse(`#############
 
 const burrow = parse(load().raw);
 export default solve(
-  () => minDistance(burrow, final1, serialize, edgeWeights(2), { heuristic }),
+  () =>
+    minDistance(burrow, serialize, {
+      goal: final1,
+      edgeWeights: edgeWeights(2),
+      heuristic,
+    }),
   () => {
     const lines = load().lines;
     lines.splice(3, 0, '  #D#C#B#A#', '  #D#B#A#C#');
     const burrow = parse(lines.join('\n'));
-    return minDistance(burrow, final2, serialize, edgeWeights(4), {
+    return minDistance(burrow, serialize, {
+      goal: final2,
+      edgeWeights: edgeWeights(4),
       heuristic,
     });
   }

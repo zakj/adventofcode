@@ -90,7 +90,9 @@ function rescue(target: Point, depth: number): number {
   const start = { point: { x: 0, y: 0 }, tool: Tool.Torch };
   const goal = { point: target, tool: Tool.Torch };
   erosionLevels.set({ p: target, depth }, 0); // hack to avoid passing target around
-  return minDistance(start, goal, serialize, edgeWeights(depth), {
+  return minDistance(start, serialize, {
+    goal,
+    edgeWeights: edgeWeights(depth),
     heuristic: ({ point }) =>
       Math.abs(point.x - target.x) + Math.abs(point.y - target.y),
   });

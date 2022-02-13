@@ -99,3 +99,26 @@ export class MinHeap<T> {
     return this.arr.length;
   }
 }
+
+export class Queue<T> {
+  private arr: T[];
+  private cur = 0;
+
+  constructor(xs: T[] = []) {
+    this.arr = xs.slice();
+  }
+
+  add(value: T): void {
+    this.arr.push(value);
+  }
+
+  shift(): T {
+    // TODO: currently we grow forever, that seems like a bad idea. maybe
+    // replace arr with slice(cur) every now and then
+    if (this.size > 0) return this.arr[this.cur++];
+  }
+
+  get size(): number {
+    return Math.max(0, this.arr.length - this.cur);
+  }
+}

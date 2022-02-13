@@ -27,11 +27,8 @@ function parse(lines: string[]): Map {
 }
 
 function shortestPath({ walls }: Map, start: Point, goal: Point): number {
-  const edgeWeights = (cur: Point): [Point, number][] =>
-    neighbors4(cur)
-      .filter((p) => !walls.has(p))
-      .map((p) => [p, 1]);
-  return minDistance(start, goal, pointHash, edgeWeights);
+  const edges = (cur: Point) => neighbors4(cur).filter((p) => !walls.has(p));
+  return minDistance(start, pointHash, { goal, edges });
 }
 
 function clean(map: Map, returnToStart = false): number {

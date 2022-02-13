@@ -16,9 +16,8 @@ function neighbors(cur: Point, n: number) {
 
 function shortestPathTo(goal: Point, n: number): number {
   const start = { x: 1, y: 1 };
-  const edgeWeights = (cur: Point): [Point, number][] =>
-    neighbors(cur, n).map((p) => [p, 1]);
-  return minDistance(start, goal, pointHash, edgeWeights);
+  const edges = (cur: Point) => neighbors(cur, n);
+  return minDistance(start, pointHash, { goal, edges });
 }
 
 function mostVisitedIn(goal: number, n: number): number {
