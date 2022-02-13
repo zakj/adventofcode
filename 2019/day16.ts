@@ -1,7 +1,7 @@
 import { example, load, solve } from 'lib/advent';
 import { sum } from 'lib/util';
 
-const parse = (s: string): number[] => s.trim().split('').map(Number);
+const parse = (s: string): number[] => s.split('').map(Number);
 
 function pattern(index: number): number[] {
   const base = [0, 1, 0, -1];
@@ -48,14 +48,14 @@ for (const [inp, exp] of examples) {
   example.equal(fft(parse(inp), 100), exp);
 }
 
-const digits = parse(load().raw);
+const input = load().raw.trim();
 export default solve(
-  // TODO optimize? 1.5s
-  () => fft(digits, 100),
+  // TODO optimize?
+  () => fft(parse(input), 100),
   () => {
-    // TODO optimize? .flat takes ~1s
-    const extendedDigits = new Array(10000).fill(digits).flat();
-    const n = Number(digits.slice(0, 7).join(''));
+    const extendedDigits = parse(input.repeat(10000));
+    const n = Number(extendedDigits.slice(0, 7).join(''));
     return fftOffset(extendedDigits, 100, n);
+    return 0;
   }
 ).expect('30369587', '27683551');
