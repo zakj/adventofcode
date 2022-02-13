@@ -1,5 +1,3 @@
-import { DefaultDict } from 'lib/collections';
-
 export type Program = number[];
 
 enum OpCode {
@@ -39,16 +37,33 @@ type Param = {
   value: number;
 };
 
+interface Memory {
+  get(i: number): number;
+  set(i: number, value: number): void;
+}
+
 type Input = number[] | string[];
 type Output = number[];
 type Computer = {
   (...inputs: Input): Output;
   ascii: (...inputs: Input) => string;
   halted: boolean;
-  memory: Map<number, number>;
+  memory: Memory;
 };
 
-const isStrings = (x: any): x is string[] => typeof x?.[0] === 'string';
+function makeMemory(init: number[] = []): Memory {
+  const arr = init.slice();
+  return {
+    get(i: number) {
+      return arr[i] ?? 0;
+    },
+    set(i: number, value: number) {
+      arr[i] = value;
+    },
+  };
+}
+
+const isStrings = (x: unknown): x is string[] => typeof x?.[0] === 'string';
 function deAscii(xs: Input): number[] {
   if (isStrings(xs)) {
     xs = xs
@@ -63,7 +78,8 @@ function deAscii(xs: Input): number[] {
 export const parse = (s: string): Program => s.split(',').map(Number);
 
 export function compile(program: Program, ...input: Input): Computer {
-  const memory = new DefaultDict(() => 0, [...program].entries());
+  // const memory = new DefaultDict(() => 0, [...program.entries()]);
+  const memory = makeMemory(program);
   let relBase = 0;
   let inputs: number[] = deAscii(input);
   let ptr = 0;
