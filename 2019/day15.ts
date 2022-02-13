@@ -1,5 +1,6 @@
 import { load, solve } from 'lib/advent';
-import { XMap, XSet } from 'lib/util';
+import { Point, pointHash, PointMap } from 'lib/coords';
+import { minDistance } from 'lib/graph';
 import { compile, parse, Program } from './intcode';
 
 enum Move {
@@ -13,9 +14,7 @@ enum Status {
   Path = 1,
   Oxygen = 2,
 }
-type Point = { x: number; y: number };
-type Grid = XMap<Point, Status>;
-const h = ({ x, y }: Point) => `${x},${y}`;
+type Grid = PointMap<Status>;
 
 const opposite: Record<Move, Move> = {
   [Move.N]: Move.S,
@@ -33,7 +32,7 @@ const moves: Map<Move, (p: Point) => Point> = new Map([
 
 function buildGrid(program: Program): Grid {
   const droid = compile(program);
-  const grid = new XMap<Point, Status>(h);
+  const grid = new PointMap<Status>();
   let cur = { x: 0, y: 0 };
   grid.set(cur, Status.Path);
 
@@ -60,25 +59,16 @@ function buildGrid(program: Program): Grid {
 
 function walk(grid: Grid): number {
   const start = { x: 0, y: 0 };
-  const visited = new XSet(h, [start]);
-  const q: [Point, number][] = [[start, 0]];
-  const hTarget = h(grid.entries().find(([p, s]) => s === Status.Oxygen)[0]);
-  while (q.length) {
-    const [cur, steps] = q.shift();
-    if (h(cur) == hTarget) return steps;
-    for (const moveFrom of moves.values()) {
-      const next = moveFrom(cur);
-      if (!visited.has(next) && grid.get(next) !== Status.Wall) {
-        visited.add(next);
-        q.push([next, steps + 1]);
-      }
-    }
-  }
-  return -1;
+  const goal = grid.entries().find(([, s]) => s === Status.Oxygen)[0];
+  const edges = (p: Point) =>
+    [...moves.values()]
+      .map((f) => f(p))
+      .filter((n) => grid.get(n) !== Status.Wall);
+  return minDistance(start, pointHash, { goal, edges });
 }
 
 function fill(grid: Grid): number {
-  const start = grid.entries().find(([p, s]) => s === Status.Oxygen)[0];
+  const start = grid.entries().find(([, s]) => s === Status.Oxygen)[0];
   const q: [Point, number][] = [[start, 0]];
   let maxMinutes = 0;
   while (q.length) {
