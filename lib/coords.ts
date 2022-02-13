@@ -62,15 +62,19 @@ export class PointGrid<T> {
   get(x: number, y: number): T;
   get(xOrPoint: number | Point, y?: number): T {
     if (typeof xOrPoint === 'number') xOrPoint = { x: xOrPoint, y };
-    return this._arr[this._index(xOrPoint)];
+    return this.has(xOrPoint) ? this._arr[this._index(xOrPoint)] : undefined;
   }
 
   has({ x, y }: Point): boolean;
   has(x: number, y: number): boolean;
   has(xOrPoint: number | Point, y?: number): boolean {
     if (typeof xOrPoint === 'number') xOrPoint = { x: xOrPoint, y };
-    const i = this._index(xOrPoint);
-    return i >= 0 && i < this._arr.length;
+    return (
+      xOrPoint.x >= 0 &&
+      xOrPoint.x < this.width &&
+      xOrPoint.y >= 0 &&
+      xOrPoint.y < this.height
+    );
   }
 
   set({ x, y }: Point, value: T): void;
