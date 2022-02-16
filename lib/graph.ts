@@ -16,6 +16,8 @@ type SearchResults<T, Hash> = {
   previous: Map<Hash, T>;
 };
 
+export class PathNotFound extends Error {}
+
 /**
  * With `options.edges`, simple BFS.
  * With `options.edgeWeights`, Dijkstra's algorithm.
@@ -74,7 +76,7 @@ function search<State, Hash extends string | number>(
     }
   }
 
-  throw new Error('no path');
+  throw new PathNotFound();
 }
 
 export function minDistance<State, Hash extends string | number>(
@@ -82,7 +84,13 @@ export function minDistance<State, Hash extends string | number>(
   hashState: (state: State) => Hash,
   options: SearchOptions<State>
 ): number {
-  const { state, distance } = search(start, hashState, options);
+  let result: SearchResults<State, Hash>;
+  try {
+    result = search(start, hashState, options);
+  } catch (e) {
+    if (e instanceof PathNotFound) return -1;
+  }
+  const { state, distance } = result;
   return distance.get(hashState(state));
 }
 
@@ -91,7 +99,14 @@ export function minPath<State, Hash extends string | number>(
   hashState: (state: State) => Hash,
   options: SearchOptions<State>
 ): State[] {
-  const { state, previous } = search(start, hashState, options);
+  options.trackPath = true;
+  let result: SearchResults<State, Hash>;
+  try {
+    result = search(start, hashState, options);
+  } catch (e) {
+    if (e instanceof PathNotFound) return null;
+  }
+  const { state, previous } = result;
   const path = [];
   let cur = state;
   while (cur) {

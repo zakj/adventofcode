@@ -1,6 +1,7 @@
 import { example, load, solve } from 'lib/advent';
 import { neighbors4, Point, pointHash, PointMap, PointSet } from 'lib/coords';
-import { XMap } from 'lib/util';
+import { minDistance, minPath } from 'lib/graph';
+import { combinations } from 'lib/util';
 
 type MapData = {
   start: Point;
@@ -10,9 +11,20 @@ type MapData = {
   paths: PointSet;
 };
 
+type Node = {
+  key: string;
+  point: Point;
+};
+type Edge = {
+  cost: number;
+  keys: number;
+};
+type EdgeMap = Map<string, Map<string, Edge>>;
+type State = [string[], Keyring];
+
 class Keyring {
   private static aOffset = 'a'.charCodeAt(0);
-  private bitmap = 0;
+  bitmap = 0;
 
   private keyToInt(key: string): number {
     return 1 << (key.charCodeAt(0) - Keyring.aOffset);
@@ -20,6 +32,13 @@ class Keyring {
 
   has(key: string): boolean {
     return !!(this.bitmap & this.keyToInt(key));
+  }
+
+  hasAll(other: number): boolean;
+  hasAll(other: Keyring): boolean;
+  hasAll(other: number | Keyring): boolean {
+    const bitmap = typeof other === 'number' ? other : other.bitmap;
+    return (this.bitmap & bitmap) === bitmap;
   }
 
   with(key: string): Keyring {
@@ -66,74 +85,59 @@ function parse(lines: string[]): MapData {
   return { start, keys, keyLocations, doors, paths };
 }
 
-function walkableFrom(p: Point, map: MapData, keyring: Keyring): Point[] {
-  return neighbors4(p).filter(
-    (p) =>
-      map.paths.has(p) || (map.doors.has(p) && keyring.has(map.doors.get(p)))
-  );
+function buildGraph(map: MapData, starts: Node[]): EdgeMap {
+  const nodes = [...map.keyLocations].map(([key, point]) => ({ key, point }));
+  for (const start of starts) nodes.push(start);
+  const edgeMap = new Map<string, Map<string, Edge>>();
+  for (const node of nodes) edgeMap.set(node.key, new Map<string, Edge>());
+
+  const edges = (p: Point) =>
+    neighbors4(p).filter((p) => map.paths.has(p) || map.doors.has(p));
+
+  for (const [a, b] of combinations(nodes)) {
+    const path = minPath(a.point, pointHash, { goal: b.point, edges });
+    if (!path) continue;
+    const doors = path
+      .map((p) => map.doors.get(p))
+      .filter(Boolean)
+      .reduce((keyring, k) => keyring.with(k), new Keyring());
+    const edge = { cost: path.length - 1, keys: doors.bitmap };
+    edgeMap.get(a.key).set(b.key, edge);
+    edgeMap.get(b.key).set(a.key, edge);
+  }
+  return edgeMap;
 }
 
-type State = [Point[], Keyring];
+function shortestPath(map: MapData, starts: Point[] = [map.start]): number {
+  const startNodes = starts.map((p, i) => ({ key: `@${i}`, point: p }));
+  const graph = buildGraph(map, startNodes);
+  const start: State = [startNodes.map((x) => x.key), new Keyring()];
 
-function reachableKeyDistances(
-  map: MapData,
-  start: Point,
-  keyring: Keyring
-): PointMap<number> {
-  const distances = new PointMap<number>([[start, 0]]);
-  const keyDistances = new PointMap<number>();
-  const q = [start];
+  // TODO: I'm not entirely sure why this part2 hash optimization works, but I
+  // ran into it accidentally and it does...
+  const h =
+    starts.length === 1
+      ? ([starts, keyring]) => `${starts[0]}|${keyring}`
+      : ([, keyring]) => keyring.bitmap;
 
-  while (q.length) {
-    const cur = q.shift();
-    for (const point of walkableFrom(cur, map, keyring)) {
-      if (distances.has(point)) continue;
-      distances.set(point, distances.get(cur) + 1);
-      if (map.keys.has(point) && !keyring.has(map.keys.get(point))) {
-        keyDistances.set(point, distances.get(point));
-      } else {
-        q.push(point);
-      }
-    }
+  function edgeWeights([starts, keyring]: State) {
+    return starts.flatMap((k, i) => {
+      const edges = graph.get(k);
+      return [...edges]
+        .filter(([k, { keys }]) => !keyring.has(k) && keyring.hasAll(keys))
+        .map(([to, { cost }]) => {
+          const nextStarts = starts.slice();
+          nextStarts.splice(i, 1, to);
+          return [[nextStarts, keyring.with(to)], cost] as [State, number];
+        });
+    });
   }
 
-  return keyDistances;
-}
+  let allKeys = new Keyring();
+  for (const k of map.keys.values()) allKeys = allKeys.with(k);
+  const goalFn = ([, keyring]) => keyring.hasAll(allKeys);
 
-function shortestPath(
-  map: MapData,
-  starts: Point[] = [map.start],
-  keyring: Keyring = new Keyring(),
-  cache = new XMap<State, number>(
-    ([points, keyring]) => `${points.map(pointHash).join('|')}|${keyring}`
-  )
-) {
-  if (cache.has([starts, keyring])) return cache.get([starts, keyring]);
-  let shortest = 0;
-
-  const reachables = starts.map((start) =>
-    reachableKeyDistances(map, start, keyring)
-  );
-  if (reachables.some((r) => r.size)) {
-    const options = reachables.flatMap((reachable, i) =>
-      reachable.entries().map(([point, distance]) => {
-        const nextStarts = starts.slice();
-        nextStarts.splice(i, 1, point);
-        return (
-          shortestPath(
-            map,
-            nextStarts,
-            keyring.with(map.keys.get(point)),
-            cache
-          ) + distance
-        );
-      })
-    );
-    shortest = Math.min(...options);
-  }
-
-  cache.set([starts, keyring], shortest);
-  return shortest;
+  return minDistance(start, h, { goalFn, edgeWeights });
 }
 
 const ex1 = parse(load('ex1').lines);
