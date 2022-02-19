@@ -1,4 +1,5 @@
 import { example, load, solve } from 'lib/advent';
+import { iter } from 'lib/iter';
 import { cartesianProduct, combinations, permutations, XSet } from 'lib/util';
 import util from 'util';
 
@@ -84,6 +85,7 @@ class Matrix3x3 {
 }
 
 type Report = Vector3[];
+type BeaconDeltas = [string, [Vector3, Vector3]][];
 
 const ORIENTATIONS = cartesianProduct([-1, 1], [-1, 1], [-1, 1])
   .flatMap(([x, y, z]) => [
@@ -105,7 +107,7 @@ function parse(paras: string[][]): Report[] {
   );
 }
 
-function getBeaconDeltas(beacons: Vector3[]): [string, [Vector3, Vector3]][] {
+function getBeaconDeltas(beacons: Vector3[]): BeaconDeltas {
   // record vectors between pairs of beacons, alongside their source beacons
   return [...combinations(beacons)].map(([a, b]) => [
     a.difference(b).hash(),
@@ -115,33 +117,32 @@ function getBeaconDeltas(beacons: Vector3[]): [string, [Vector3, Vector3]][] {
 
 function orientBeacons(
   known: XSet<Vector3>,
+  knownDeltas: BeaconDeltas,
   report: Report
 ): { beacons: Vector3[]; scanner: Vector3 } {
-  const knownDeltas = getBeaconDeltas([...known]);
   const reportDeltas = getBeaconDeltas(report);
   const matches: [Vector3, Vector3, Vector3, Vector3][] = [];
-  for (const [knownHash, [k1, k2]] of knownDeltas) {
+  for (const [knownHash, [k1, k2]] of knownDeltas.reverse()) {
     for (const [reportHash, [r1, r2]] of reportDeltas) {
-      if (knownHash === reportHash) {
-        matches.push([k1, k2, r1, r2]);
-      }
+      if (knownHash === reportHash) matches.push([k1, k2, r1, r2]);
     }
+    if (matches.length >= 66) break;
   }
 
   // needs at least 66 (12 choose 2) matching fingerprints
   if (matches.length < 66) return;
 
-  let count = 0;
   for (const [k1, k2, r1, r2] of matches) {
     const orientation = ORIENTATIONS.find((rot) =>
       k1.difference(r1.multiply(rot)).equals(k2.difference(r2.multiply(rot)))
     );
     if (orientation) {
       const offset = k1.difference(r1.multiply(orientation));
-      const translated = report.map((v) => v.multiply(orientation).sum(offset));
-      if (translated.filter((v) => known.has(v)).length >= 12) {
-        return { beacons: translated, scanner: offset };
-      }
+      const translated = iter(report).map((v) =>
+        v.multiply(orientation).sum(offset)
+      );
+      if (translated.filter((v) => known.has(v)).take(12).size === 12)
+        return { beacons: translated.toArray(), scanner: offset };
     }
   }
 }
@@ -153,13 +154,17 @@ function mapSpace(reports: Report[]): {
   // Start with scanner 0 at the center.
   const scanners = [new Vector3([0, 0, 0])];
   const knownBeacons = new XSet((b) => b.hash(), reports[0]);
+  let knownBeaconDeltas = getBeaconDeltas(reports[0]);
   const toSearch = reports.slice(1);
 
   while (toSearch.length) {
     const report = toSearch.shift();
-    const found = orientBeacons(knownBeacons, report);
+    const found = orientBeacons(knownBeacons, knownBeaconDeltas, report);
     if (found) {
       found.beacons.forEach((f) => knownBeacons.add(f));
+      knownBeaconDeltas = knownBeaconDeltas.concat(
+        getBeaconDeltas(found.beacons)
+      );
       scanners.push(found.scanner);
     } else {
       toSearch.push(report);
@@ -178,12 +183,7 @@ example.equal(mapSpace(exampleReports).beacons.length, 79);
 example.equal(maxDistance(mapSpace(exampleReports).scanners), 3621);
 
 const reports = parse(load().paragraphs);
-let scanners: Vector3[]; // XXX timing cheat
 export default solve(
-  () => {
-    const result = mapSpace(reports);
-    scanners = result.scanners;
-    return result.beacons.length;
-  },
-  () => maxDistance(scanners)
+  () => mapSpace(reports).beacons.length,
+  () => maxDistance(mapSpace(reports).scanners)
 ).expect(419, 13210);
