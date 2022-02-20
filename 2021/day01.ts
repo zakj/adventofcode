@@ -1,24 +1,17 @@
 import { example, load, solve } from 'lib/advent';
-import { pairs, sum } from 'lib/util';
+import { Iter, iter } from 'lib/iter';
+import { sum } from 'lib/util';
 
-function countIncreases(xs: number[]): number {
-  return pairs(xs).filter(([a, b]) => b > a).length;
+function countIncreases(xs: Iter<number>): number {
+  return xs.aperture(2).filter(([a, b]) => b > a).size;
 }
 
-function countIncreasesWindowed(xs: number[]): number {
-  const windows = [];
-  for (let i = 0; i <= xs.length - 3; ++i) {
-    windows.push(sum(xs.slice(i, i + 3)));
-  }
-  return countIncreases(windows);
-}
-
-const exampleReport = load('ex').numbers;
+const exampleReport = iter(load('ex').numbers);
 example.equal(countIncreases(exampleReport), 7);
-example.equal(countIncreasesWindowed(exampleReport), 5);
+example.equal(countIncreases(exampleReport.aperture(3).map(sum)), 5);
 
-const report = load().numbers;
+const report = iter(load().numbers);
 export default solve(
   () => countIncreases(report),
-  () => countIncreasesWindowed(report)
+  () => countIncreases(report.aperture(3).map(sum))
 ).expect(1548, 1589);
