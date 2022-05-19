@@ -34,7 +34,7 @@ class Map {
   }
 
   countTilesForSlope(slope: Slope, tile: Tile): number {
-    return [...this.slope(slope)].filter((tile) => tile === Tile.Tree).length;
+    return [...this.slope(slope)].filter((t) => t === tile).length;
   }
 }
 
