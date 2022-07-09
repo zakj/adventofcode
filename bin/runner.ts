@@ -154,7 +154,6 @@ function fmtSummary({ result, expected, duration }: Result): string {
     else if (!arg) runAll();
     else throw `invalid argument ${arg}`;
   } catch (e) {
-    // TODO maybe: console.error(color.red(e));
-    throw e;
+    console.error(e.stack);
   }
 })();
