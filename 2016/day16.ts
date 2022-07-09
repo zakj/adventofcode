@@ -1,5 +1,4 @@
 import { example, load, solve } from 'lib/advent';
-import { iter } from 'lib/iter';
 
 function curve(a: number[]): number[] {
   const b = [...a].reverse().map((c) => (c === 0 ? 1 : 0));
@@ -9,10 +8,11 @@ function curve(a: number[]): number[] {
 function checksum(value: number[]): number[] {
   let checksum = value;
   do {
-    checksum = iter(checksum)
-      .splitEvery(2)
-      .map(([a, b]) => (a === b ? 1 : 0))
-      .toArray();
+    const next = [];
+    for (let i = 0; i < checksum.length; i += 2) {
+      next.push(checksum[i] === checksum[i + 1] ? 1 : 0);
+    }
+    checksum = next;
   } while (checksum.length % 2 === 0);
   return checksum;
 }
