@@ -1,13 +1,21 @@
 import { load, solve } from 'lib/advent';
+import { iter } from 'lib/iter';
 import { pairs } from 'lib/util';
 
 const A = 'a'.charCodeAt(0);
 const Z = 'z'.charCodeAt(0);
 
-function incrementPass(pass: string[]): string[] {
-  const last = pass.pop().charCodeAt(0) + 1;
-  if (last > Z) pass = incrementPass(pass);
-  return [...pass, String.fromCharCode(((last - A) % (Z - A + 1)) + A)];
+function* genPass(start: string): Generator<string> {
+  let pass = start.split('');
+  const rotateChar = (c: number): string =>
+    String.fromCharCode(((c - A) % (Z - A + 1)) + A);
+  while (true) {
+    for (let i = pass.length - 1; i >= 0; --i) {
+      pass[i] = rotateChar(pass[i].charCodeAt(0) + 1);
+      if (pass[i] !== 'a') break;
+    }
+    yield pass.join('');
+  }
 }
 
 function increasingStraight(pass: string): boolean {
@@ -20,31 +28,11 @@ function increasingStraight(pass: string): boolean {
 const badLetters = /[iol]/;
 const twoPairs = /(.)\1.*(.)\2/;
 
-// TODO: `find` for iterable/generator?
+const isValidPass = (p: string): boolean =>
+  increasingStraight(p) && !badLetters.test(p) && twoPairs.test(p);
+
 const password = load().lines[0];
 export default solve(
-  () => {
-    let pass = password;
-    while (true) {
-      pass = incrementPass(pass.split('')).join('');
-      if (
-        increasingStraight(pass) &&
-        !badLetters.test(pass) &&
-        twoPairs.test(pass)
-      )
-        return pass;
-    }
-  },
-  (part1) => {
-    let pass = part1;
-    while (true) {
-      pass = incrementPass(pass.split('')).join('');
-      if (
-        increasingStraight(pass) &&
-        !badLetters.test(pass) &&
-        twoPairs.test(pass)
-      )
-        return pass;
-    }
-  }
+  () => iter(genPass(password)).find(isValidPass),
+  (part1) => iter(genPass(part1)).find(isValidPass)
 ).expect('hepxxyzz', 'heqaabcc');
