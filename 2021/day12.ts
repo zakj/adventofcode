@@ -18,7 +18,7 @@ function isSmall(cave: string): boolean {
   return cave === cave.toLowerCase();
 }
 
-function countPaths(caves: Caves, canVisitTwice: boolean = false): number {
+function countPaths(caves: Caves, canVisitTwice = false): number {
   const q: { cur: string; visited: Set<string>; twice: boolean }[] = [
     { cur: 'start', visited: new Set(), twice: canVisitTwice },
   ];
@@ -32,13 +32,13 @@ function countPaths(caves: Caves, canVisitTwice: boolean = false): number {
         continue;
       }
       let nextTwice = twice;
-      if (visited.has(next) && isSmall(next)) {
+      if (isSmall(next) && visited.has(next)) {
         if (twice) nextTwice = false;
         else continue;
       }
       q.push({
         cur: next,
-        visited: new Set([...visited, next]),
+        visited: isSmall(next) ? new Set([...visited, next]) : visited,
         twice: nextTwice,
       });
     }
