@@ -6,7 +6,7 @@ type Nodes = Map<Node, Node[]>;
 function parse(lines: string[]): Nodes {
   return new Map<Node, Node[]>(
     lines.map((line) => {
-      const [node, _, ...connections] = line.split(/\s+/);
+      const [node, , ...connections] = line.split(/\s+/);
       return [Number(node), connections.join('').split(',').map(Number)];
     })
   );
