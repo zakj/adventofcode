@@ -1,5 +1,6 @@
 import { load, solve } from 'lib/advent';
 import { neighbors8, parseMap, PointMap, PointSet } from 'lib/coords';
+import { range } from 'lib/iter';
 
 function stepFlashes(octopuses: PointMap<number>): number {
   for (const [point, energy] of octopuses) {
@@ -27,20 +28,17 @@ function stepFlashes(octopuses: PointMap<number>): number {
 
 const octopuses = parseMap(load().lines, Number);
 export default solve(
+  () =>
+    range(100)
+      .map(() => stepFlashes(octopuses))
+      .sum(),
   () => {
-    let flashes = 0;
-    for (let i = 0; i < 100; ++i) {
-      flashes += stepFlashes(octopuses);
-    }
-    return flashes;
-  },
-  () => {
-    // XXX mutable octopii :/
+    // TODO mutable octopii :/
     const octopuses = parseMap(load().lines, Number);
-    let i = 1;
-    while (true) {
-      if (stepFlashes(octopuses) === octopuses.size) return i;
-      ++i;
-    }
+    return (
+      range(Infinity)
+        .map((i) => ({ flashes: stepFlashes(octopuses), i }))
+        .find(({ flashes, i }) => flashes === octopuses.size).i + 1
+    );
   }
 ).expect(1642, 320);
