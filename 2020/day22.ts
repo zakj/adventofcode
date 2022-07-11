@@ -2,6 +2,7 @@ import { example, load, solve } from 'lib/advent';
 import { sum } from 'lib/util';
 
 type Hand = number[];
+type Player = 1 | 2;
 
 function parseGame(games: string[][]): Hand[] {
   return games.map((player) => player.slice(1).map(Number));
@@ -18,7 +19,7 @@ function play(hands: Hand[]): Hand[] {
 }
 
 function score(hand: Hand): number {
-  return hand.length ? sum(hand.map((c, i) => c * (hand.length - i))) : 0;
+  return sum(hand.map((c, i) => c * (hand.length - i)));
 }
 
 function checkAndCache(cache: Set<string>, hands: Hand[]): boolean {
@@ -34,7 +35,7 @@ function playRecursive(hands: Hand[]): [number, number] {
   while (p1.length && p2.length) {
     if (checkAndCache(cache, [p1, p2])) return [1, 0];
     const [a, b] = [p1.shift(), p2.shift()];
-    let winner;
+    let winner: Player;
     if (a <= p1.length && b <= p2.length) {
       const scores = playRecursive([p1.slice(0, a), p2.slice(0, b)]);
       winner = scores[0] > scores[1] ? 1 : 2;
