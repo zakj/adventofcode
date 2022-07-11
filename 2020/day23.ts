@@ -39,7 +39,7 @@ class CircleList<T> {
 
   toArray(from: Node<T>): T[] {
     let node = from;
-    let out = [];
+    const out = [];
     do {
       out.push(node.value);
       node = node.next;

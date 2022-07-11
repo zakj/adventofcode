@@ -23,7 +23,7 @@ function transformSubject(subject: number, loopSize: number): number {
 }
 
 function findLoopSize(pubKey: number): number {
-  for (let [loopSize, value] of transformSubjectSearch(INITIAL_SUBJECT)) {
+  for (const [loopSize, value] of transformSubjectSearch(INITIAL_SUBJECT)) {
     if (value === pubKey) return loopSize;
   }
 }
