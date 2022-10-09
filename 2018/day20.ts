@@ -1,17 +1,14 @@
 import { example, load, solve } from 'lib/advent';
-import { XMap } from 'lib/util';
+import { Dir, move, Point, PointMap } from 'lib/coords';
+import { iter } from 'lib/iter';
 
-type Point = { x: number; y: number };
-type PointHash = string;
-type Branch = (string | [Branch, Branch])[];
-type Moves = Record<'N' | 'E' | 'S' | 'W', (p: Point) => Point>;
-const moves: Moves = {
-  N: ({ x, y }) => ({ x, y: y - 2 }),
-  E: ({ x, y }) => ({ x: x + 2, y }),
-  S: ({ x, y }) => ({ x, y: y + 2 }),
-  W: ({ x, y }) => ({ x: x - 2, y }),
+type Branch = (Dir | [Branch, Branch])[];
+const moves: Record<string, Dir> = {
+  N: Dir.Up,
+  E: Dir.Right,
+  S: Dir.Down,
+  W: Dir.Left,
 };
-const h = ({ x, y }: Point): PointHash => `${x},${y}`;
 
 function parse(s: string): Branch {
   const items = s.slice(1, s.length - 1).split('');
@@ -33,27 +30,28 @@ function parse(s: string): Branch {
       depths.delete(depth);
       depth--;
     } else {
-      depths.get(depth).push(item);
+      depths.get(depth).push(moves[item]);
     }
   }
   return depths.get(0);
 }
 
 function walk(branch: Branch) {
-  const stepsToReach = new XMap<Point, number>(h);
-  let start = { x: 0, y: 0 };
+  const stepsToReach = new PointMap<number>();
+  const start = { x: 0, y: 0 };
   stepsToReach.set(start, 0);
   const q: [cur: Point, branch: Branch][] = [[start, branch]];
 
   while (q.length) {
-    let [cur, branch] = q.shift();
+    const [start, branch] = q.shift();
+    let cur = start;
     for (const item of branch) {
       if (Array.isArray(item)) {
         q.push([cur, item[0]]);
         q.push([cur, item[1]]);
       } else {
         const steps = stepsToReach.get(cur) + 1;
-        cur = moves[item](cur);
+        cur = move(cur, item);
         if ((stepsToReach.get(cur) || Infinity) > steps) {
           stepsToReach.set(cur, steps);
         }
@@ -63,8 +61,8 @@ function walk(branch: Branch) {
   return stepsToReach;
 }
 
-function maxSteps(stepsToReach: XMap<Point, number>): number {
-  return stepsToReach.values().reduce((max, s) => (s > max ? s : max));
+function maxSteps(stepsToReach: PointMap<number>): number {
+  return iter(stepsToReach.values()).max();
 }
 
 const testCases: [string, number][] = [
