@@ -43,7 +43,7 @@ const wires = new Map(
 );
 export default solve(
   () => valueOf(wires, 'a'),
-  (firstA) => {
+  (firstA: number) => {
     cache.clear();
     cache.set('b', firstA);
     return valueOf(wires, 'a');

@@ -295,5 +295,5 @@ export function range(start: number, end?: number, step = 1): Iter<number> {
 
 // Expose a consistent interface that doesn't depend on class-based implementation.
 type IterType<T> = Iter<T>;
-export { IterType as Iter };
+export type { IterType as Iter };
 export const iter = <T>(iterable: Iterable<T>): Iter<T> => new Iter(iterable);

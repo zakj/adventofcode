@@ -11,7 +11,7 @@ type Input = {
   paragraphs: string[][];
 };
 
-export type SolverResult = any;
+export type SolverResult = number | bigint | string;
 export type SolverFn = (prev: SolverResult) => SolverResult;
 export interface Solver {
   expect: (...values: SolverResult[]) => Solver;

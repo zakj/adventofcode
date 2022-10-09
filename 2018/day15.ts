@@ -103,7 +103,7 @@ function play(
         const targets = new PointSet(enemies.flatMap((e) => neighbors4(e)));
         const targetDistances = [...distances]
           .filter(([hash]) => targets.has(hash))
-          .map(([hash, pd]) => pd);
+          .map(([, pd]) => pd);
         const target = best([...targetDistances.values()], 'distance');
         if (!target) continue;
 
@@ -187,6 +187,6 @@ for (const [result, exampleMaze] of testCases) {
 
 const map = parse(load().lines);
 export default solve(
-  () => play(map),
+  () => play(map) as number,
   () => elfatePower(map)
 ).expect(206236, 88537);

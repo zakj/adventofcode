@@ -6,7 +6,7 @@ const A = 'a'.charCodeAt(0);
 const Z = 'z'.charCodeAt(0);
 
 function* genPass(start: string): Generator<string> {
-  let pass = start.split('');
+  const pass = start.split('');
   const rotateChar = (c: number): string =>
     String.fromCharCode(((c - A) % (Z - A + 1)) + A);
   while (true) {
@@ -34,5 +34,5 @@ const isValidPass = (p: string): boolean =>
 const password = load().lines[0];
 export default solve(
   () => iter(genPass(password)).find(isValidPass),
-  (part1) => iter(genPass(part1)).find(isValidPass)
+  (part1: string) => iter(genPass(part1)).find(isValidPass)
 ).expect('hepxxyzz', 'heqaabcc');

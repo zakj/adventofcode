@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import inspector from 'inspector';
-import { Solver, SolverFn, SolverResult } from 'lib/advent';
+import { SolverFn, SolverResult } from 'lib/advent';
 import { color, makeTable } from 'lib/format';
 import { basename, join, resolve } from 'path';
 import { performance } from 'perf_hooks';
@@ -42,15 +42,7 @@ async function runYear(dir: string) {
   table.footer();
 }
 
-function isSolver(obj: unknown): obj is Solver {
-  return (
-    typeof obj === 'object' &&
-    'parts' in obj &&
-    Array.isArray((obj as any).parts)
-  );
-}
-
-function timedResult(fn: SolverFn, prev: SolverResult): [unknown, number] {
+function timedResult(fn: SolverFn, prev: SolverResult): [SolverResult, number] {
   const start = performance.now();
   const result = fn(prev);
   const durationMs = performance.now() - start;
@@ -61,36 +53,32 @@ async function runDay(file: string, printer?: (s: string) => void) {
   const day = await import(resolve(file));
   const solve = day.default;
 
-  if (!isSolver(solve)) {
-    // TODO: rework this `if` after all files are ported
-    if (printer) printer(color.red('invalid export'));
-    return;
-  }
-
   let previousResult = undefined;
   for (let i = 0; i < solve.parts.length; ++i) {
     const [fn, expected] = solve.parts[i];
-    const [result, duration] = await new Promise((resolve) => {
-      if (!solve.shouldProfile) {
-        resolve(timedResult(fn, previousResult));
-      } else {
-        const session = new inspector.Session();
-        session.connect();
-        session.post('Profiler.enable', () => {
-          session.post('Profiler.start', () => {
-            resolve(timedResult(fn, previousResult));
-            session.post('Profiler.stop', (err, { profile }) => {
-              if (err) return;
-              writeFileSync(
-                `./part${i + 1}.cpuprofile`,
-                JSON.stringify(profile)
-              );
+    const [result, duration] = await new Promise<[SolverResult, number]>(
+      (resolve) => {
+        if (!solve.shouldProfile) {
+          resolve(timedResult(fn, previousResult));
+        } else {
+          const session = new inspector.Session();
+          session.connect();
+          session.post('Profiler.enable', () => {
+            session.post('Profiler.start', () => {
+              resolve(timedResult(fn, previousResult));
+              session.post('Profiler.stop', (err, { profile }) => {
+                if (err) return;
+                writeFileSync(
+                  `./part${i + 1}.cpuprofile`,
+                  JSON.stringify(profile)
+                );
+              });
             });
           });
-        });
-        session.disconnect();
+          session.disconnect();
+        }
       }
-    });
+    );
     previousResult = result;
 
     if (printer) printer(fmtSummary({ part: i, result, expected, duration }));
@@ -117,7 +105,7 @@ function printResult({ part, result, expected, duration }: Result): void {
     output = [
       color.red(result?.toString()),
       color.grey('!=='),
-      color.green(expected),
+      color.green(expected.toString()),
     ].join(' ');
   }
 
