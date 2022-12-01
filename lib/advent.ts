@@ -21,7 +21,7 @@ export interface Solver {
 }
 
 function downloadInput(year: number, day: number, path: string): void {
-  const session = readFileSync(resolve(__dirname, '.session'))
+  const session = readFileSync(resolve(__dirname, '..', '.session'))
     .toString()
     .trim();
   execSync(
