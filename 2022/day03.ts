@@ -1,42 +1,34 @@
 import { load, solve } from 'lib/advent';
 import { iter } from 'lib/iter';
-import { XSet } from 'lib/util';
 
 function parse(lines: string[]) {
-  return lines.map((line) => line.split(''));
+  return iter(lines.map((line) => line.split('')));
 }
 
-function value(s: string): number {
-  if (s.toLowerCase() === s) {
-    return s.charCodeAt(0) - 'a'.charCodeAt(0) + 1;
-  }
-  return s.charCodeAt(0) - 'A'.charCodeAt(0) + 27;
-}
+const intersect = <T>(...xs: T[][]): T =>
+  [
+    ...xs
+      .map((x) => new Set(x))
+      .reduce((a, b) => new Set([...b].filter((x) => a.has(x)))),
+  ].pop();
+
+const lowerCaseOffset = 'a'.charCodeAt(0) - 1;
+const upperCaseOffset = 'A'.charCodeAt(0) - 27;
+const priority = (s: string): number =>
+  s.charCodeAt(0) - (s.toLowerCase() === s ? lowerCaseOffset : upperCaseOffset);
 
 const data = parse(load().lines);
 export default solve(
-  () => {
-    let ss = 0;
-    for (const line of data) {
-      const [a, b] = [
-        new XSet((x) => x, line.slice(0, line.length / 2)),
-        new XSet((x) => x, line.slice(line.length / 2)),
-      ];
-      const match = [...a.intersect(b)].pop();
-      ss += value(match);
-    }
-    return ss;
-  },
-  () => {
-    return iter(data)
-      .splitEvery(3)
-      .map(([a, b, c]) => {
-        const xa = new XSet((x) => x, a);
-        const xb = new XSet((x) => x, b);
-        const xc = new XSet((x) => x, c);
-        const match = [...xa.intersect(xb).intersect(xc)].pop();
-        return value(match);
+  () =>
+    data
+      .map((line) => {
+        const len = line.length / 2;
+        return priority(intersect(line.slice(0, len), line.slice(len)));
       })
-      .sum();
-  }
-).expect();
+      .sum(),
+  () =>
+    data
+      .splitEvery(3)
+      .map((lines) => priority(intersect(...lines)))
+      .sum()
+).expect(7875, 2479);
