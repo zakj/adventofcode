@@ -79,7 +79,7 @@ export function load(suffix = ''): Input {
     },
     get paragraphs() {
       return text
-        .trim()
+        .trimEnd()
         .split('\n\n')
         .filter(Boolean)
         .map((p) => p.split('\n'));

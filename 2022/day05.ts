@@ -1,89 +1,51 @@
 import { example, load, solve } from 'lib/advent';
 
-function parse(paragraphs: string[]): [Boxes, Procedure[]] {
-  const boxesInput = paragraphs[0].split('\n');
-  const procedure = paragraphs[1].split('\n').map((line) => {
+type Stacks = Record<number, string[]>;
+type Procedure = { from: number; to: number; count: number };
+
+function parse(paragraphs: string[][]): [Stacks, Procedure[]] {
+  const stacksInput = paragraphs[0];
+  const indexToStack = new Map(
+    stacksInput[stacksInput.length - 1].split('').map((x, i) => [i, Number(x)])
+  );
+  const stacks: Record<number, string[]> = {};
+  stacksInput.slice(0, stacksInput.length - 1).forEach((line) => {
+    line.split('').forEach((x, i) => {
+      if (!/[A-Z]/.test(x)) return;
+      const stack = indexToStack.get(i);
+      if (!stacks[stack]) stacks[stack] = [];
+      stacks[stack].unshift(x);
+    });
+  });
+
+  const procedures = paragraphs[1].map((line) => {
     const [count, from, to] = line.match(/[0-9]+/g).map(Number);
     return { count, from, to };
   });
 
-  const numIndexes = new Map(
-    boxesInput[boxesInput.length - 1].split('').map((x, i) => [i, Number(x)])
-  );
-  const boxes: Record<number, string[]> = {};
-  boxesInput.slice(0, boxesInput.length - 1).forEach((line) => {
-    line.split('').forEach((x, i) => {
-      if (!/[A-Z]/.test(x)) return;
-      const stack = numIndexes.get(i);
-      if (!boxes[stack]) boxes[stack] = [];
-      boxes[stack].unshift(x);
-    });
-  });
-  return [boxes, procedure];
+  return [stacks, procedures];
 }
 
-type Boxes = Record<number, string[]>;
-type Procedure = { from: number; to: number; count: number };
+// Needed because we mutate stacks and don't want to break part 2.
+const clone = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));
 
-function part1(boxes: Boxes, procedure: Procedure[]) {
-  for (const p of procedure) {
-    for (let i = 0; i < p.count; ++i) {
-      const box = boxes[p.from].pop();
-      boxes[p.to].push(box);
-    }
-  }
-  return Object.values(boxes)
+function operate(stacks: Stacks, procedures: Procedure[], reverse = true) {
+  stacks = procedures.reduce((stacks, p) => {
+    const move = stacks[p.from].splice(-p.count, p.count);
+    stacks[p.to].push(...(reverse ? move.reverse() : move));
+    return stacks;
+  }, clone(stacks));
+  return Object.values(stacks)
     .map((stack) => stack.pop())
     .join('');
 }
 
-function part2(boxes: Boxes, procedure: Procedure[]) {
-  for (const p of procedure) {
-    const moving = [];
-    for (let i = 0; i < p.count; ++i) {
-      const box = boxes[p.from].pop();
-      console.log('TO MOVE', box);
-      moving.unshift(box);
-    }
-    for (const b of moving) {
-      boxes[p.to].push(b);
-    }
-    console.log({ boxes, moving });
-  }
-  return Object.values(boxes)
-    .map((stack) => stack.pop())
-    .join('');
-}
+const exampleData = parse(load('ex').paragraphs);
+example.equal('CMZ', operate(...exampleData));
+example.equal('MCD', operate(...exampleData, false));
 
-const exampleData = parse(
-  `    [D]    
-[N] [C]    
-[Z] [M] [P]
- 1   2   3 
-
-move 1 from 2 to 1
-move 3 from 1 to 3
-move 2 from 2 to 1
-move 1 from 1 to 2`.split('\n\n')
-);
-example.equal('CMZ', part1(...exampleData));
-const exampleData2 = parse(
-  `    [D]    
-[N] [C]    
-[Z] [M] [P]
- 1   2   3 
-
-move 1 from 2 to 1
-move 3 from 1 to 3
-move 2 from 2 to 1
-move 1 from 1 to 2`.split('\n\n')
-);
-example.equal('MCD', part2(...exampleData2));
-
-const data = parse(load().raw.trim().split('\n\n'));
-const data2 = parse(load().raw.trim().split('\n\n'));
-
+const data = parse(load().paragraphs);
 export default solve(
-  () => part1(...data),
-  () => part2(...data2)
+  () => operate(...data),
+  () => operate(...data, false)
 ).expect('VGBBJCRMN', 'LBBVJBRMH');
