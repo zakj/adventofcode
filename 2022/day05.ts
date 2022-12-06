@@ -4,19 +4,19 @@ type Stacks = Record<number, string[]>;
 type Procedure = { from: number; to: number; count: number };
 
 function parse(paragraphs: string[][]): [Stacks, Procedure[]] {
-  const stacksInput = paragraphs[0];
   const indexToStack = new Map(
-    stacksInput[stacksInput.length - 1].split('').map((x, i) => [i, Number(x)])
+    paragraphs[0]
+      .pop()
+      .split('')
+      .map((x, i) => [i, Number(x)])
   );
-  const stacks: Record<number, string[]> = {};
-  stacksInput.slice(0, stacksInput.length - 1).forEach((line) => {
+  const stacks = paragraphs[0].reduce((stacks, line) => {
     line.split('').forEach((x, i) => {
       if (!/[A-Z]/.test(x)) return;
-      const stack = indexToStack.get(i);
-      if (!stacks[stack]) stacks[stack] = [];
-      stacks[stack].unshift(x);
+      (stacks[indexToStack.get(i)] ??= []).unshift(x);
     });
-  });
+    return stacks;
+  }, {});
 
   const procedures = paragraphs[1].map((line) => {
     const [count, from, to] = line.match(/[0-9]+/g).map(Number);
