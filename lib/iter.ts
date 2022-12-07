@@ -1,6 +1,6 @@
 /* eslint-disable no-constant-condition */ // We often want to loop forever.
 /* eslint-disable @typescript-eslint/no-this-alias */ // We cannot yield from arrow functions.
-import util from 'util';
+import util, { InspectOptions } from 'util';
 
 class Iter<T> implements Iterable<T> {
   constructor(iterable: Iterable<T> | (() => Iterator<T>)) {
@@ -15,19 +15,13 @@ class Iter<T> implements Iterable<T> {
     throw new Error('Method not implemented.');
   }
 
-  [util.inspect.custom](depth, options) {
+  [util.inspect.custom](depth: number, options: InspectOptions) {
+    const values: (T | string)[] = this.take(100).toArray();
     const isBig = this.skip(1000).take(1).size;
+    if (isBig || this.size > 100) values.push('...');
     return (
       `Iter(${isBig ? '1000+' : this.size}) ` +
-      util.inspect(
-        this.take(100)
-          .toArray()
-          // @ts-ignore TODO
-          .concat(isBig || this.size > 100 ? ['...'] : []),
-        options.showHidden,
-        depth,
-        options.colors
-      )
+      util.inspect(values, options.showHidden, depth, options.colors)
     );
   }
 
@@ -105,8 +99,7 @@ class Iter<T> implements Iterable<T> {
     const b = [];
     let i = 0;
     for (const item of this) {
-      if (predicate(item, i++)) a.push(item);
-      else b.push(item);
+      (predicate(item, i++) ? a : b).push(item);
     }
     return [new Iter(a), new Iter(b)];
   }
@@ -222,18 +215,12 @@ class Iter<T> implements Iterable<T> {
     return item;
   }
 
-  max(): number {
-    // XXX how to make this type safe?
-    return (this as unknown as Iter<number>).reduce((max, x) =>
-      x < max ? max : x
-    );
+  max(): T {
+    return this.reduce((max, x) => (x < max ? max : x));
   }
 
-  min(): number {
-    // XXX how to make this type safe?
-    return (this as unknown as Iter<number>).reduce((min, x) =>
-      x > min ? min : x
-    );
+  min(): T {
+    return this.reduce((min, x) => (x > min ? min : x));
   }
 
   reduce(fn: (acc: T, value: T) => T): T;
@@ -301,6 +288,5 @@ export function range(start: number, end?: number, step = 1): Iter<number> {
 }
 
 // Expose a consistent interface that doesn't depend on class-based implementation.
-type IterType<T> = Iter<T>;
-export type { IterType as Iter };
+export type { Iter };
 export const iter = <T>(iterable: Iterable<T>): Iter<T> => new Iter(iterable);
