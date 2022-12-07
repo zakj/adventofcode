@@ -229,6 +229,13 @@ class Iter<T> implements Iterable<T> {
     );
   }
 
+  min(): number {
+    // XXX how to make this type safe?
+    return (this as unknown as Iter<number>).reduce((min, x) =>
+      x > min ? min : x
+    );
+  }
+
   reduce(fn: (acc: T, value: T) => T): T;
   reduce<Acc>(fn: (acc: Acc, value: T) => Acc, initial: Acc): Acc;
   reduce<Acc>(
@@ -257,7 +264,7 @@ class Iter<T> implements Iterable<T> {
 
   sum(): number {
     // XXX how to make this type safe?
-    return (this as unknown as Iter<number>).reduce((acc, x) => acc + x);
+    return (this as unknown as Iter<number>).reduce((acc, x) => acc + x, 0);
   }
 
   toArray() {
