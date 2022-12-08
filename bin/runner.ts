@@ -91,7 +91,7 @@ function humanDuration(d: number): string {
     ? `${(d / 1000).toFixed(2)}s`
     : d >= 1
     ? `${d.toFixed(0)}ms`
-    : `${d.toFixed(2)}ms`;
+    : `< 1ms`;
 }
 
 function printResult({ part, result, expected, duration }: Result): void {
