@@ -159,6 +159,19 @@ class Iter<T> implements Iterable<T> {
     });
   }
 
+  takeWhile(predicate: (value: T) => boolean, inclusive?: boolean): Iter<T> {
+    const iter = this;
+    return new Iter(function* take() {
+      for (const item of iter) {
+        if (!predicate(item)) {
+          if (inclusive) yield item;
+          return;
+        }
+        yield item;
+      }
+    });
+  }
+
   uniq(): Iter<T> {
     const iter = this;
     return new Iter(function* uniq() {

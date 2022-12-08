@@ -89,6 +89,14 @@ export class PointGrid<T> {
   filter(predicate: (value: T) => boolean): T[] {
     return this._arr.filter(predicate);
   }
+
+  *map<U>(project: (val: T, p: Point) => U): Generator<U> {
+    for (const x of this.xs) {
+      for (const y of this.ys) {
+        yield project(this.get(x, y), { x, y });
+      }
+    }
+  }
 }
 
 export function pointHash({ x, y }: Point): number {
