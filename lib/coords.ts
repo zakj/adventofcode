@@ -21,7 +21,7 @@ export const turnAround: (dir: Dir) => Dir = (dir) => ((dir + 2) % 4) as Dir;
 export const turnRight: (dir: Dir) => Dir = (dir) => ((dir + 1) % 4) as Dir;
 
 // More performant version of PointMap for dense, stably-sized grids.
-export class PointGrid<T> {
+export class PointGrid<T> implements Iterable<[T, Point, PointGrid<T>]> {
   width: number;
   height: number;
   private _arr: T[] = [];
@@ -46,6 +46,15 @@ export class PointGrid<T> {
 
   private _index(point: Point): number {
     return point.y * this.width + point.x;
+  }
+
+  // TODO optimize
+  *[Symbol.iterator](): Iterator<[T, Point, PointGrid<T>]> {
+    for (const x of this.xs) {
+      for (const y of this.ys) {
+        yield [this.get(x, y), { x, y }, this];
+      }
+    }
   }
 
   get xs(): number[] {
@@ -86,16 +95,9 @@ export class PointGrid<T> {
     this._arr[this._index(xOrPoint)] = value;
   }
 
+  // TODO: remove in favor of iterator
   filter(predicate: (value: T) => boolean): T[] {
     return this._arr.filter(predicate);
-  }
-
-  *map<U>(project: (val: T, p: Point) => U): Generator<U> {
-    for (const x of this.xs) {
-      for (const y of this.ys) {
-        yield project(this.get(x, y), { x, y });
-      }
-    }
   }
 }
 
