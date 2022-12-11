@@ -13,15 +13,15 @@ function heightsEachDir(p: Point, grid: PointGrid<number>): number[][] {
   });
 }
 
-type GridIterator = [number, Point, PointGrid<number>];
+type GridIterator = [Point, number, PointGrid<number>];
 
-function isVisible([height, p, grid]: GridIterator): boolean {
+function isVisible([p, height, grid]: GridIterator): boolean {
   return heightsEachDir(p, grid).some((values) =>
     values.every((v) => v < height)
   );
 }
 
-function scenicScore([height, p, grid]: GridIterator): number {
+function scenicScore([p, height, grid]: GridIterator): number {
   return heightsEachDir(p, grid)
     .map((values) => iter(values).takeWhile((v) => v < height, true).size)
     .reduce((a, b) => a * b);
