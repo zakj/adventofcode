@@ -20,6 +20,10 @@ export const turnLeft: (dir: Dir) => Dir = (dir) => ((dir + 3) % 4) as Dir;
 export const turnAround: (dir: Dir) => Dir = (dir) => ((dir + 2) % 4) as Dir;
 export const turnRight: (dir: Dir) => Dir = (dir) => ((dir + 1) % 4) as Dir;
 
+export function distance(a: Point, b: Point): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
 // More performant version of PointMap for dense, stably-sized grids.
 export class PointGrid<T> implements Iterable<[Point, T, PointGrid<T>]> {
   width: number;
