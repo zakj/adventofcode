@@ -106,10 +106,8 @@ function exteriorSurfaceArea(droplets: Point3d[]): number {
       for (let z = bounds.min.z; z <= bounds.max.z; ++z) {
         if (!cave.has({ x, y, z })) {
           const [area, isEnclosed] = areaEnclosed(cave, bounds, { x, y, z });
-          if (isEnclosed) {
-            for (const p of area) {
-              cave.set(p, Cell.Enclosed);
-            }
+          for (const p of area) {
+            cave.set(p, isEnclosed ? Cell.Enclosed : Cell.Empty);
           }
         }
       }
@@ -119,7 +117,7 @@ function exteriorSurfaceArea(droplets: Point3d[]): number {
   let exposedSides = 0;
   for (const a of droplets) {
     let aExposedSides = 6;
-    for (const b of cave.keys()) {
+    for (const [b] of [...cave].filter(([, type]) => type !== Cell.Empty)) {
       if (distance(a, b) === 1) aExposedSides--;
     }
     exposedSides += aExposedSides;
