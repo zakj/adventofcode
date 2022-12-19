@@ -1,5 +1,6 @@
 import { example, load, solve } from 'lib/advent';
 import { Queue } from 'lib/collections';
+import { iter } from 'lib/iter';
 import { ValuesOf, XMap, XSet } from 'lib/util';
 
 type Point3d = {
@@ -15,10 +16,13 @@ type Rect3d = {
 
 const Cell = {
   Droplet: '#',
-  Enclosed: 'E',
-  Empty: '.',
+  Air: '.',
+  Steam: '~',
 } as const;
 type Cell = ValuesOf<typeof Cell>;
+
+type Cave = XMap<Point3d, Cell>;
+const hash = (p: Point3d) => `${p.x},${p.y},${p.z}`;
 
 function parse(lines: string[]): Point3d[] {
   return lines.map((line) => {
@@ -34,19 +38,29 @@ function distance(a: Point3d, b: Point3d): number {
 }
 
 function surfaceArea(droplets: Point3d[]): number {
-  let exposedSides = 0;
+  let exposedSides = droplets.length * 6;
   for (const a of droplets) {
-    let aExposedSides = 6;
     for (const b of droplets) {
-      if (a !== b && distance(a, b) === 1) aExposedSides--;
+      if (distance(a, b) === 1) exposedSides--;
     }
-    exposedSides += aExposedSides;
   }
   return exposedSides;
 }
 
-type Cave = XMap<Point3d, Cell>;
-const hash = (p: Point3d) => `${p.x},${p.y},${p.z}`;
+function isWithin(p: Point3d, box: Rect3d): boolean {
+  return ['x', 'y', 'z'].every((x) => p[x] >= box.min[x] && p[x] <= box.max[x]);
+}
+
+function neighbors(p: Point3d): Point3d[] {
+  return [
+    { x: p.x + 1, y: p.y, z: p.z },
+    { x: p.x - 1, y: p.y, z: p.z },
+    { x: p.x, y: p.y + 1, z: p.z },
+    { x: p.x, y: p.y - 1, z: p.z },
+    { x: p.x, y: p.y, z: p.z + 1 },
+    { x: p.x, y: p.y, z: p.z - 1 },
+  ];
+}
 
 function areaEnclosed(
   cave: Cave,
@@ -59,27 +73,12 @@ function areaEnclosed(
   const q = new Queue([start]);
   while (q.size) {
     const cur = q.shift();
-    if (
-      cur.x < bounds.min.x ||
-      cur.x > bounds.max.x ||
-      cur.y < bounds.min.y ||
-      cur.y > bounds.max.y ||
-      cur.z < bounds.min.z ||
-      cur.z > bounds.max.z
-    ) {
+    if (!isWithin(cur, bounds)) {
       isEnclosed = false;
       continue;
     }
-    const openNeighbors = [
-      { ...cur, x: cur.x + 1 },
-      { ...cur, x: cur.x - 1 },
-      { ...cur, y: cur.y + 1 },
-      { ...cur, y: cur.y - 1 },
-      { ...cur, z: cur.z + 1 },
-      { ...cur, z: cur.z - 1 },
-    ].filter((p) => !cave.has(p));
-    for (const next of openNeighbors) {
-      if (area.has(next)) continue;
+    for (const next of neighbors(cur)) {
+      if (area.has(next) || cave.has(next)) continue;
       q.add(next);
       area.add(next);
     }
@@ -89,17 +88,23 @@ function areaEnclosed(
 }
 
 function exteriorSurfaceArea(droplets: Point3d[]): number {
-  const cave = new XMap<Point3d, Cell>(hash);
-  const bounds: Rect3d = { min: { ...droplets[0] }, max: { ...droplets[0] } };
-  droplets.forEach((p) => {
-    bounds.min.x = Math.min(bounds.min.x, p.x);
-    bounds.min.y = Math.min(bounds.min.y, p.y);
-    bounds.min.z = Math.min(bounds.min.z, p.z);
-    bounds.max.x = Math.max(bounds.max.x, p.x);
-    bounds.max.y = Math.max(bounds.max.y, p.y);
-    bounds.max.z = Math.max(bounds.max.z, p.z);
-    cave.set(p, Cell.Droplet);
-  });
+  const cave = new XMap<Point3d, Cell>(
+    hash,
+    droplets.map((p) => [p, Cell.Droplet])
+  );
+  const dropIter = iter(droplets);
+  const bounds = {
+    min: {
+      x: dropIter.pluck('x').min(),
+      y: dropIter.pluck('y').min(),
+      z: dropIter.pluck('z').min(),
+    },
+    max: {
+      x: dropIter.pluck('x').max(),
+      y: dropIter.pluck('y').max(),
+      z: dropIter.pluck('z').max(),
+    },
+  };
 
   for (let x = bounds.min.x; x <= bounds.max.x; ++x) {
     for (let y = bounds.min.y; y <= bounds.max.y; ++y) {
@@ -107,20 +112,18 @@ function exteriorSurfaceArea(droplets: Point3d[]): number {
         if (!cave.has({ x, y, z })) {
           const [area, isEnclosed] = areaEnclosed(cave, bounds, { x, y, z });
           for (const p of area) {
-            cave.set(p, isEnclosed ? Cell.Enclosed : Cell.Empty);
+            cave.set(p, isEnclosed ? Cell.Air : Cell.Steam);
           }
         }
       }
     }
   }
 
-  let exposedSides = 0;
+  let exposedSides = droplets.length * 6;
   for (const a of droplets) {
-    let aExposedSides = 6;
-    for (const [b] of [...cave].filter(([, type]) => type !== Cell.Empty)) {
-      if (distance(a, b) === 1) aExposedSides--;
+    for (const b of neighbors(a)) {
+      if (cave.has(b) && cave.get(b) !== Cell.Steam) exposedSides--;
     }
-    exposedSides += aExposedSides;
   }
   return exposedSides;
 }
