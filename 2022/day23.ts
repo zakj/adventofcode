@@ -57,44 +57,18 @@ function part1(elves: PointSet, rounds = 10): number {
     }
 
     // Check moves
-    const nextElves = new PointSet();
-    for (const [cur, next] of moves) {
+    for (const next of moves.values()) {
       const samePoint = iter(moves).filter(
-        ([from, to]) => to.x === next.x && to.y === next.y
+        ([, to]) => to.x === next.x && to.y === next.y
       );
       if (samePoint.size > 1) {
         samePoint.forEach(([from]) => moves.delete(from));
       }
-      // console.log('moving', cur, next);
-      // if (
-      //   iter(moves).findIndex(
-      //     ([from, to]) =>
-      //       !(from.x === cur.x && from.y === cur.y) &&
-      //       to.x === next.x &&
-      //       to.y === next.y
-      //   ) !== -1
-      // ) {
-      //   // console.log('  BAD');
-      //   if (nextElves.has(cur)) throw new Error('next elf has cur');
-      //   nextElves.add(cur);
-      // } else {
-      //   // console.log('  good!');
-      //   if (nextElves.has(next)) throw new Error('next elf has next');
-      //   nextElves.add(next);
-      // }
     }
 
-    if (moves.size === 0) {
-      // console.log(toAscii(elves));
-      return i + 1;
-    }
+    if (moves.size === 0) return i + 1;
 
     // Move
-    // console.log(toAscii(elves));
-    // console.log('--');
-    // console.log(toAscii(nextElves));
-    // console.log('=======');
-    // elves = nextElves;
     for (const [cur, next] of moves) {
       elves.delete(cur);
       elves.add(next);
@@ -104,10 +78,7 @@ function part1(elves: PointSet, rounds = 10): number {
     proposals.push(proposals.shift());
   }
 
-  // console.log(toAscii(elves));
   const { min, max } = findBounds(elves);
-  // console.log({ min, max }, elves.size);
-  // console.log(toAscii(elves));
   return (max.x - min.x + 1) * (max.y - min.y + 1) - elves.size;
 }
 
@@ -123,10 +94,11 @@ const exampleData = parse([
 example.equal(110, part1(new PointSet(exampleData), 10));
 example.equal(20, part1(exampleData, Infinity));
 
+// TODO: cleanup
+// TODO: mutable data again
+// TODO: optimize p2: 48s
 const data = parse(load().lines);
 export default solve(
   () => part1(new PointSet(data)),
-  () => part1(data, Infinity),
-  () => 0,
-  () => 0
+  () => part1(data, Infinity)
 ).expect(3925, 903);
