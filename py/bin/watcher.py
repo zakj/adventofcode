@@ -20,7 +20,10 @@ class Handler(PatternMatchingEventHandler):
         if self.process:
             if self.process.poll() is None:
                 self.process.terminate()
-                self.process.wait(timeout=1)
+                try:
+                    self.process.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    self.process.kill()
             print()
         self.process = subprocess.Popen(["python", "bin/runner.py", src])
 
@@ -37,6 +40,8 @@ if __name__ == "__main__":
     try:
         while True:
             time.sleep(1)
+    except KeyboardInterrupt:
+        pass
     finally:
         observer.stop()
         observer.join()

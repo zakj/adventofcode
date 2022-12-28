@@ -107,14 +107,17 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.path:
-        path = Path(args.path)
-        if not path.exists():
-            parser.error(f"{path}: file not found")
-            raise
-        elif path.is_file():
-            run_day(path)
-        elif path.is_dir():
-            run_year(path)
-    else:
-        run_all_years()
+    try:
+        if args.path:
+            path = Path(args.path)
+            if not path.exists():
+                parser.error(f"{path}: file not found")
+                raise
+            elif path.is_file():
+                run_day(path)
+            elif path.is_dir():
+                run_year(path)
+        else:
+            run_all_years()
+    except KeyboardInterrupt:
+        pass
