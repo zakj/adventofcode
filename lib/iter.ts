@@ -220,6 +220,7 @@ class Iter<T> implements Iterable<T> {
       if (predicate(item)) return i;
       ++i;
     }
+    return -1;
   }
 
   last(): T {
