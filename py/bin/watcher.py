@@ -1,10 +1,10 @@
-from pathlib import Path
 import subprocess
 import sys
 import time
+from pathlib import Path
 
-from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
+from watchdog.observers import Observer
 
 
 class Handler(PatternMatchingEventHandler):

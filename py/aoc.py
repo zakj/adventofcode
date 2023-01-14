@@ -1,12 +1,17 @@
 import inspect
+from collections import namedtuple
 from itertools import zip_longest
 from pathlib import Path
+
+Solver = namedtuple("Solver", "fn expected path suffix should_profile")
 
 
 def _find_day_file():
     for frame in inspect.stack()[1:]:
         mod = inspect.getmodule(frame[0])
-        f = Path(inspect.getmodule(frame[0]).__file__)
+        if mod is None or mod.__file__ is None:
+            continue
+        f = Path(mod.__file__)
         if f.stem.startswith("day"):
             return f
     raise RuntimeError("no day file found in stack")
@@ -28,20 +33,9 @@ def load(suffix: str = "", day_file: Path | None = None) -> str:
     return (input_dir / f"{day}{suffix}.txt").read_text()
 
 
-class Solver:
-    def __init__(self, *parts, expect=None, suffix=""):
-        self.parts = parts
-        if expect is None:
-            expect = []
-        self.suffix = suffix
-        self.expected = expect
-
-    def __add__(self, other):
-        return [self, other]
-
-    def __iter__(self):
-        return zip_longest(self.parts, self.expected)
-
-
-def solve(*args, **kwargs):
-    return Solver(*args, **kwargs)
+def solve(*parts, expect=(), profile=None, suffix=""):
+    path = _find_day_file()
+    return [
+        Solver(fn, expected, path, suffix, i == profile)
+        for i, (fn, expected) in enumerate(zip_longest(parts, expect[: len(parts)]))
+    ]
