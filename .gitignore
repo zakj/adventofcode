@@ -1,6 +1,10 @@
+*.cpuprofile
 .DS_Store
-node_modules
+.pdm.toml
 .session
 .stignore
+.venv
 .vscode
-*.cpuprofile
+__pycache__
+node_modules
+pdm.lock
