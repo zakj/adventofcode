@@ -6,17 +6,16 @@ watch = "python -m aocli -w"
 name = ""
 version = ""
 description = ""
-authors = [
-    {name = "Zak Johnson", email = "me@zakj.net"},
-]
+authors = [{ name = "Zak Johnson", email = "me@zakj.net" }]
 dependencies = [
     "black>=22.12.0",
+    "isort>=5.11.4",
     "mypy>=0.991",
     "numpy>=1.24.1",
-    "rich>=13.2.0",
-    "watchdog>=2.2.1",
     "pyyaml>=6.0",
+    "rich>=13.2.0",
     "types-pyyaml>=6.0.12.3",
+    "watchdog>=2.2.1",
 ]
 requires-python = ">=3.11"
-license = {text = "MIT"}
+license = { text = "MIT" }
