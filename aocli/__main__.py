@@ -7,7 +7,8 @@ from pathlib import Path
 from watchdog.observers import Observer
 
 from . import BASE_DIR, RUNNERS
-from .observer import Handler
+from .event_handler import Handler
+from .run import Runner
 
 # TODO: is there a better way?
 os.environ["PYTHONPATH"] = str(BASE_DIR / "py")
@@ -38,22 +39,25 @@ if not path.exists():
     sys.exit(1)
 
 
-if args.watch:
-    handler = Handler(patterns=[f"*{ext}" for ext in RUNNERS.keys()])
-    observer = Observer()
-    observer.schedule(handler, path, recursive=True)
-    observer.start()
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        if handler.thread and handler.thread.proc:
-            handler.thread.proc.terminate()
-    finally:
-        observer.stop()
-        observer.join()
-else:
-    if path.is_file():
-        ...  # TODO run day
+runner = Runner()
+try:
+    if args.watch:
+        handler = Handler(runner=runner, patterns=[f"*{ext}" for ext in RUNNERS.keys()])
+        observer = Observer()
+        observer.schedule(handler, path, recursive=True)
+        observer.start()
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            observer.stop()
+            observer.join()
     else:
-        ...  # TODO run all — if it's a year, just the year, otherwise all sub-years?
+        if path.is_file():
+            runner.run_file(path)
+        else:
+            runner.run_dir(path)
+except KeyboardInterrupt:
+    runner.cancel()
