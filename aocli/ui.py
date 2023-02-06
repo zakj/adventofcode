@@ -133,7 +133,6 @@ class Year(BaseUI):
 
     def complete(self, result, expected, duration):
         # TODO: handle extra parts
-        # cells[part].set(f"[red]Exception ×")
         success = "[green]✓" if result == expected else "[red]×"
         self.row.parts[self.current_part - 1].set(
             " ".join([format_duration(duration), success])

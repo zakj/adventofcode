@@ -5,32 +5,18 @@ import subprocess
 import tempfile
 import threading
 from contextlib import contextmanager
-from dataclasses import dataclass
 from itertools import groupby
 from pathlib import Path
 from typing import IO, Any, Iterable, NotRequired, TypedDict
 
-import tomllib
 from rich.console import Console
 
 from . import BASE_DIR, RUNNERS
+from .data import Input, load_data
 from .ui import Aside, Day, Year
 
 FILE_SEP = chr(28)
 RECORD_SEP = chr(30)
-
-
-@dataclass
-class Input:
-    answers: list
-    args: dict
-    input: str
-
-
-@dataclass
-class Data:
-    main: Input
-    examples: list[Input]
 
 
 class Wait:
@@ -41,20 +27,6 @@ class Message(TypedDict):
     result: Any
     duration: float
     aside: NotRequired[Aside]
-
-
-def get_data(year: str, day: str) -> Data:
-    with open(BASE_DIR / "data" / year / f"{day}.toml", "rb") as f:
-        data = tomllib.load(f)
-    main_data = data["main"]
-    main = Input(
-        main_data.get("answers", []), main_data.get("args", {}), main_data["input"]
-    )
-    examples = [
-        Input(ex.get("answers", []), ex.get("args", {}), ex["input"])
-        for ex in data.get("examples", [])
-    ]
-    return Data(main, examples)
 
 
 @contextmanager
@@ -143,7 +115,7 @@ class Runner:
                 for path in days:
                     day = path.stem.removeprefix("day")
                     ui.start_day(day)
-                    data = get_data(year, day)
+                    data = load_data(year, day)
                     args = [x.format(path) for x in RUNNERS[path.suffix].split()]
                     args.append(self.socket.getsockname())
                     self.run_parts(args, data.main, ui)
@@ -158,7 +130,7 @@ class Runner:
         year = path.parent.name
         day = path.stem.removeprefix("day")
 
-        data = get_data(year, day)
+        data = load_data(year, day)
         args = [x.format(path) for x in RUNNERS[path.suffix].split()]
         args.append(self.socket.getsockname())
         with Day(f"{year}/{day}.{path.suffix[1:]}") as self.ui:
