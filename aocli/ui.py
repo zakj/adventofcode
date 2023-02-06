@@ -75,7 +75,7 @@ class BaseUI:
         self.live.__enter__()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.live.__exit__(exc_type, exc_val, exc_tb)
 
     def start(self) -> None:
@@ -84,10 +84,13 @@ class BaseUI:
     def complete(self, result: Any, expected: Any, duration: float) -> None:
         raise NotImplementedError
 
-    def quit(self):
+    def error(self) -> None:
         raise NotImplementedError
 
-    def aside(self, aside: Aside):
+    def quit(self) -> None:
+        raise NotImplementedError
+
+    def aside(self, aside: Aside) -> None:
         return  # default to ignore
 
 
@@ -130,7 +133,6 @@ class Year(BaseUI):
 
     def complete(self, result, expected, duration):
         # TODO: handle extra parts
-        # TODO: handle exceptions somehow
         # cells[part].set(f"[red]Exception ×")
         success = "[green]✓" if result == expected else "[red]×"
         self.row.parts[self.current_part - 1].set(
@@ -140,6 +142,9 @@ class Year(BaseUI):
             self.stars += 1
             self.panel.subtitle = f"[bright_yellow]{self.stars}*"
 
+    def error(self):
+        self.row.parts[self.current_part - 1].set("[red]Error ×")
+
 
 class Day(BaseUI):
     current_part: int
@@ -147,14 +152,13 @@ class Day(BaseUI):
     asides: Group
     failed: bool
     panel: Panel
-    row: PartRow | None
+    row: PartRow
     table: Table
 
     def __init__(self, title: str):
         self.current_part = 0
         self.examples_running = False
         self.failed = False
-        self.row = None
         self.table = self.make_table()
         self.panel = Panel.fit("", title=title, title_align="left")
         self.asides = Group()
@@ -204,6 +208,10 @@ class Day(BaseUI):
             self.failed = True
         self.row.result.set(format_result(result, expected))
         self.row.duration.set(format_duration(duration))
+
+    def error(self):
+        self.row.result.set("[red]Error")
+        self.row.duration.set("[red]×")
 
     def aside(self, aside: Aside):
         # TODO: how to handle extras when there are examples? aoc.py needs to

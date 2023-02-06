@@ -196,4 +196,6 @@ class Runner:
                 if "aside" in msg:
                     ui.aside(msg["aside"])
                 i += 1
+        if self.proc.wait() != 0:
+            ui.error()
         stdout.join()
