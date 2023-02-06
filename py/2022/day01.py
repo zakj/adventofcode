@@ -1,4 +1,4 @@
-from aoc import load, solve
+from aoc import main
 
 
 def parse(input: str):
@@ -10,8 +10,8 @@ def total_calories(elves: list[list[int]]) -> list[int]:
     return [sum(elf) for elf in elves]
 
 
-parts = solve(
-    lambda s: max(total_calories(parse(s))),
-    lambda s: sum(sorted(total_calories(parse(s)))[-3:]),
-    expect=(71023, 206289),
-)
+if __name__ == "__main__":
+    main(
+        lambda s: max(total_calories(parse(s))),
+        lambda s: sum(sorted(total_calories(parse(s)))[-3:]),
+    )

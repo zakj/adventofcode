@@ -1,4 +1,4 @@
-from aoc import solve
+from aoc import main
 
 
 def parse(s: str) -> list[int]:
@@ -19,8 +19,8 @@ def decrypt_coordinates(data: list[int], key: int = 1, iterations: int = 1) -> i
     return sum(values[indexes[(zero + n) % length]] for n in [1000, 2000, 3000])
 
 
-parts = solve(
-    lambda s: decrypt_coordinates(parse(s)),
-    lambda s: decrypt_coordinates(parse(s), key=811589153, iterations=10),
-    expect=(8721, 831878881825),
-)
+if __name__ == "__main__":
+    main(
+        lambda s: decrypt_coordinates(parse(s)),
+        lambda s: decrypt_coordinates(parse(s), key=811589153, iterations=10),
+    )
