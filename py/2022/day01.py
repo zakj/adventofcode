@@ -1,9 +1,5 @@
 from aoc import main
-
-
-def parse(input: str):
-    # TODO: factor out paragraphs helper
-    return [[int(n) for n in chunk.splitlines()] for chunk in input.split("\n\n")]
+from parse import paras
 
 
 def total_calories(elves: list[list[int]]) -> list[int]:
@@ -12,6 +8,6 @@ def total_calories(elves: list[list[int]]) -> list[int]:
 
 if __name__ == "__main__":
     main(
-        lambda s: max(total_calories(parse(s))),
-        lambda s: sum(sorted(total_calories(parse(s)))[-3:]),
+        lambda s: max(total_calories(paras(s, int))),
+        lambda s: sum(sorted(total_calories(paras(s, int)))[-3:]),
     )
