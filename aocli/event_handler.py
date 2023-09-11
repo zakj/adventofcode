@@ -22,9 +22,7 @@ class Handler(PatternMatchingEventHandler):
         self.thread = None
         super().__init__(*args, **kwargs)
 
-    def on_created_or_modified(
-        self, event: FileCreatedEvent | FileModifiedEvent
-    ) -> None:
+    def on_modified(self, event: FileCreatedEvent | FileModifiedEvent) -> None:
         # Debounce.
         prev_src, prev_time = self.prev
         now = time.time()
@@ -46,6 +44,3 @@ class Handler(PatternMatchingEventHandler):
             target=lambda: self.runner.run_file(Path(event.src_path))
         )
         self.thread.start()
-
-    on_created = on_created_or_modified
-    on_modified = on_created_or_modified
