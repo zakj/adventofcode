@@ -1,6 +1,6 @@
 *.cpuprofile
 .DS_Store
-.pdm.toml
+.pdm-python
 .session
 .stignore
 .venv
@@ -8,3 +8,4 @@
 __pycache__
 node_modules
 pdm.lock
+tmp
