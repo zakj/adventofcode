@@ -27,14 +27,11 @@ def parse(input: str) -> list[Valve]:
 
 # https://en.wikipedia.org/wiki/Floyd–Warshall_algorithm
 def floyd_warshall(valves: list[Valve]) -> dict[tuple[str, str], int]:
-    all_names = [name for (name, *_) in valves]
     distance = defaultdict[tuple[str, str], int](lambda: sys.maxsize)
-    flow: dict[str, int] = {}
-    for name, rate, tunnels in valves:
-        if rate > 0:
-            flow[name] = rate
+    for name, _, tunnels in valves:
         for dst in tunnels:
             distance[name, dst] = 1
+    all_names = [name for (name, *_) in valves]
     for k, i, j in itertools.product(all_names, all_names, all_names):
         distance[i, j] = min(distance[i, j], distance[i, k] + distance[k, j])
     return distance
