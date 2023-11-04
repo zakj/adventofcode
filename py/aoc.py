@@ -2,8 +2,6 @@ import cProfile
 import inspect
 import json
 import pstats
-import socket
-import struct
 import sys
 import time
 from collections.abc import Callable
@@ -74,28 +72,32 @@ def main(*fns: Callable[..., Any], profile: int = -1):
             for fn in fns:
                 print(fn(input, **args))
         else:
-            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            sock.connect(sys.argv[1])
-            sock.send(struct.pack(">H", len(fns)))
-            for input, args in files:
-                for i, fn in enumerate(fns):
-                    sig = inspect.signature(fn)
-                    kwargs = {k: v for k, v in args.items() if k in sig.parameters}
-                    response = {}
-                    prof = None
-                    if profile == i:
-                        prof = cProfile.Profile()
-                        start = time.perf_counter()
-                        prof.enable()
-                        response["result"] = fn(input, **kwargs)
-                        prof.disable()
-                        response["duration"] = time.perf_counter() - start
-                        response["aside"] = create_profile_table(prof, _find_day_file())
-                    else:
-                        start = time.perf_counter()
-                        response["result"] = fn(input, **kwargs)
-                        response["duration"] = time.perf_counter() - start
-                    msg = bytes(json.dumps(response, cls=ResultsEncoder), "utf8")
-                    sock.send(struct.pack(">H", len(msg)) + msg)
+            with open(sys.argv[1], "w") as pipe:
+                for input, args in files:
+                    for i, fn in enumerate(fns):
+                        sig = inspect.signature(fn)
+                        kwargs = {k: v for k, v in args.items() if k in sig.parameters}
+                        response = {}
+                        prof = None
+                        if profile == i:
+                            prof = cProfile.Profile()
+                            start = time.perf_counter()
+                            prof.enable()
+                            response["answer"] = fn(input, **kwargs)
+                            prof.disable()
+                            response["duration"] = time.perf_counter() - start
+                            response["aside"] = create_profile_table(
+                                prof, _find_day_file()
+                            )
+                        else:
+                            start = time.perf_counter()
+                            # TODO: catch and handle exceptions here so we don't abort the whole run
+                            response["answer"] = fn(input, **kwargs)
+                            response["duration"] = time.perf_counter() - start
+                        print(
+                            json.dumps(response, cls=ResultsEncoder),
+                            file=pipe,
+                            flush=True,
+                        )
     except KeyboardInterrupt:
         pass

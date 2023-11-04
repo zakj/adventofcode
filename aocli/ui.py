@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import NamedTuple, TypedDict
+from typing import Any, NamedTuple, TypedDict
 
 from rich import box
 from rich.columns import Columns
@@ -18,29 +18,10 @@ class Aside(TypedDict):
     rows: list[list[str]]
 
 
-@dataclass
-class R:
-    renderable: RenderableType
-
-    def __rich_console__(self, console, options) -> RenderResult:
-        yield self.renderable
-
-    def __rich_measure__(self, console, options) -> Measurement:
-        return Measurement.get(console, options, self.renderable)
-
-    def set(self, value: RenderableType) -> None:
-        self.renderable = value
-
-
-class DayRow(NamedTuple):
-    day: str
-    parts: list[R]
-
-
-class PartRow(NamedTuple):
-    part: str
-    result: R
-    duration: R
+class DayRun(NamedTuple):
+    result: str
+    duration: str
+    is_correct: bool
 
 
 def format_duration(seconds: float):
@@ -65,20 +46,23 @@ def format_result(result, expected):
     )
 
 
-from typing import Any
-
-
 class BaseUI:
     live: Live
+    done: bool
+
+    def __init__(self) -> None:
+        self.live = Live(self, refresh_per_second=8)
+        self.done = False
 
     def __enter__(self):
         self.live.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.done = True
         self.live.__exit__(exc_type, exc_val, exc_tb)
 
-    def start(self) -> None:
+    def __rich__(self):
         raise NotImplementedError
 
     def complete(self, result: Any, expected: Any, duration: float) -> None:
@@ -95,86 +79,101 @@ class BaseUI:
 
 
 class Year(BaseUI):
-    current_part: int
-    panel: Panel
-    row: DayRow
     stars: int
-    table: Table
+    title: str
+    days: list[tuple[str, list[str]]]
 
     def __init__(self, title: str):
-        self.table = Table.grid(padding=(0, 2))
-        self.table.add_column("Day")
-        self.table.add_column("Part 1", justify="right")
-        self.table.add_column("Part 2", justify="right")
-        self.panel = Panel.fit(
-            "",
-            title=f"[bright_white italic]{title}",
-            title_align="left",
-            subtitle_align="right",
-            border_style="dim",
-        )
+        super().__init__()
         self.stars = 0
-        self.live = Live(self.panel, refresh_per_second=8)
+        self.title = title
+        self.days = []
+
+    def __rich__(self):
+        table = Table(box=box.ROUNDED, show_header=False)
+        table.add_column("Day")
+        table.add_column("Part 1", justify="right")
+        table.add_column("Part 2", justify="right")
+
+        for day, parts in self.days:
+            table.add_row(f"Day {day}", *parts)
+        table.add_section()
+        table.add_row(
+            f"[bright_white italic]{self.title}", "", f"[bright_yellow]{self.stars}*"
+        )
+        return table
 
     def start_day(self, day: str):
-        self.panel.renderable = self.table  # Prevent flash of wide panel.
-        # TODO: skipped days? or maybe just leave it because we have star count
-        # only one part cell for day 25
-        parts = [R("[dim]-"), R("[dim]-")]
-        if day == 25:
-            parts = parts[:1]
-        self.row = DayRow(f"Day {day}", parts)
-        self.table.add_row(self.row.day, *self.row.parts)
-        self.current_part = 0
-
-    def start(self):
-        self.current_part += 1
-        self.row.parts[self.current_part - 1].set(Spinner("line"))
+        self.days.append((day, []))
 
     def complete(self, result, expected, duration):
-        # TODO: handle extra parts
+        _, parts = self.days[-1]
         success = "[green]✓" if result == expected else "[red]×"
-        self.row.parts[self.current_part - 1].set(
-            " ".join([format_duration(duration), success])
-        )
+        parts.append(" ".join([format_duration(duration), success]))
         if result == expected:
+            # TODO: set to 50 at 49, since day 25 only has one part?
             self.stars += 1
-            self.panel.subtitle = f"[bright_yellow]{self.stars}*"
 
     def error(self):
-        self.row.parts[self.current_part - 1].set("[red]Error ×")
+        _, parts = self.days[-1]
+        parts.append("[red]Error ×")
 
 
 class Day(BaseUI):
-    current_part: int
+    title: str
     examples_running: bool
-    asides: Group
-    failed: bool
-    panel: Panel
-    row: PartRow
-    table: Table
+    example_runs: list[DayRun]
+    runs: list[DayRun]
+    killed: bool
 
     def __init__(self, title: str):
-        self.current_part = 0
+        super().__init__()
+        self.asides = Group()  # TODO
+
+        self.title = title
         self.examples_running = False
-        self.failed = False
-        self.table = self.make_table()
-        self.panel = Panel.fit("", title=title, title_align="left")
-        self.asides = Group()
-        self.live = Live(Columns([self.panel, self.asides]), refresh_per_second=8)
+        # TODO: just keep them all in one list with an is_example?
+        self.example_runs = []
+        self.runs = []
+        self.killed = False
 
-    def quit(self):
-        self.panel.border_style = "dim"
-        if self.row:
-            self.row.result.set("[dim red]KILLED")
-        self.live.refresh()
-
-    def make_table(self) -> Table:
+    # TODO: cache repeated runs?
+    def __rich__(self):
         table = Table.grid(padding=(0, 1))
         table.add_column("Part")
         table.add_column("Result", min_width=3)
         table.add_column("Time", min_width=8, justify="right")
-        return table
+
+        # Don't show examples if they're finished and they all succeeded. If
+        # any of them failed, show them all with a dim rule between sections.
+        any_example_failed = any(not r.is_correct for r in self.example_runs)
+        if self.examples_running or any_example_failed:
+            for row in self.example_runs:
+                table.add_row("", row.result, row.duration)
+            if any_example_failed and not self.examples_running:
+                table.add_row(*[Rule(style="dim")] * 3)
+
+        # Main output.
+        for i, row in enumerate(self.runs):
+            table.add_row(f"{i + 1}:", row.result, row.duration)
+
+        # Loading spinner, showing the part number when appropriate.
+        if not self.done:
+            if self.examples_running:
+                table.add_row(Spinner("line"))
+            else:
+                table.add_row(f"{len(self.runs) + 1}:", Spinner("line"))
+
+        # We quit an in-progress run to start a new one sometimes.
+        panel = Panel.fit(table, title=self.title, title_align="left")
+        if self.killed:
+            table.add_row("", "[dim red]KILLED")
+            panel.border_style = "dim"
+
+        return Columns([panel, self.asides])
+
+    def quit(self):
+        self.killed = True
 
     @property
     @contextmanager
@@ -182,35 +181,25 @@ class Day(BaseUI):
         self.examples_running = True
         yield
         self.examples_running = False
-        if self.current_part > 0:
-            self.current_part = 0
-            if self.failed:
-                self.table.add_row(*[Rule(style="dim")] * 3)
-            else:
-                # Clear successful example output.
-                self.panel.renderable = ""
-                self.table = self.make_table()
-
-    def start(self):
-        self.current_part += 1
-        self.panel.renderable = self.table  # Prevent flash of wide panel.
-        self.row = PartRow(
-            f"{self.current_part}:" if not self.examples_running else "",
-            R(Spinner("line")),
-            R(""),
-        )
-        self.table.add_row(*self.row)
 
     def complete(self, result, expected, duration):
-        assert self.row is not None
-        if result != expected:
-            self.failed = True
-        self.row.result.set(format_result(result, expected))
-        self.row.duration.set(format_duration(duration))
+        (self.example_runs if self.examples_running else self.runs).append(
+            DayRun(
+                format_result(result, expected),
+                format_duration(duration),
+                result == expected,
+            )
+        )
 
     def error(self):
-        self.row.result.set("[red]Error")
-        self.row.duration.set("[red]×")
+        # TODO DRY
+        (self.example_runs if self.examples_running else self.runs).append(
+            DayRun(
+                "[red]Error",
+                "[red]×",
+                False,
+            )
+        )
 
     def aside(self, aside: Aside):
         # TODO: how to handle extras when there are examples? aoc.py needs to
@@ -218,6 +207,6 @@ class Day(BaseUI):
         table = Table(*aside["header"], box=box.ROUNDED)
         for row in aside["rows"]:
             table.add_row(*row)
-        if self.row and isinstance(self.row.duration.renderable, str):
-            self.row.duration.renderable += " [bright_white]→"
+        # if self.row and isinstance(self.row.duration.renderable, str):
+        #     self.row.duration.renderable += " [bright_white]→"
         self.asides.renderables.append(table)

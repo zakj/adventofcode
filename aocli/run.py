@@ -1,6 +1,5 @@
 import json
-import socket
-import struct
+import os
 import subprocess
 import tempfile
 import threading
@@ -19,12 +18,9 @@ FILE_SEP = chr(28)
 RECORD_SEP = chr(30)
 
 
-class Wait:
-    pass  # sentinel
-
-
+# TODO: we could have aside be its own message. and add a status message for live-updating
 class Message(TypedDict):
-    result: Any
+    answer: Any
     duration: float
     aside: NotRequired[Aside]
 
@@ -59,14 +55,11 @@ class Runner:
         self._cancel = threading.Lock()
         self.proc = None
         self.tempdir = tempfile.TemporaryDirectory(prefix="aocli-")
-        self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.socket.settimeout(0.5)
-        self.socket.bind(self.tempdir.name + "/sock")
-        self.socket.listen()
+        self.pipe = Path(self.tempdir.name) / "pipe"
+        os.mkfifo(self.pipe)
         self.ui = None
 
     def __del__(self):
-        self.socket.close()
         self.tempdir.cleanup()
 
     def cancel(self):
@@ -80,32 +73,10 @@ class Runner:
     def resume(self):
         self._cancel.release()
 
-    def messages(self) -> Iterable[Message | type[Wait]]:
-        sock = None
-        while sock is None:
-            try:
-                sock, _ = self.socket.accept()
-            except TimeoutError:
-                # TODO: if we timeout too many times, it means the script isn't talking
-                # to us; we should bail
-                if self._cancel.locked():
-                    return
-
-        def recv_length() -> int:
-            response = sock.recv(2)
-            if len(response) != 2:
-                return 0
-            return struct.unpack(">H", response)[0]
-
-        # TODO: handle that one day where we are decrypting something and want to show status messages
-        msgcount = recv_length()
-        for _ in range(msgcount):
-            yield Wait
-            size = recv_length()
-            if size == 0:
-                return
-            yield json.loads(sock.recv(size))
-        sock.close()
+    def messages(self) -> Iterable[Message]:
+        with open(self.pipe, "r") as f:
+            for line in f:
+                yield json.loads(line)
 
     def run_dir(self, path: Path) -> None:
         files = [f for suffix in RUNNERS.keys() for f in path.rglob(f"day??{suffix}")]
@@ -117,7 +88,7 @@ class Runner:
                     ui.start_day(day)
                     data = load_data(year, day)
                     args = [x.format(path) for x in RUNNERS[path.suffix].split()]
-                    args.append(self.socket.getsockname())
+                    args.append(str(self.pipe))
                     self.run_parts(args, data.main, ui)
 
     def run_file(self, path: Path) -> None:
@@ -132,7 +103,7 @@ class Runner:
 
         data = load_data(year, day)
         args = [x.format(path) for x in RUNNERS[path.suffix].split()]
-        args.append(self.socket.getsockname())
+        args.append(str(self.pipe))
         with Day(f"{year}/{day}.{path.suffix[1:]}") as self.ui:
             with self.ui.examples:
                 for example in data.examples:
@@ -157,17 +128,14 @@ class Runner:
         stdout = StdoutThread(self.proc.stdout, ui.live.console)
         stdout.start()
 
-        i = 0
+        answers = iter(input.answers)
         for msg in self.messages():
-            if msg == Wait:
-                ui.start()
-            else:
-                assert isinstance(msg, dict)  # for type system
-                expected = input.answers[i] if i < len(input.answers) else None
-                ui.complete(msg["result"], expected, msg["duration"])
-                if "aside" in msg:
-                    ui.aside(msg["aside"])
-                i += 1
+            if "answer" in msg and "duration" in msg:
+                expected = next(answers, None)
+                ui.complete(msg["answer"], expected, msg["duration"])
+            if "aside" in msg:
+                ui.aside(msg["aside"])
+
         if self.proc.wait() != 0:
             ui.error()
         stdout.join()
