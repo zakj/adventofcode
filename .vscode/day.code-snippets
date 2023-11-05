@@ -1,0 +1,42 @@
+{
+  "New day typescript": {
+    "scope": "typescript",
+    "prefix": "nday",
+    "body": [
+      "import { example, load, solve } from 'lib/advent';",
+      "",
+      "function parse(lines: string[]) {",
+      "  return lines;",
+      "}",
+      "",
+      "$0",
+      "",
+      "const exampleData = '';",
+      "example.equal(1, 1);",
+      "",
+      "const data = load().raw;",
+      "console.log(data);",
+      "export default solve(",
+      "  () => 0,",
+      "  () => 0",
+      ").expect();"
+    ],
+    "description": "Generate a new day file"
+  },
+  "New day python": {
+    "scope": "python",
+    "prefix": "nday",
+    "body": [
+      "from aoc import main",
+      "",
+      "$0",
+      "",
+      "if __name__ == \"__main__\":",
+      "    main(",
+      "        lambda s: print(s),",
+      "        lambda s: None,",
+      "    )"
+    ],
+    "description": "Generate a new day file"
+  }
+}

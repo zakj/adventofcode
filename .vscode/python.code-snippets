@@ -1,0 +1,8 @@
+{
+  "Pretty-print variable": {
+    "scope": "python",
+    "prefix": "pp",
+    "body": ["print(f\"{$1=}$2\")$0"],
+    "description": "Print variable and its name"
+  }
+}
