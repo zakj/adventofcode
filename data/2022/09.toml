@@ -1,5 +1,5 @@
 [[examples]]
-answers = [13, 36]
+answers = [13, 1]
 input = '''
 R 4
 U 4

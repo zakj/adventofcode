@@ -16,6 +16,10 @@ class Dir(Enum):
     E = (1, 0)
     S = (0, 1)
     W = (-1, 0)
+    U = (0, -1)
+    R = (1, 0)
+    D = (0, 1)
+    L = (-1, 0)
 
 
 class Dir8(Enum):
