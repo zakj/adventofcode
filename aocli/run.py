@@ -6,7 +6,8 @@ import threading
 from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
-from typing import IO, Any, Iterable, NotRequired, TypedDict
+from queue import Empty, Queue
+from typing import IO, Any, Literal, NotRequired, TypeAlias, TypedDict
 
 from rich.console import Console
 
@@ -19,10 +20,14 @@ RECORD_SEP = chr(30)
 
 
 # TODO: we could have aside be its own message. and add a status message for live-updating
-class Message(TypedDict):
+class ResultMessage(TypedDict):
     answer: Any
     duration: float
     aside: NotRequired[Aside]
+
+
+# TODO: better sentinel for a completed pipe
+Message: TypeAlias = ResultMessage | Literal[False]
 
 
 @contextmanager
@@ -50,6 +55,22 @@ class StdoutThread(threading.Thread):
             self.console.print(line.rstrip())
 
 
+class PipeThread(threading.Thread):
+    path: str
+    queue: Queue[Message]
+
+    def __init__(self, path: str, queue: Queue[Message]) -> None:
+        self.path = path
+        self.queue = queue
+        super().__init__()
+
+    def run(self) -> None:
+        with open(self.path, "r") as f:
+            for line in f:
+                self.queue.put(json.loads(line))
+        self.queue.put(False)
+
+
 class Runner:
     def __init__(self):
         self._cancel = threading.Lock()
@@ -72,11 +93,6 @@ class Runner:
 
     def resume(self):
         self._cancel.release()
-
-    def messages(self) -> Iterable[Message]:
-        with open(self.pipe, "r") as f:
-            for line in f:
-                yield json.loads(line)
 
     def run_dir(self, path: Path) -> None:
         files = [f for suffix in RUNNERS.keys() for f in path.rglob(f"day??{suffix}")]
@@ -128,13 +144,24 @@ class Runner:
         stdout = StdoutThread(self.proc.stdout, ui.live.console)
         stdout.start()
 
+        queue: Queue[Message] = Queue()
+        pipe = PipeThread(str(self.pipe), queue)
+        pipe.start()
+
         answers = iter(input.answers)
-        for msg in self.messages():
+        while self.proc.poll() is None or not queue.empty():
+            try:
+                msg = queue.get(timeout=0.2)
+            except Empty:
+                continue
+            if msg is False:
+                break
             if "answer" in msg and "duration" in msg:
                 expected = next(answers, None)
                 ui.complete(msg["answer"], expected, msg["duration"])
             if "aside" in msg:
                 ui.aside(msg["aside"])
+            queue.task_done()
 
         if self.proc.wait() != 0:
             ui.error()
