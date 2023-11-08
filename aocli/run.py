@@ -1,3 +1,4 @@
+import enum
 import json
 import os
 import subprocess
@@ -7,7 +8,7 @@ from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
 from queue import Empty, Queue
-from typing import IO, Any, Literal, NotRequired, TypeAlias, TypedDict
+from typing import IO, Any, NotRequired, TypeAlias, TypedDict
 
 from rich.console import Console
 
@@ -26,8 +27,11 @@ class ResultMessage(TypedDict):
     aside: NotRequired[Aside]
 
 
-# TODO: better sentinel for a completed pipe
-Message: TypeAlias = ResultMessage | Literal[False]
+class Sentinel(enum.Enum):
+    COMPLETE = object()
+
+
+Message: TypeAlias = ResultMessage | Sentinel
 
 
 @contextmanager
@@ -68,7 +72,7 @@ class PipeThread(threading.Thread):
         with open(self.path, "r") as f:
             for line in f:
                 self.queue.put(json.loads(line))
-        self.queue.put(False)
+        self.queue.put(Sentinel.COMPLETE)
 
 
 class Runner:
@@ -154,7 +158,7 @@ class Runner:
                 msg = queue.get(timeout=0.2)
             except Empty:
                 continue
-            if msg is False:
+            if msg is Sentinel.COMPLETE:
                 break
             if "answer" in msg and "duration" in msg:
                 expected = next(answers, None)
