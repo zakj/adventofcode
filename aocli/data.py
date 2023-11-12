@@ -1,8 +1,8 @@
+import os
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.request import Request, urlopen
-
-import tomllib
 
 from . import BASE_DIR
 
@@ -38,6 +38,7 @@ def load_data(year: str, day: str) -> Data:
 
 
 def write_data_skeleton(path: Path, input: str):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         f.write("[main]\n")
         f.write("answers = []\n")
