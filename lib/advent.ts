@@ -1,8 +1,9 @@
 import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
-import { readFileSync } from 'fs';
+import fs, { readFileSync } from 'fs';
 import { zip } from 'lib/util';
 import { dirname, resolve } from 'path';
+import { performance } from 'perf_hooks';
 
 type Input = {
   raw: string;
@@ -110,6 +111,25 @@ export function solve(...fns: SolverFn[]): Solver {
       return fns.map((f, i) => [f, expected[i]] as [SolverFn, SolverResult]);
     },
   };
+}
+
+export function main(...fns: ((input: string) => unknown)[]) {
+  process.stdin.on('data', (input) => {
+    if (process.argv.length > 2) {
+      const pipe = fs.createWriteStream(process.argv[2]);
+
+      // TODO support for multiple inputs, arguments
+      for (const fn of fns) {
+        const start = performance.now();
+        const answer = fn(input.toString());
+        const duration = (performance.now() - start) / 1000;
+        pipe.write(JSON.stringify({ type: 'result', answer, duration }) + '\n');
+      }
+    } else {
+      // TODO
+      for (const fn of fns) console.log(fn(input.toString()));
+    }
+  });
 }
 
 const assertHandler: ProxyHandler<typeof assert> = {
