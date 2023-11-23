@@ -1,6 +1,22 @@
 import crypto from 'crypto';
 import util from 'util';
 
+export function allNumbers(s: string): number[] {
+  return [...s.matchAll(/[-+]?\d+/g)].map(Number);
+}
+
+export function lines(s: string): string[] {
+  return s.trim().split('\n');
+}
+
+export function paragraphs(s: string): string[][] {
+  return s
+    .trimEnd()
+    .split('\n\n')
+    .filter(Boolean)
+    .map((p) => p.split('\n'));
+}
+
 export function cartesianProduct<T>(...arrays: T[][]): T[][] {
   return arrays.reduce(
     (acc, arr) => acc.flatMap((xs) => arr.map((x) => [...xs, x])),

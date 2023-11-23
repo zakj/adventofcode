@@ -1,0 +1,6 @@
+[main]
+answers = [900, 1216]
+input = '''
+Hit Points: 51
+Damage: 9
+'''

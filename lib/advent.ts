@@ -113,21 +113,23 @@ export function solve(...fns: SolverFn[]): Solver {
   };
 }
 
-export function main(...fns: ((input: string) => unknown)[]) {
-  process.stdin.on('data', (input) => {
+export function main(
+  ...fns: ((input: string, args: Record<string, unknown>) => unknown)[]
+) {
+  // TODO support for multiple inputs
+  process.stdin.on('data', (data) => {
+    const [input, ...extra] = data.toString().split(String.fromCharCode(30));
+    const args = JSON.parse(extra[0] ?? '{}');
     if (process.argv.length > 2) {
       const pipe = fs.createWriteStream(process.argv[2]);
-
-      // TODO support for multiple inputs, arguments
       for (const fn of fns) {
         const start = performance.now();
-        const answer = fn(input.toString());
+        const answer = fn(input, args);
         const duration = (performance.now() - start) / 1000;
         pipe.write(JSON.stringify({ type: 'result', answer, duration }) + '\n');
       }
     } else {
-      // TODO
-      for (const fn of fns) console.log(fn(input.toString()));
+      for (const fn of fns) console.log(fn(input, args));
     }
   });
 }
