@@ -1,5 +1,5 @@
 import { example, load, solve } from 'lib/advent';
-import { distance, PointMap, PointSet } from 'lib/coords';
+import { PointMap, PointSet, distance } from 'lib/coords';
 import { iter } from 'lib/iter';
 
 type Input = { sensors: PointMap<number>; beacons: PointSet };
@@ -25,7 +25,7 @@ function rangeOverlaps(a: Range, b: Range): boolean {
 function unionRanges(ranges: [number, number][]): [number, number][] {
   const sorted = ranges.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   const union = [];
-  let last = union[union.length - 1];
+  let last: [number, number];
   for (const [start, end] of sorted) {
     if (last && last[1] >= start - 1) {
       last[1] = Math.max(last[1], end);
@@ -37,7 +37,6 @@ function unionRanges(ranges: [number, number][]): [number, number][] {
   return union;
 }
 
-// TODO: optimize
 function noBeaconCount({ sensors, beacons }: Input, targetY: number) {
   const ranges = iter(sensors.entries())
     .filter(([sensor, d]) =>
@@ -59,6 +58,7 @@ function noBeaconCount({ sensors, beacons }: Input, targetY: number) {
   return noBeacon.sum() - objects.size;
 }
 
+// TODO: optimize
 function tuningFrequency({ sensors, beacons }: Input, space: number) {
   const ranges = Array(space + 1)
     .fill(null)

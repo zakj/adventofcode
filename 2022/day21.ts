@@ -44,6 +44,7 @@ function makeString(
   return `(${aVal} ${opStr} ${bVal})`;
 }
 
+// TODO: clean up
 function part2(monkeys: Map<string, string | number>, start = 'root'): number {
   const val = monkeys.get(start);
   if (typeof val === 'number') throw new Error();
@@ -57,19 +58,18 @@ function part2(monkeys: Map<string, string | number>, start = 'root'): number {
   let lowBound = Number.MIN_SAFE_INTEGER;
   let highBound = Number.MAX_SAFE_INTEGER;
 
+  // TODO: reuse part1 instead of eval?
   const checkPos = eval(test.replace('humn', '1'));
   const checkNeg = eval(test.replace('humn', '-1'));
   const invert = checkPos < checkNeg;
   const isTooHigh = (check: number): boolean =>
     invert ? check < goalVal : check > goalVal;
-  console.log({ test, goal });
   for (;;) {
     const humn = Math.floor((highBound + lowBound) / 2);
     const check = eval(test);
     if (check === goalVal) return humn;
     if (isTooHigh(check)) highBound = humn;
     else lowBound = humn;
-    if (lowBound >= highBound) throw new Error();
   }
 
   return 0;

@@ -1,10 +1,6 @@
 import { example, load, solve } from 'lib/advent';
 import { sum } from 'lib/util';
 
-function parse(lines: string[]) {
-  return lines;
-}
-
 const snafu = {
   '2': 2,
   '1': 1,
