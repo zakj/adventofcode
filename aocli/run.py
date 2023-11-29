@@ -1,37 +1,22 @@
-import enum
 import json
-import os
 import subprocess
 import tempfile
 import threading
 from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
-from queue import Empty, Queue
-from typing import IO, Any, NotRequired, TypeAlias, TypedDict
+from queue import Empty, SimpleQueue
+from typing import IO
 
 from rich.console import Console
 
 from . import BASE_DIR, RUNNERS
 from .data import Input, load_data
-from .ui import Aside, Day, Year
+from .ui import Day, Year
+from .websocket import WS_URL, Message
 
 FILE_SEP = chr(28)
 RECORD_SEP = chr(30)
-
-
-# TODO: we could have aside be its own message. and add a status message for live-updating
-class ResultMessage(TypedDict):
-    answer: Any
-    duration: float
-    aside: NotRequired[Aside]
-
-
-class Sentinel(enum.Enum):
-    COMPLETE = object()
-
-
-Message: TypeAlias = ResultMessage | Sentinel
 
 
 @contextmanager
@@ -50,123 +35,93 @@ class StdoutThread(threading.Thread):
     console: Console
 
     def __init__(self, fd: IO[str], console: Console):
+        super().__init__()
         self.fd = fd
         self.console = console
-        super().__init__()
 
     def run(self):
         for line in self.fd:
             self.console.print(line.rstrip())
 
 
-class PipeThread(threading.Thread):
-    path: str
-    queue: Queue[Message]
-
-    def __init__(self, path: str, queue: Queue[Message]) -> None:
-        self.path = path
-        self.queue = queue
-        super().__init__()
-
-    def run(self) -> None:
-        with open(self.path, "r") as f:
-            for line in f:
-                self.queue.put(json.loads(line))
-        self.queue.put(Sentinel.COMPLETE)
+def most_recently_modified(path: Path) -> Path:
+    if not path.name.startswith("day"):
+        days = BASE_DIR.rglob(f"day*{path.suffix}")
+        return max(days, key=lambda f: f.stat().st_ctime)
+    return path
 
 
 class Runner:
-    def __init__(self):
-        self._cancel = threading.Lock()
+    message_queue: SimpleQueue[Message]
+    proc: subprocess.Popen | None
+    running: threading.Lock
+
+    def __init__(self, message_queue: SimpleQueue[Message]) -> None:
+        self.message_queue = message_queue
         self.proc = None
-        self.tempdir = tempfile.TemporaryDirectory(prefix="aocli-")
-        self.pipe = Path(self.tempdir.name) / "pipe"
-        os.mkfifo(self.pipe)
-        self.ui = None
+        self.running = threading.Lock()
 
-    def __del__(self):
-        self.tempdir.cleanup()
-
-    def cancel(self):
-        self._cancel.acquire()
-        if self.ui:
-            self.ui.quit()
-        if self.proc and self.proc.poll() is None:
-            self.proc.terminate()
-            self.proc.wait()
-
-    def resume(self):
-        self._cancel.release()
-
-    def run_dir(self, path: Path) -> None:
-        files = [f for suffix in RUNNERS.keys() for f in path.rglob(f"day??{suffix}")]
-        files.sort()
-        for year, days in groupby(files, lambda f: f.parent.name):
-            with Year(year) as ui:
-                for path in days:
-                    day = path.stem.removeprefix("day")
-                    ui.start_day(day)
-                    data = load_data(year, day)
-                    args = [x.format(path) for x in RUNNERS[path.suffix].split()]
-                    args.append(str(self.pipe))
-                    self.run_parts(args, data.main, ui)
-
-    def run_file(self, path: Path) -> None:
-        if path.suffix not in RUNNERS:
-            raise ValueError(f"unknown file extension: {path.suffix}")
-        if not path.name.startswith("day"):
-            days = BASE_DIR.rglob(f"day*{path.suffix}")
-            path = max(days, key=lambda f: f.stat().st_ctime)
-
-        year = path.parent.name
-        day = path.stem.removeprefix("day")
-
-        data = load_data(year, day)
-        args = [x.format(path) for x in RUNNERS[path.suffix].split()]
-        args.append(str(self.pipe))
-        with Day(f"{year}/{day}.{path.suffix[1:]}") as self.ui:
-            with self.ui.examples:
-                for example in data.examples:
-                    self.run_parts(args, example, self.ui)
-            self.run_parts(args, data.main, self.ui)
-        self.ui = None
-
-    # TODO: take list of inputs, maybe with example flag?
-    def run_parts(self, args: list[str], input: Input, ui: Day | Year):
-        with input_fd(input) as stdin:
-            if not self._cancel.acquire(blocking=False):
+    def run(self, filename: str) -> None:
+        if not self.running.acquire(blocking=False):
+            if self.proc:
+                self.proc.terminate()
+                self.proc.wait()
+            if not self.running.acquire(timeout=0.2):
+                # Unexpected lock holder. This can happen if multiple different files
+                # are all saved at once, best to just abandon this attempt.
+                # TODO: debugging feedback? better concurrency model?
                 return
-            self.proc = subprocess.Popen(
+
+        path = Path(filename).resolve()
+        if path.is_file():
+            path = most_recently_modified(path)
+            data = load_data(path)
+            with Day(path) as ui:
+                with ui.examples:
+                    for example in data.examples:
+                        self.spawn(path, ui, example)
+                self.spawn(path, ui, data.main)
+        elif path.is_dir():
+            files = sorted(
+                f for suffix in RUNNERS.keys() for f in path.rglob(f"day??{suffix}")
+            )
+            for year, days in groupby(files, lambda f: f.parent.name):
+                with Year(year) as ui:
+                    # TODO: what if we try to cancel here?
+                    for path in days:
+                        ui.start_day(path.stem.removeprefix("day"))
+                        data = load_data(path)
+                        self.spawn(path, ui, data.main)
+        self.running.release()
+
+    def spawn(self, path: Path, ui: Day | Year, input: Input) -> None:
+        args = [x.format(path) for x in RUNNERS[path.suffix].split()] + [WS_URL]
+        with input_fd(input) as stdin:
+            self.proc = proc = subprocess.Popen(
                 args,
                 stdin=stdin,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
             )
-            self._cancel.release()
-        assert self.proc.stdout is not None  # for type system
-        stdout = StdoutThread(self.proc.stdout, ui.live.console)
+        assert proc.stdout is not None  # for type system
+        stdout = StdoutThread(proc.stdout, ui.live.console)
         stdout.start()
 
-        queue: Queue[Message] = Queue()
-        pipe = PipeThread(str(self.pipe), queue)
-        pipe.start()
-
         answers = iter(input.answers)
-        while self.proc.poll() is None or not queue.empty():
+        while proc.poll() is None or not self.message_queue.empty():
             try:
-                msg = queue.get(timeout=0.2)
+                msg = self.message_queue.get(timeout=0.2)
             except Empty:
                 continue
-            if msg is Sentinel.COMPLETE:
+            if "complete" in msg:
                 break
-            if "answer" in msg and "duration" in msg:
+            if "answer" in msg:
                 expected = next(answers, None)
                 ui.complete(msg["answer"], expected, msg["duration"])
             if "aside" in msg:
                 ui.aside(msg["aside"])
-            queue.task_done()
 
-        if self.proc.wait() != 0:
+        if proc.wait() != 0:
             ui.error()
         stdout.join()

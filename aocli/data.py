@@ -20,7 +20,9 @@ class Data:
     examples: list[Input]
 
 
-def load_data(year: str, day: str) -> Data:
+def load_data(path: Path) -> Data:
+    year = path.parent.name
+    day = path.stem.removeprefix("day")
     data_file = BASE_DIR / "data" / year / f"{day}.toml"
     if not data_file.exists():
         write_data_skeleton(data_file, fetch_input(year, day))

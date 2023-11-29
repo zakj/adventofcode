@@ -1,12 +1,7 @@
 import threading
 import time
-from pathlib import Path
 
-from watchdog.events import (
-    FileCreatedEvent,
-    FileModifiedEvent,
-    PatternMatchingEventHandler,
-)
+from watchdog.events import FileModifiedEvent, PatternMatchingEventHandler
 
 from .run import Runner
 
@@ -14,15 +9,13 @@ from .run import Runner
 class Handler(PatternMatchingEventHandler):
     runner: Runner
     prev: tuple[str, float]
-    thread: threading.Thread | None
 
     def __init__(self, *args, runner: Runner, **kwargs):
         self.runner = runner
         self.prev = ("", 0)
-        self.thread = None
         super().__init__(*args, **kwargs)
 
-    def on_modified(self, event: FileCreatedEvent | FileModifiedEvent) -> None:
+    def on_modified(self, event: FileModifiedEvent) -> None:
         # Debounce.
         prev_src, prev_time = self.prev
         now = time.time()
@@ -30,17 +23,7 @@ class Handler(PatternMatchingEventHandler):
             return
         self.prev = (event.src_path, now)
 
-        # Cancel any existing run.
-        if self.thread and self.thread.is_alive():
-            self.runner.cancel()
-            self.thread.join()
-            self.runner.resume()
-
-        # Newline between subsequent runs.
+        # Newline between subsequent runs. TODO: this is not the right place for this.
         if prev_src:
             print()
-
-        self.thread = threading.Thread(
-            target=lambda: self.runner.run_file(Path(event.src_path))
-        )
-        self.thread.start()
+        threading.Thread(target=self.runner.run, args=[event.src_path]).start()

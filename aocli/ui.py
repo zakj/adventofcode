@@ -1,21 +1,17 @@
 from contextlib import contextmanager
-from dataclasses import dataclass
-from typing import Any, NamedTuple, TypedDict
+from pathlib import Path
+from typing import Any, NamedTuple
 
 from rich import box
 from rich.columns import Columns
-from rich.console import Group, RenderableType, RenderResult
+from rich.console import Group
 from rich.live import Live
-from rich.measure import Measurement
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.spinner import Spinner
 from rich.table import Table
 
-
-class Aside(TypedDict):
-    header: list[str]
-    rows: list[list[str]]
+from .websocket import Aside
 
 
 class DayRun(NamedTuple):
@@ -83,10 +79,10 @@ class Year(BaseUI):
     title: str
     days: list[tuple[str, list[str]]]
 
-    def __init__(self, title: str):
+    def __init__(self, year: str):
         super().__init__()
         self.stars = 0
-        self.title = title
+        self.title = year
         self.days = []
 
     def __rich__(self):
@@ -111,8 +107,10 @@ class Year(BaseUI):
         success = "[green]✓" if result == expected else "[red]×"
         parts.append(" ".join([format_duration(duration), success]))
         if result == expected:
-            # TODO: set to 50 at 49, since day 25 only has one part?
             self.stars += 1
+            # Day 25 only has one part, the last star is free.
+            if self.stars == 49:
+                self.stars = 50
 
     def error(self):
         _, parts = self.days[-1]
@@ -126,11 +124,11 @@ class Day(BaseUI):
     runs: list[DayRun]
     killed: bool
 
-    def __init__(self, title: str):
+    def __init__(self, path: Path):
         super().__init__()
         self.asides = Group()  # TODO
 
-        self.title = title
+        self.title = "/".join(path.parts[-2:])
         self.examples_running = False
         # TODO: just keep them all in one list with an is_example?
         self.example_runs = []

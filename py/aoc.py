@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from websockets.sync.client import connect
 
 FILE_SEP = chr(28)
 RECORD_SEP = chr(30)
@@ -72,7 +73,7 @@ def main(*fns: Callable[..., Any], profile: int = -1):
             for fn in fns:
                 print(fn(input, **args))
         else:
-            with open(sys.argv[1], "w") as pipe:
+            with connect(sys.argv[1]) as websocket:
                 for input, args in files:
                     for i, fn in enumerate(fns):
                         sig = inspect.signature(fn)
@@ -94,10 +95,6 @@ def main(*fns: Callable[..., Any], profile: int = -1):
                             # TODO: catch and handle exceptions here so we don't abort the whole run
                             response["answer"] = fn(input, **kwargs)
                             response["duration"] = time.perf_counter() - start
-                        print(
-                            json.dumps(response, cls=ResultsEncoder),
-                            file=pipe,
-                            flush=True,
-                        )
+                        websocket.send(json.dumps(response, cls=ResultsEncoder))
     except KeyboardInterrupt:
         pass
