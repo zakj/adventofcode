@@ -1,9 +1,10 @@
 import { strict as assert } from 'assert';
 import { execSync } from 'child_process';
-import fs, { readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import { zip } from 'lib/util';
 import { dirname, resolve } from 'path';
 import { performance } from 'perf_hooks';
+import WebSocket from 'ws';
 
 type Input = {
   raw: string;
@@ -121,13 +122,16 @@ export function main(
     const [input, ...extra] = data.toString().split(String.fromCharCode(30));
     const args = JSON.parse(extra[0] ?? '{}');
     if (process.argv.length > 2) {
-      const pipe = fs.createWriteStream(process.argv[2]);
-      for (const fn of fns) {
-        const start = performance.now();
-        const answer = fn(input, args);
-        const duration = (performance.now() - start) / 1000;
-        pipe.write(JSON.stringify({ type: 'result', answer, duration }) + '\n');
-      }
+      const ws = new WebSocket(process.argv[2]);
+      ws.on('open', () => {
+        for (const fn of fns) {
+          const start = performance.now();
+          const answer = fn(input, args);
+          const duration = (performance.now() - start) / 1000;
+          ws.send(JSON.stringify({ type: 'result', answer, duration }));
+        }
+        ws.close();
+      });
     } else {
       for (const fn of fns) console.log(fn(input, args));
     }
