@@ -23,7 +23,4 @@ class Handler(PatternMatchingEventHandler):
             return
         self.prev = (event.src_path, now)
 
-        # Newline between subsequent runs. TODO: this is not the right place for this.
-        if prev_src:
-            print()
         threading.Thread(target=self.runner.run, args=[event.src_path]).start()

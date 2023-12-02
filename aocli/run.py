@@ -72,6 +72,10 @@ class Runner:
                 # TODO: debugging feedback? better concurrency model?
                 return
 
+        # Newline between runs.
+        if self.proc:
+            print()
+
         path = Path(filename).resolve()
         if path.is_file():
             path = most_recently_modified(path)
