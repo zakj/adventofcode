@@ -79,7 +79,12 @@ class Runner:
         path = Path(filename).resolve()
         if path.is_file():
             path = most_recently_modified(path)
-            data = load_data(path)
+            try:
+                data = load_data(path)
+            except Exception as err:
+                print("unable to fetch data:", err)
+                self.running.release()
+                return
             with Day(path) as ui:
                 with ui.examples:
                     for example in data.examples:
