@@ -14,12 +14,14 @@
   },
   "devDependencies": {
     "@types/node": "^17.0.45",
+    "@types/ws": "^8.5.10",
     "@zakj/eslint-config": "^2.0.0",
     "@zakj/prettier-config": "^2.0.0",
     "eslint": "^8.19.0",
     "onchange": "^7.1.0",
     "prettier": "^2.7.1",
     "ts-node": "^10.8.2",
-    "tsconfig-paths": "^4.0.0"
+    "tsconfig-paths": "^4.0.0",
+    "ws": "^8.14.2"
   }
 }
