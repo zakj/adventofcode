@@ -1,46 +1,39 @@
-from aoc import main
-from functools import reduce
 import math
+import re
 from dataclasses import dataclass
+from functools import reduce
+
+from aoc import main
+from parse import all_numbers
 
 
 @dataclass
 class Game:
     id: int
-    grabs: list[dict[str, int]]
+    most: dict[str, int]
 
 
 def parse(s: str) -> list[Game]:
     games = []
+    color_re = re.compile(r"red|green|blue")
     for line in s.splitlines():
-        [game, rest] = line.split(": ")
-        [_, id] = game.split(" ")
-        bags = []
-        for s in rest.split("; "):
-            bag = {}
-            for item in s.split(", "):
-                [n, c] = item.split(" ")
-                bag[c] = int(n)
-            bags.append(bag)
-        games.append(Game(int(id), bags))
+        nums = all_numbers(line)
+        colors = color_re.findall(line)
+        id = int(nums.pop(0))
+        most = {"red": 0, "green": 0, "blue": 0}
+        for num, color in zip(nums, colors):
+            most[color] = max(most[color], num)
+        games.append(Game(id, most))
     return games
 
 
 def is_valid_game(game: Game) -> bool:
     max = {"red": 12, "green": 13, "blue": 14}
-    for grab in game.grabs:
-        for c, n in grab.items():
-            if n > max[c]:
-                return False
-    return True
+    return all(n <= max[c] for c, n in game.most.items())
 
 
 def cubes_power(game: Game) -> int:
-    mins = {}
-    for grab in game.grabs:
-        for c, n in grab.items():
-            mins[c] = max(mins.get(c, 0), n)
-    return math.prod(mins.values())
+    return math.prod(game.most.values())
 
 
 if __name__ == "__main__":
