@@ -20,13 +20,11 @@ def parse(s: str) -> list[Card]:
     return cards
 
 
-def points(cards: list[Card]) -> int:
-    tot = 0
-    for card in cards:
-        wins = len(card.winning & card.held)
-        if wins:
-            tot += 2 ** (wins - 1)
-    return tot
+def points(card: Card) -> int:
+    wins = len(card.winning & card.held)
+    if wins:
+        return 2 ** (wins - 1)
+    return 0
 
 
 def total_cards(cards: list[Card]) -> int:
@@ -40,6 +38,6 @@ def total_cards(cards: list[Card]) -> int:
 
 if __name__ == "__main__":
     main(
-        lambda s: points(parse(s)),
+        lambda s: sum(points(c) for c in parse(s)),
         lambda s: total_cards(parse(s)),
     )
