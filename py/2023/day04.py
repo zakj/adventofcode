@@ -1,43 +1,45 @@
 import re
+from dataclasses import dataclass
 
 from aoc import main
 from parse import all_numbers
 
 
-def parse(s: str):
-    tot = 0
+@dataclass
+class Card:
+    winning: set[int]
+    held: set[int]
+    copies: int = 1
+
+
+def parse(s: str) -> list[Card]:
+    cards = []
     for line in s.splitlines():
-        [card, winning, held] = re.split(r"[:|]", line)
-        winning = all_numbers(winning)
-        held = all_numbers(held)
-        overlap = set(winning) & set(held)
-        if overlap:
-            tot += 2 ** (len(overlap) - 1)
+        [_, winning, held] = re.split(r"[:|]", line)
+        cards.append(Card(set(all_numbers(winning)), set(all_numbers(held))))
+    return cards
+
+
+def points(cards: list[Card]) -> int:
+    tot = 0
+    for card in cards:
+        wins = len(card.winning & card.held)
+        if wins:
+            tot += 2 ** (wins - 1)
     return tot
 
 
-def parse2(s: str):
-    tot = 0
-    cards = []
-    for line in s.splitlines():
-        [card, winning, held] = re.split(r"[:|]", line)
-        card = all_numbers(card)[0]
-        winning = set(all_numbers(winning))
-        held = set(all_numbers(held))
-        cards.append([card, winning, held, 1])
-    print(f"{cards=}")
-    for i, (card, winning, held, copies) in enumerate(cards):
-        wins = len(winning & held)
-        print(f"{wins=}")
-        for j in range(wins):
-            if i + j + 1 > len(cards) - 1:
-                break
-            cards[i + j + 1][3] += copies
-    return sum(copies for [*_, copies] in cards)
+def total_cards(cards: list[Card]) -> int:
+    for i, card in enumerate(cards):
+        wins = len(card.winning & card.held)
+        start = i + 1
+        for j in range(start, min(start + wins, len(cards))):
+            cards[j].copies += card.copies
+    return sum(c.copies for c in cards)
 
 
 if __name__ == "__main__":
     main(
-        lambda s: parse(s),
-        lambda s: parse2(s),
+        lambda s: points(parse(s)),
+        lambda s: total_cards(parse(s)),
     )
