@@ -4,10 +4,13 @@ import re
 from aoc import main
 from coords import Point
 
+Symbols = dict[Point, str]
+Numbers = list[tuple[int, set[Point]]]
 
-def parse(s: str):
-    symbols: dict[Point, str] = {}
-    numbers: list[tuple[int, set[Point]]] = []
+
+def parse(s: str) -> tuple[Symbols, Numbers]:
+    symbols: Symbols = {}
+    numbers: Numbers = []
 
     for y, line in enumerate(s.splitlines()):
         for match in re.finditer(r"[^.\d]", line):
@@ -22,21 +25,21 @@ def parse(s: str):
     return symbols, numbers
 
 
-def part1(symbols, numbers) -> int:
-    return sum(v for v, adj in numbers if adj & symbols.keys())
+def part_numbers(symbols: Symbols, numbers: Numbers) -> list[int]:
+    return [v for v, adj in numbers if adj & symbols.keys()]
 
 
-def part2(symbols, numbers) -> int:
-    tot = 0
+def gear_ratios(symbols: Symbols, numbers: Numbers) -> list[int]:
+    ratios = []
     for p in [p for p, c in symbols.items() if c == "*"]:
         parts = [value for value, adj in numbers if p in adj]
         if len(parts) == 2:
-            tot += math.prod(parts)
-    return tot
+            ratios.append(math.prod(parts))
+    return ratios
 
 
 if __name__ == "__main__":
     main(
-        lambda s: part1(*parse(s)),
-        lambda s: part2(*parse(s)),
+        lambda s: sum(part_numbers(*parse(s))),
+        lambda s: sum(gear_ratios(*parse(s))),
     )
