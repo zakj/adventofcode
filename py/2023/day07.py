@@ -3,7 +3,6 @@ from enum import IntEnum, auto
 from typing import Callable
 
 from aoc import main
-from parse import all_numbers
 
 VALUES = "23456789TJQKA"
 VALUES_JOKERS = "23456789TQKA"
@@ -40,12 +39,14 @@ def hand_value(hand):
 
 
 def hand_value_jokers(hand):
-    best = -1
-    for c in VALUES_JOKERS:
-        cc = hand[0].replace("J", c)
-        best = max(best, hand_value((cc, 1))[0])
-    cards = [VALUES_JOKERS.find(c) for c in hand[0]]
-    return (best, cards)
+    cards = hand[0]
+    most_common = Counter(c for c in cards if c != "J").most_common()
+    if most_common:
+        value = hand_value((cards.replace("J", most_common[0][0]), 1))[0]
+    else:
+        value = Value.FIVE_OF_A_KIND
+    cards = [VALUES_JOKERS.find(c) for c in cards]
+    return (value, cards)
 
 
 # TODO: more specific typing for sortkey?
@@ -53,7 +54,7 @@ def winnings(s: str, sortkey: Callable):
     hands = []
     for line in s.splitlines():
         cards = line[:5]
-        bid = all_numbers(line[5:])[0]
+        bid = int(line[5:])
         hands.append((cards, bid))
     hands.sort(key=sortkey)
     return sum(rank * bid for rank, (_, bid) in enumerate(hands, start=1))
