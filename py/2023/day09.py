@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from functools import reduce
 
 from aoc import main
 from parse import all_numbers
@@ -24,10 +25,7 @@ def next_val(history: History) -> int:
 
 
 def prev_val(history: History) -> int:
-    prev = history[-1][0]
-    for diffs in reversed(history[:-1]):
-        prev = diffs[0] - prev
-    return prev
+    return reduce(lambda a, b: b - a, reversed([h[0] for h in history]))
 
 
 if __name__ == "__main__":
