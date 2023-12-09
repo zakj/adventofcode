@@ -1,43 +1,37 @@
+from collections.abc import Generator
+
 from aoc import main
 from parse import all_numbers
 
+History = list[list[int]]
 
-def parse(s: str) -> int:
-    tot = 0
+
+def histories(s: str) -> Generator[History, None, None]:
     for line in s.splitlines():
-        nums = [all_numbers(line)]
-        while any(n != 0 for n in nums[-1]):
-            prev = nums[-1][0]
+        history = [all_numbers(line)]
+        while any(n != 0 for n in history[-1]):
             diffs = []
-            for n in nums[-1][1:]:
+            prev = history[-1][0]
+            for n in history[-1][1:]:
                 diffs.append(n - prev)
                 prev = n
-            nums.append(diffs)
-        tot += sum([line[-1] for line in nums])
-    return tot
+            history.append(diffs)
+        yield history
 
 
-def part2(s: str) -> int:
-    tot = 0
-    for line in s.splitlines():
-        nums = [all_numbers(line)]
-        while any(n != 0 for n in nums[-1]):
-            prev = nums[-1][0]
-            diffs = []
-            for n in nums[-1][1:]:
-                diffs.append(n - prev)
-                prev = n
-            nums.append(diffs)
+def next_val(history: History) -> int:
+    return sum([diffs[-1] for diffs in history])
 
-        prev = nums[-1][0]
-        for line in reversed(nums[:-1]):
-            prev = line[0] - prev
-        tot += prev
-    return tot
+
+def prev_val(history: History) -> int:
+    prev = history[-1][0]
+    for diffs in reversed(history[:-1]):
+        prev = diffs[0] - prev
+    return prev
 
 
 if __name__ == "__main__":
     main(
-        lambda s: parse(s),
-        lambda s: part2(s),
+        lambda s: sum(next_val(h) for h in histories(s)),
+        lambda s: sum(prev_val(h) for h in histories(s)),
     )
