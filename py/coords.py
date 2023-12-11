@@ -38,6 +38,14 @@ def mdist(a: Point, b: Point):
     return abs(ax - bx) + abs(ay - by)
 
 
+def addp(a: Point, b: Point) -> Point:
+    return a[0] + b[0], a[1] + b[1]
+
+
+def subp(a: Point, b: Point) -> Point:
+    return a[0] - b[0], a[1] - b[1]
+
+
 def turn_right(p: Point) -> Point:
     x, y = p
     return -y, x
