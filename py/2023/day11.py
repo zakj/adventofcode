@@ -1,4 +1,4 @@
-from itertools import combinations, takewhile
+from itertools import combinations
 
 from aoc import main
 from coords import Point, mdist
@@ -7,22 +7,15 @@ from coords import Point, mdist
 def space(s: str) -> tuple[list[Point], list[int], list[int]]:
     lines = s.splitlines()
     galaxies = []
-    empty_rows = []
-    empty_cols = []
-
     for y, line in enumerate(lines):
-        if "#" not in line:
-            empty_rows.append(y)
-        else:
-            for x, c in enumerate(line):
-                if c == "#":
-                    galaxies.append((x, y))
+        for x, c in enumerate(line):
+            if c == "#":
+                galaxies.append((x, y))
 
-    rotated = ["".join(x).strip() for x in zip(*reversed(lines))]
-    for i, col in enumerate(rotated):
-        if "#" not in col:
-            empty_cols.append(i)
-
+    gal_rows = set(y for _, y in galaxies)
+    gal_cols = set(x for x, _ in galaxies)
+    empty_rows = [r for r in range(len(lines)) if r not in gal_rows]
+    empty_cols = [c for c in range(len(lines[0])) if c not in gal_cols]
     return galaxies, empty_rows, empty_cols
 
 
@@ -30,10 +23,11 @@ def galaxy_distance(s: str, expand: int) -> int:
     galaxies, empty_rows, empty_cols = space(s)
 
     expanded_galaxies = []
+    expand -= 1
     for x, y in galaxies:
-        left = len(list(takewhile(lambda c: c < x, empty_cols)))
-        top = len(list(takewhile(lambda r: r < y, empty_rows)))
-        expanded_galaxies.append((x + left * (expand - 1), y + top * (expand - 1)))
+        left = len([c for c in empty_cols if c < x]) * expand
+        top = len([r for r in empty_rows if r < y]) * expand
+        expanded_galaxies.append((x + left, y + top))
 
     return sum(mdist(a, b) for a, b in combinations(expanded_galaxies, 2))
 
