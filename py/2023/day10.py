@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 from aoc import main
 from coords import Dir, Point, subp
 from graph import Graph, shortest_path_lengths_from
@@ -47,18 +49,19 @@ def farthest_from_start(G: Graph, start: Point) -> int:
     return max(d for _, d in shortest_path_lengths_from(G, start))
 
 
+def ray_northwest(x: int, y: int) -> Iterable[Point]:
+    while x > 0 and y > 0:
+        x -= 1
+        y -= 1
+        yield (x, y)
+
+
 def enclosed(G: Graph, start: Point) -> int:
     loop = set(n for n, _ in shortest_path_lengths_from(G, start))
+    valid_crossings = set(n for n in loop if G.nodes[n]["label"] not in "7L")
     enclosed = 0
-    for x, y in G.nodes:
-        if (x, y) in loop:
-            continue
-        crossings = 0
-        while x >= 0 and y >= 0:
-            x -= 1
-            y -= 1
-            if (x, y) in loop and G.nodes[x, y]["label"] not in "7L":
-                crossings += 1
+    for x, y in set(G.nodes) - loop:
+        crossings = sum(1 for n in ray_northwest(x, y) if n in valid_crossings)
         if crossings % 2 == 1:
             enclosed += 1
     return enclosed
