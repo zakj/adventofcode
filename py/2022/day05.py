@@ -2,6 +2,7 @@ import re
 
 from aoc import main
 from parse import paras
+from util import rotate_cw
 
 Stacks = dict[int, list[str]]
 Instruction = tuple[int, ...]
@@ -9,7 +10,7 @@ Instruction = tuple[int, ...]
 
 def parse(s: str) -> tuple[Stacks, list[Instruction]]:
     drawing, instructions_str = paras(s)
-    rotated = ["".join(x).strip() for x in zip(*reversed(drawing))]
+    rotated = rotate_cw(drawing)
     stacks = {int(x[0]): list(x[1:]) for x in rotated if re.match(r"[0-9]", x)}
     instructions = [
         tuple(int(x) for x in re.findall(r"\d+", line)) for line in instructions_str

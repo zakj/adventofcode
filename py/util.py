@@ -1,4 +1,5 @@
 import collections
+from collections.abc import Sequence
 from itertools import islice
 from typing import Iterable, TypeVar
 
@@ -29,3 +30,15 @@ def mod(x: int, mod: int, min: int = 0) -> int:
     """x % mod, but shifted to account for a min value. Handles negatives."""
     n = mod - min
     return (x + n - min) % n + min
+
+
+def rotate_cw(lines: Sequence[str]) -> list[str]:
+    return ["".join(x).strip() for x in zip(*reversed(lines))]
+
+
+def rotate_ccw(lines: Sequence[str]) -> list[str]:
+    return list(reversed(["".join(x).strip() for x in zip(*lines)]))
+
+
+def flip_rows_cols(lines: Sequence[str]) -> list[str]:
+    return ["".join(x).strip() for x in zip(*lines)]
