@@ -1,69 +1,47 @@
 from aoc import main
-from util import rotate_cw
+
+Map = list[list[str]]
 
 
-def part1(s: str) -> int:
-    map = [list(line) for line in s.splitlines()]
-    for y, line in enumerate(map):
-        for x, c in enumerate(line):
-            ny = y - 1
-            if c != "O":
-                continue
-            while ny >= 0 and map[ny][x] == ".":
-                map[ny][x] = "O"
-                map[ny + 1][x] = "."
-                ny -= 1
-    total = 0
-    for y, line in enumerate(map):
-        total += (len(map) - y) * sum(1 for c in line if c == "O")
-    return total
+def weight(map: Map) -> int:
+    return sum((len(map) - y) * line.count("O") for y, line in enumerate(map))
 
 
-def spin(map: list[list[str]]) -> list[list[str]]:
-    for y, line in enumerate(map):
-        for x, c in enumerate(line):
-            ny = y - 1
-            if c != "O":
-                continue
-            while ny >= 0 and map[ny][x] == ".":
-                map[ny][x] = "O"
-                map[ny + 1][x] = "."
-                ny -= 1
+def tilt(map: Map) -> Map:
+    for x in range(len(map[0])):
+        top = -1
+        for y, line in enumerate(map):
+            c = line[x]
+            if c == "#":
+                top = y
+            elif c == "O":
+                top += 1
+                if top < y:
+                    map[top][x] = "O"
+                    line[x] = "."
     return map
 
 
-def spin_cycle(s: str) -> int:
-    # if len(s) > 500:
-    #     return 0
+# TODO: try storing map as two sets of rolling/block points
+def spin_cycle(s: str, goal=1_000_000_000) -> int:
     map = [list(line) for line in s.splitlines()]
 
-    def hash(map: list[list[str]]) -> str:
-        return "\n".join("".join(line) for line in map)
-
     seen = {}
-    goal = 1_000_000_000
     for i in range(1, goal):
-        map = spin(map)
-        map = [list(line) for line in rotate_cw(["".join(line) for line in map])]
-        map = spin(map)
-        map = [list(line) for line in rotate_cw(["".join(line) for line in map])]
-        map = spin(map)
-        map = [list(line) for line in rotate_cw(["".join(line) for line in map])]
-        map = spin(map)
-        map = [list(line) for line in rotate_cw(["".join(line) for line in map])]
-        hh = hash(map)
-        if hh in seen and (goal - i) % (i - seen[hh]) == 0:
+        for _ in range(4):
+            map = tilt(map)
+            map = [list(line) for line in zip(*reversed(map))]
+        hash = "".join("".join(line) for line in map)
+        if hash in seen and (goal - i) % (i - seen[hash]) == 0:
             break
-        seen[hh] = i
+        seen[hash] = i
 
-    total = 0
-    for y, line in enumerate(map):
-        total += (len(map) - y) * sum(1 for c in line if c == "O")
-    return total
+    return weight(map)
 
 
 if __name__ == "__main__":
     main(
-        lambda s: part1(s),
+        lambda s: weight(tilt([list(line) for line in s.splitlines()])),
         lambda s: spin_cycle(s),
+        # profile=1,
     )
