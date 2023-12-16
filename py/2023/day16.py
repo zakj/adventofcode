@@ -1,86 +1,94 @@
+from collections import deque
+
 from aoc import main
-from coords import Dir, Point, addp
+from coords import Point, addp
+
+
+# TODO consider factoring this out into parse.py, it's more broadly useful
+class Grid:
+    height: int
+    width: int
+
+    def __init__(self, s: str) -> None:
+        lines = s.splitlines()
+        self.data = {
+            (x, y): c for y, line in enumerate(lines) for x, c in enumerate(line)
+        }
+        self.height = len(lines)
+        self.width = len(lines[0])
+
+    def __repr__(self) -> str:
+        items = "".join(sorted(set(self.data.values())))
+        return f'Grid(width={self.width}, height={self.height}, items="{items}")'
+
+    def __getitem__(self, name: Point) -> str:
+        return self.data[name]
+
+    def __setitem__(self, name: Point, value: str) -> None:
+        self.data[name] = value
+
+    def get(self, name: Point, default: str | None = None) -> str | None:
+        return self.data.get(name)
+
+
+# TODO: not using coords.Dir, because Enum.__hash__ is slow. maybe just put this into coords instead?
+class Dir:
+    N = (0, -1)
+    E = (1, 0)
+    S = (0, 1)
+    W = (-1, 0)
+
+
+REFLECTORS: dict[str, dict[Point, Point]] = {
+    "/": {Dir.E: Dir.N, Dir.N: Dir.E, Dir.W: Dir.S, Dir.S: Dir.W},
+    "\\": {Dir.E: Dir.S, Dir.N: Dir.W, Dir.W: Dir.N, Dir.S: Dir.E},
+}
+SPLITTERS: dict[str, set[Point]] = {
+    "-": {Dir.E, Dir.W},
+    "|": {Dir.N, Dir.S},
+}
 
 
 def part1(s: str) -> int:
-    cur, dir = (0, 0), Dir.E
-    lines = s.splitlines()
-    seen: set[tuple[Point, Dir]] = set()
-    energized = {cur} | walk(lines, cur, dir, seen)
-    return len(energized)
+    grid = Grid(s)
+    return walk(grid, (0, 0), Dir.E)
 
 
 def part2(s: str) -> int:
-    lines = s.splitlines()
+    grid = Grid(s)
     best = 0
-    for x in range(len(lines[0])):
-        cur, dir = (x, 0), Dir.S
-        seen: set[tuple[Point, Dir]] = set()
-        best = max(best, len({cur} | walk(lines, cur, dir, seen)))
-        cur, dir = (x, len(lines) - 1), Dir.N
-        seen: set[tuple[Point, Dir]] = set()
-        best = max(best, len({cur} | walk(lines, cur, dir, seen)))
-    for y in range(len(lines)):
-        cur, dir = (0, y), Dir.E
-        seen: set[tuple[Point, Dir]] = set()
-        best = max(best, len({cur} | walk(lines, cur, dir, seen)))
-        cur, dir = (len(lines[0]) - 1, y), Dir.W
-        seen: set[tuple[Point, Dir]] = set()
-        best = max(best, len({cur} | walk(lines, cur, dir, seen)))
+    for x in range(grid.width):
+        best = max(best, walk(grid, (x, 0), Dir.S))
+        best = max(best, walk(grid, (x, grid.height - 1), Dir.N))
+    for y in range(grid.height):
+        best = max(best, walk(grid, (0, y), Dir.E))
+        best = max(best, walk(grid, (grid.width - 1, y), Dir.W))
     return best
 
 
-def walk(
-    lines: list[str], cur: Point, dir: Dir, seen: set[tuple[Point, Dir]]
-) -> set[Point]:
-    height = len(lines)
-    width = len(lines[0])
-    energized = set()
-    while True:
-        x, y = cur
-        if (cur, dir) in seen:
-            return energized
-        seen.add((cur, dir))
-        if not (0 <= y < height and 0 <= x < width):
-            break
-        energized.add(cur)
-        c = lines[y][x]
-        if c == "/":
-            if dir == Dir.E:
-                cur, dir = addp(cur, Dir.N.value), Dir.N
-            elif dir == Dir.W:
-                cur, dir = addp(cur, Dir.S.value), Dir.S
-            elif dir == Dir.S:
-                cur, dir = addp(cur, Dir.W.value), Dir.W
-            elif dir == Dir.N:
-                cur, dir = addp(cur, Dir.E.value), Dir.E
-        if c == "\\":
-            if dir == Dir.E:
-                cur, dir = addp(cur, Dir.S.value), Dir.S
-            elif dir == Dir.W:
-                cur, dir = addp(cur, Dir.N.value), Dir.N
-            elif dir == Dir.S:
-                cur, dir = addp(cur, Dir.E.value), Dir.E
-            elif dir == Dir.N:
-                cur, dir = addp(cur, Dir.W.value), Dir.W
-        if c == "-":
-            if dir in [Dir.W, Dir.E]:
-                cur = addp(cur, dir.value)
-            else:
-                energized |= walk(lines, addp(cur, Dir.W.value), dir.W, seen)
-                energized |= walk(lines, addp(cur, Dir.E.value), dir.E, seen)
-                break
-        if c == "|":
-            if dir in [Dir.N, Dir.S]:
-                cur = addp(cur, dir.value)
-            else:
-                energized |= walk(lines, addp(cur, Dir.N.value), dir.N, seen)
-                energized |= walk(lines, addp(cur, Dir.S.value), dir.S, seen)
-                break
-        if c == ".":
-            cur = addp(cur, dir.value)
+def walk(grid: Grid, start: Point, dir: Point):
+    seen = set()
+    q: deque[tuple[Point, Point]] = deque([(start, dir)])
+    while q:
+        pos, dir = q.popleft()
+        if (pos, dir) in seen:
+            continue
+        c = grid.get(pos)
+        if c is None:
+            continue
 
-    return energized
+        seen.add((pos, dir))
+        if c in REFLECTORS:
+            dir = REFLECTORS[c][dir]
+            pos = addp(pos, dir)
+            q.append((pos, dir))
+        elif c in SPLITTERS:
+            one, two = SPLITTERS[c]
+            q.append((addp(pos, one), one))
+            q.append((addp(pos, two), two))
+        elif c == ".":
+            q.append((addp(pos, dir), dir))
+    return len(set(p for p, d in seen))
 
 
 if __name__ == "__main__":
