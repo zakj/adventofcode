@@ -49,24 +49,18 @@ SPLITTERS: dict[str, set[Point]] = {
 }
 
 
-def part1(s: str) -> int:
-    grid = Grid(s)
-    return walk(grid, (0, 0), Dir.E)
-
-
-def part2(s: str) -> int:
-    grid = Grid(s)
+def best_beam_start(grid: Grid) -> int:
     best = 0
     for x in range(grid.width):
-        best = max(best, walk(grid, (x, 0), Dir.S))
-        best = max(best, walk(grid, (x, grid.height - 1), Dir.N))
+        best = max(best, energize(grid, (x, 0), Dir.S))
+        best = max(best, energize(grid, (x, grid.height - 1), Dir.N))
     for y in range(grid.height):
-        best = max(best, walk(grid, (0, y), Dir.E))
-        best = max(best, walk(grid, (grid.width - 1, y), Dir.W))
+        best = max(best, energize(grid, (0, y), Dir.E))
+        best = max(best, energize(grid, (grid.width - 1, y), Dir.W))
     return best
 
 
-def walk(grid: Grid, start: Point, dir: Point):
+def energize(grid: Grid, start: Point, dir: Point) -> int:
     seen = set()
     q: deque[tuple[Point, Point]] = deque([(start, dir)])
     while q:
@@ -76,23 +70,22 @@ def walk(grid: Grid, start: Point, dir: Point):
         c = grid.get(pos)
         if c is None:
             continue
-
         seen.add((pos, dir))
         if c in REFLECTORS:
             dir = REFLECTORS[c][dir]
             pos = addp(pos, dir)
             q.append((pos, dir))
-        elif c in SPLITTERS:
+        elif c in SPLITTERS and dir not in SPLITTERS[c]:
             one, two = SPLITTERS[c]
             q.append((addp(pos, one), one))
             q.append((addp(pos, two), two))
-        elif c == ".":
+        else:
             q.append((addp(pos, dir), dir))
     return len(set(p for p, d in seen))
 
 
 if __name__ == "__main__":
     main(
-        lambda s: part1(s),
-        lambda s: part2(s),
+        lambda s: energize(Grid(s), (0, 0), Dir.E),
+        lambda s: best_beam_start(Grid(s)),
     )
