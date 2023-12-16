@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from math import prod
 
@@ -20,18 +21,19 @@ def initialize(s: str) -> int:
 
 def focus_lenses(s: str) -> int:
     sequence = s.replace("\n", "").split(",")
+    pattern = re.compile(r"(\w+)([=-])(\d?)")
     boxes: dict[int, list[tuple[str, str]]] = defaultdict(list)
     for step in sequence:
-        op = next(c for c in step if c in "-=")
-        values = step.split(op)
-        label = values.pop(0)
+        match = pattern.fullmatch(step)
+        assert match is not None
+        label, op, length = match.groups()
         box = boxes[hash(label)]
         if op == "-":
             i = next((i for i, (l, _) in enumerate(box) if l == label), None)
             if i is not None:
                 del box[i]
         elif op == "=":
-            lens = (label, values[0])
+            lens = (label, length)
             i = next((i for i, (l, _) in enumerate(box) if l == label), None)
             if i is not None:
                 box[i] = lens
