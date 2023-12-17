@@ -1,143 +1,125 @@
+from heapq import heappop, heappush
+from typing import Callable, Generic, Iterable, Iterator, TypeVar
+
 from aoc import main
 from coords import Point
 
+Vector = tuple[int, int]
+T = TypeVar("T")
 
-# XXX copied from 16
-class Grid:
+# heat, pos, last dir, count since turning
+State = tuple[int, Point, Vector, int]
+
+
+class Grid(Generic[T]):
     height: int
     width: int
 
-    def __init__(self, s: str) -> None:
+    def __init__(self, s: str, mapfn: Callable[[str], T] = str) -> None:
         lines = s.splitlines()
         self.data = {
-            (x, y): c for y, line in enumerate(lines) for x, c in enumerate(line)
+            (x, y): mapfn(c) for y, line in enumerate(lines) for x, c in enumerate(line)
         }
         self.height = len(lines)
         self.width = len(lines[0])
 
     def __repr__(self) -> str:
-        items = "".join(sorted(set(self.data.values())))
+        items = "".join(str(c) for c in sorted(set(self.data.values())))  # type: ignore
         return f'Grid(width={self.width}, height={self.height}, items="{items}")'
 
-    def __getitem__(self, name: Point) -> str:
-        return self.data[name]
+    def __getitem__(self, item: Point) -> T:
+        return self.data[item]
 
-    def __setitem__(self, name: Point, value: str) -> None:
-        self.data[name] = value
+    def __setitem__(self, item: Point, value: T) -> None:
+        self.data[item] = value
 
     def __contains__(self, item: Point) -> bool:
         return item in self.data
 
-    def get(self, name: Point, default: str | None = None) -> str | None:
-        return self.data.get(name)
+    def get(self, item: Point, default: T | None = None) -> T | None:
+        return self.data.get(item)
 
 
-# TODO: not using coords.Dir, because Enum.__hash__ is slow. maybe just put this into coords instead?
-class Dir:
-    N = (0, -1)
-    E = (1, 0)
-    S = (0, 1)
-    W = (-1, 0)
+class IterableClass(type, Generic[T]):
+    def classiter(self):
+        raise NotImplementedError
+
+    def __iter__(self) -> Iterator[T]:
+        return self.classiter()
 
 
-OPPOSITE: dict[Point, Point] = {
-    Dir.N: Dir.S,
-    Dir.S: Dir.N,
-    Dir.E: Dir.W,
-    Dir.W: Dir.E,
-}
+class Dir(metaclass=IterableClass[Vector]):
+    N: Vector = (0, -1)
+    E: Vector = (1, 0)
+    S: Vector = (0, 1)
+    W: Vector = (-1, 0)
 
-from collections import deque
-from heapq import heappop, heappush
+    @classmethod
+    def classiter(cls) -> Iterator[Vector]:
+        return iter([cls.N, cls.E, cls.S, cls.W])
 
-from coords import addp, mdist
+    @classmethod
+    def neighbors(cls, p: Point) -> Iterable[Point]:
+        x, y = p
+        for dx, dy in cls:
+            yield (x + dx, y + dy)
+
+    @classmethod
+    def add(cls, p: Point, d: Vector) -> Point:
+        return (p[0] + d[0], p[1] + d[1])
+
+    @classmethod
+    def turn_left(cls, d: Vector) -> Vector:
+        x, y = d
+        return (y, -x)
+
+    @classmethod
+    def turn_right(cls, d: Vector) -> Vector:
+        x, y = d
+        return (-y, x)
+
+    @classmethod
+    def reverse(cls, d: Vector) -> Vector:
+        x, y = d
+        return (-x, -y)
 
 
-def part1(s: str) -> int:
-    grid = Grid(s)
+def min_heat_loss(grid: Grid[int], max_dir=3, min_dir=0) -> int:
+    q: list[State] = [
+        (0, (0, 0), Dir.E, 0),
+        (0, (0, 0), Dir.S, 0),
+    ]
+    seen: set[tuple[Point, Point, int]] = set()
     goal = (grid.height - 1, grid.width - 1)
-    State = tuple[
-        int, Point, Point, int
-    ]  # heat, pos, previous dir, count in previous dir
-    start: State = (0, (0, 0), (0, 0), 0)
-    # q: deque[tuple[Point, list[Point], int]] = deque([start])
-    q: list[State] = [start]
-    distance: dict[tuple[Point, Point, int], int] = {}
-    best = 9999999999
     while q:
         heat, cur, dir, count = heappop(q)
-        # print(f"{cur=} {path=} {heat=}")
-        dirs: set[Point] = set([Dir.N, Dir.S, Dir.E, Dir.W])
-        if (cur, dir, count) in distance:
+        if cur == goal and count >= min_dir:
+            return heat
+        if (cur, dir, count) in seen:
             continue
-        distance[(cur, dir, count)] = heat
-        if count >= 3:
-            dirs.remove(dir)
-        if dir != (0, 0):
-            dirs.remove(OPPOSITE[dir])
-        for ndir in dirs:
-            neighbor = addp(cur, ndir)
+        seen.add((cur, dir, count))
+
+        for ndir in Dir:
+            if (
+                (dir == ndir and count >= max_dir)
+                or (dir != ndir and count < min_dir)
+                or ndir == Dir.reverse(dir)
+            ):
+                continue
+            neighbor = Dir.add(cur, ndir)
             if neighbor in grid:
-                heappush(
-                    q,
-                    (
-                        heat + int(grid[neighbor]),
-                        # mdist(neighbor, goal),
-                        neighbor,
-                        ndir,
-                        count + 1 if dir == ndir else 1,
-                    ),
+                state = (
+                    heat + grid[neighbor],
+                    neighbor,
+                    ndir,
+                    count + 1 if dir == ndir else 1,
                 )
-
-    for (cur, _, _), heat in distance.items():
-        if cur == goal:
-            best = min(best, heat)
-    return best
-
-
-def part2(s: str) -> int:
-    grid = Grid(s)
-    goal = (grid.height - 1, grid.width - 1)
-    State = tuple[
-        int, Point, Point, int
-    ]  # heat, pos, previous dir, count in previous dir
-    start: State = (0, (0, 0), (0, 0), 0)
-    q: list[State] = [start]
-    distance: dict[tuple[Point, Point, int], int] = {}
-    best = 9999999999
-    while q:
-        heat, cur, dir, count = heappop(q)
-        if (cur, dir, count) in distance and distance[cur, dir, count] < heat:
-            continue
-        distance[(cur, dir, count)] = heat
-        dirs: set[Point] = set([Dir.N, Dir.S, Dir.E, Dir.W])
-        if dir != (0, 0):
-            dirs.remove(OPPOSITE[dir])
-        if count < 4 and dir != (0, 0):
-            dirs = set([dir])
-        elif count >= 10:
-            dirs.remove(dir)
-        for ndir in dirs:
-            neighbor = addp(cur, ndir)
-            if neighbor in grid:
-                heappush(
-                    q,
-                    (
-                        heat + int(grid[neighbor]),
-                        neighbor,
-                        ndir,
-                        count + 1 if dir == ndir else 1,
-                    ),
-                )
-
-    for (cur, _, count), heat in distance.items():
-        if cur == goal and count >= 4:
-            best = min(best, heat)
-    return best
+                heappush(q, state)
+    return -1
 
 
 if __name__ == "__main__":
     main(
-        lambda s: part1(s),
-        lambda s: part2(s),
+        lambda s: min_heat_loss(Grid(s, int), max_dir=3),
+        lambda s: min_heat_loss(Grid(s, int), min_dir=4, max_dir=10),
     )
