@@ -2,31 +2,25 @@ from functools import cache, partial
 from typing import Callable
 
 from aoc import main
-from coords import Dir, Point, find_bounds
+from coords import Dir, Point
+from coords import VVector as Vector
+from coords import find_bounds
 from util import mod
 
-Blizzard = tuple[Point, Point]
-neighbors = [(0, 0)] + [d.value for d in Dir]
+Blizzard = tuple[Point, Vector]
 
 
 def parse(s: str) -> tuple[frozenset[Point], frozenset[Blizzard]]:
     walkable = set[Point]()
     blizzards = set[Blizzard]()
-    # TODO: add to coords? probably reusable
-    dir_map: dict[str, Dir] = {
-        "^": Dir.N,
-        ">": Dir.E,
-        "v": Dir.S,
-        "<": Dir.W,
-    }
-
+    dirs = {"^": Dir.N, ">": Dir.E, "v": Dir.S, "<": Dir.W}
     for y, line in enumerate(s.splitlines()):
         for x, c in enumerate(line):
             if c == "#":
                 continue
             walkable.add((x, y))
-            if dir := dir_map.get(c):
-                blizzards.add(((x, y), dir.value))
+            if dir := dirs.get(c):
+                blizzards.add(((x, y), dir))
     return frozenset(walkable), frozenset(blizzards)
 
 
@@ -38,9 +32,10 @@ def walk(
     t: int = 0,
 ):
     q: set[Point] = {start}
+    options = [(0, 0)] + list(Dir)
     while goal not in q:
         t += 1
-        q = {(px + dx, py + dy) for dx, dy in neighbors for px, py in q}
+        q = {(px + dx, py + dy) for dx, dy in options for px, py in q}
         q &= walkable - blizzards_at(t)
     return t
 

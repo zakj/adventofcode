@@ -14,19 +14,7 @@ VVector = tuple[int, int]  # TODO
 T = TypeVar("T")
 
 
-class Dir(Enum):
-    N = (0, -1)
-    E = (1, 0)
-    S = (0, 1)
-    W = (-1, 0)
-    U = (0, -1)
-    R = (1, 0)
-    D = (0, 1)
-    L = (-1, 0)
-
-
-# TODO replace Dir uses with this, and then rename
-class VDir(metaclass=IterableClass[VVector]):
+class Dir(metaclass=IterableClass[VVector]):
     N: VVector = (0, -1)
     E: VVector = (1, 0)
     S: VVector = (0, 1)
@@ -68,7 +56,7 @@ class Grid(Generic[T]):
 
 def neighbors(p: Point) -> Iterable[Point]:
     x, y = p
-    for dx, dy in VDir:
+    for dx, dy in Dir:
         yield (x + dx, y + dy)
 
 

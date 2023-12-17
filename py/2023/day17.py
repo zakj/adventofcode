@@ -1,8 +1,7 @@
 from heapq import heappop, heappush
 
 from aoc import main
-from coords import Grid, Point
-from coords import VDir as Dir
+from coords import Dir, Grid, Point
 from coords import VVector as Vector
 from coords import addp, opposite
 

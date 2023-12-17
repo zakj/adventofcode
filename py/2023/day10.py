@@ -5,13 +5,13 @@ from coords import Dir, Point, subp
 from graph import Graph, shortest_path_lengths_from
 
 PIPES = {
-    "|": set([Dir.N.value, Dir.S.value]),
-    "-": set([Dir.W.value, Dir.E.value]),
-    "L": set([Dir.N.value, Dir.E.value]),
-    "J": set([Dir.N.value, Dir.W.value]),
-    "7": set([Dir.S.value, Dir.W.value]),
-    "F": set([Dir.S.value, Dir.E.value]),
-    ".": set(),
+    "|": set([Dir.N, Dir.S]),
+    "-": set([Dir.W, Dir.E]),
+    "L": set([Dir.N, Dir.E]),
+    "J": set([Dir.N, Dir.W]),
+    "7": set([Dir.S, Dir.W]),
+    "F": set([Dir.S, Dir.E]),
+    ".": {},
 }
 
 

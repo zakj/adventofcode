@@ -7,9 +7,10 @@ from coords import Dir, Vector
 
 def parse(s: str) -> list[Vector]:
     rv = []
+    dirs = {"U": Dir.N, "R": Dir.E, "D": Dir.S, "L": Dir.W}
     for line in s.splitlines():
         dir, count = line.split(" ")
-        rv.extend([np.array(Dir[dir].value)] * int(count))
+        rv.extend([np.array(dirs[dir])] * int(count))
     return rv
 
 
