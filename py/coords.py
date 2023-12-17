@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from enum import Enum
-from typing import Iterable, Iterator
+from typing import Callable, Generic, Iterable, Iterator, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -11,6 +11,7 @@ Rect = tuple[Point, Point]
 Point3 = tuple[int, int, int]
 Vector = npt.NDArray[np.int8]
 VVector = tuple[int, int]  # TODO
+T = TypeVar("T")
 
 
 class Dir(Enum):
@@ -34,6 +35,35 @@ class VDir(metaclass=IterableClass[VVector]):
     @classmethod
     def classiter(cls) -> Iterator[VVector]:
         return iter([cls.N, cls.E, cls.S, cls.W])
+
+
+class Grid(Generic[T]):
+    height: int
+    width: int
+
+    def __init__(self, s: str, mapfn: Callable[[str], T] = str) -> None:
+        lines = s.splitlines()
+        self.data = {
+            (x, y): mapfn(c) for y, line in enumerate(lines) for x, c in enumerate(line)
+        }
+        self.height = len(lines)
+        self.width = len(lines[0])
+
+    def __repr__(self) -> str:
+        items = "".join(str(c) for c in sorted(set(self.data.values())))  # type: ignore
+        return f'Grid(width={self.width}, height={self.height}, items="{items}")'
+
+    def __contains__(self, item: Point) -> bool:
+        return item in self.data
+
+    def __getitem__(self, item: Point) -> T:
+        return self.data[item]
+
+    def __setitem__(self, item: Point, value: T) -> None:
+        self.data[item] = value
+
+    def get(self, item: Point, default: T | None = None) -> T | None:
+        return self.data.get(item)
 
 
 def neighbors(p: Point) -> Iterable[Point]:

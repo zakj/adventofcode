@@ -1,38 +1,10 @@
 from collections import deque
 
 from aoc import main
-from coords import Point
+from coords import Grid, Point
 from coords import VDir as Dir
 from coords import VVector as Vector
 from coords import addp
-
-
-# TODO consider factoring this out into parse.py, it's more broadly useful
-class Grid:
-    height: int
-    width: int
-
-    def __init__(self, s: str) -> None:
-        lines = s.splitlines()
-        self.data = {
-            (x, y): c for y, line in enumerate(lines) for x, c in enumerate(line)
-        }
-        self.height = len(lines)
-        self.width = len(lines[0])
-
-    def __repr__(self) -> str:
-        items = "".join(sorted(set(self.data.values())))
-        return f'Grid(width={self.width}, height={self.height}, items="{items}")'
-
-    def __getitem__(self, name: Point) -> str:
-        return self.data[name]
-
-    def __setitem__(self, name: Point, value: str) -> None:
-        self.data[name] = value
-
-    def get(self, name: Point, default: str | None = None) -> str | None:
-        return self.data.get(name)
-
 
 REFLECTORS: dict[str, dict[Vector, Vector]] = {
     "/": {Dir.E: Dir.N, Dir.N: Dir.E, Dir.W: Dir.S, Dir.S: Dir.W},
