@@ -15,12 +15,12 @@ class Map(NamedTuple):
 
 
 def parse(s: str) -> tuple[list[int], list[list[Map]]]:
-    chunks = paras(s)
-    seeds = all_numbers(chunks.pop(0)[0])
+    seeds, *recipes = paras(s)
+    seeds = all_numbers(seeds[0])
 
     path = {}
     maps: dict[str, list[Map]] = defaultdict(list)
-    for chunk in chunks:
+    for chunk in recipes:
         [src, dst, *_] = re.split(r"-to-| ", chunk.pop(0))
         path[src] = dst
         for line in chunk:

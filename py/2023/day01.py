@@ -1,5 +1,6 @@
-from aoc import main
 import re
+
+from aoc import main
 
 
 def calibrate(line: str) -> int:
