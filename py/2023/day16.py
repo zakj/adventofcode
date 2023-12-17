@@ -1,7 +1,10 @@
 from collections import deque
 
 from aoc import main
-from coords import Point, addp
+from coords import Point
+from coords import VDir as Dir
+from coords import VVector as Vector
+from coords import addp
 
 
 # TODO consider factoring this out into parse.py, it's more broadly useful
@@ -31,19 +34,11 @@ class Grid:
         return self.data.get(name)
 
 
-# TODO: not using coords.Dir, because Enum.__hash__ is slow. maybe just put this into coords instead?
-class Dir:
-    N = (0, -1)
-    E = (1, 0)
-    S = (0, 1)
-    W = (-1, 0)
-
-
-REFLECTORS: dict[str, dict[Point, Point]] = {
+REFLECTORS: dict[str, dict[Vector, Vector]] = {
     "/": {Dir.E: Dir.N, Dir.N: Dir.E, Dir.W: Dir.S, Dir.S: Dir.W},
     "\\": {Dir.E: Dir.S, Dir.N: Dir.W, Dir.W: Dir.N, Dir.S: Dir.E},
 }
-SPLITTERS: dict[str, set[Point]] = {
+SPLITTERS: dict[str, set[Vector]] = {
     "-": {Dir.E, Dir.W},
     "|": {Dir.N, Dir.S},
 }
@@ -60,9 +55,10 @@ def best_beam_start(grid: Grid) -> int:
     return best
 
 
-def energize(grid: Grid, start: Point, dir: Point) -> int:
+# TODO: cache start/dir -> int runs, hash grid on grid.height
+def energize(grid: Grid, start: Point, dir: Vector) -> int:
     seen = set()
-    q: deque[tuple[Point, Point]] = deque([(start, dir)])
+    q: deque[tuple[Point, Vector]] = deque([(start, dir)])
     while q:
         pos, dir = q.popleft()
         if (pos, dir) in seen:

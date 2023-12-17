@@ -1,7 +1,7 @@
 import collections
 from collections.abc import Sequence
 from itertools import islice
-from typing import Iterable, TypeVar
+from typing import Generic, Iterable, Iterator, TypeVar
 
 T = TypeVar("T")
 
@@ -42,3 +42,12 @@ def rotate_ccw(lines: Sequence[str]) -> list[str]:
 
 def flip_rows_cols(lines: Sequence[str]) -> list[str]:
     return ["".join(x).strip() for x in zip(*lines)]
+
+
+# To make a class (vs its instance) iterable, used by coords.Dir.
+class IterableClass(type, Generic[T]):
+    def classiter(self):
+        raise NotImplementedError
+
+    def __iter__(self) -> Iterator[T]:
+        return self.classiter()

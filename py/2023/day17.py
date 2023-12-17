@@ -1,8 +1,11 @@
 from heapq import heappop, heappush
-from typing import Callable, Generic, Iterable, Iterator, TypeVar
+from typing import Callable, Generic, TypeVar
 
 from aoc import main
 from coords import Point
+from coords import VDir as Dir
+from coords import VVector as Vector
+from coords import addp, opposite
 
 Vector = tuple[int, int]
 T = TypeVar("T")
@@ -40,56 +43,12 @@ class Grid(Generic[T]):
         return self.data.get(item)
 
 
-class IterableClass(type, Generic[T]):
-    def classiter(self):
-        raise NotImplementedError
-
-    def __iter__(self) -> Iterator[T]:
-        return self.classiter()
-
-
-class Dir(metaclass=IterableClass[Vector]):
-    N: Vector = (0, -1)
-    E: Vector = (1, 0)
-    S: Vector = (0, 1)
-    W: Vector = (-1, 0)
-
-    @classmethod
-    def classiter(cls) -> Iterator[Vector]:
-        return iter([cls.N, cls.E, cls.S, cls.W])
-
-    @classmethod
-    def neighbors(cls, p: Point) -> Iterable[Point]:
-        x, y = p
-        for dx, dy in cls:
-            yield (x + dx, y + dy)
-
-    @classmethod
-    def add(cls, p: Point, d: Vector) -> Point:
-        return (p[0] + d[0], p[1] + d[1])
-
-    @classmethod
-    def turn_left(cls, d: Vector) -> Vector:
-        x, y = d
-        return (y, -x)
-
-    @classmethod
-    def turn_right(cls, d: Vector) -> Vector:
-        x, y = d
-        return (-y, x)
-
-    @classmethod
-    def reverse(cls, d: Vector) -> Vector:
-        x, y = d
-        return (-x, -y)
-
-
 def min_heat_loss(grid: Grid[int], max_dir=3, min_dir=0) -> int:
     q: list[State] = [
         (0, (0, 0), Dir.E, 0),
         (0, (0, 0), Dir.S, 0),
     ]
-    seen: set[tuple[Point, Point, int]] = set()
+    seen: set[tuple[Point, Vector, int]] = set()
     goal = (grid.height - 1, grid.width - 1)
     while q:
         heat, cur, dir, count = heappop(q)
@@ -103,10 +62,10 @@ def min_heat_loss(grid: Grid[int], max_dir=3, min_dir=0) -> int:
             if (
                 (dir == ndir and count >= max_dir)
                 or (dir != ndir and count < min_dir)
-                or ndir == Dir.reverse(dir)
+                or ndir == opposite(dir)
             ):
                 continue
-            neighbor = Dir.add(cur, ndir)
+            neighbor = addp(cur, ndir)
             if neighbor in grid:
                 state = (
                     heat + grid[neighbor],
