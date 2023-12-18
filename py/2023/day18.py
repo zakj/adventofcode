@@ -1,14 +1,16 @@
+from itertools import pairwise
+
 from aoc import main
 from coords import Dir, Point
 
 
 def shoelace(vertices: list[Point]) -> int:
-    area = 0
-    (x, y), *rest = vertices
-    for nx, ny in rest:
-        area += x * ny - nx * y + abs(nx - x) + abs(ny - y)
-        x, y = nx, ny
-    return area // 2 + 1
+    area, perimeter = 0, 0
+    for (x, y), (nx, ny) in pairwise(vertices):
+        area += x * ny - nx * y
+        perimeter += abs(nx - x) + abs(ny - y)
+    perimeter = perimeter // 2 + 1
+    return abs(area) // 2 + perimeter
 
 
 def parse_simple(s: str) -> list[Point]:
