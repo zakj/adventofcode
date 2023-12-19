@@ -13,13 +13,13 @@ Blizzard = tuple[Point, Vector]
 def parse(s: str) -> tuple[frozenset[Point], frozenset[Blizzard]]:
     walkable = set[Point]()
     blizzards = set[Blizzard]()
-    dirs = {"^": Dir.N, ">": Dir.E, "v": Dir.S, "<": Dir.W}
     for y, line in enumerate(s.splitlines()):
         for x, c in enumerate(line):
             if c == "#":
                 continue
             walkable.add((x, y))
-            if dir := dirs.get(c):
+            dir = Dir.parse(c)
+            if dir := Dir.parse(c):
                 blizzards.add(((x, y), dir))
     return frozenset(walkable), frozenset(blizzards)
 

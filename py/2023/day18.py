@@ -14,12 +14,11 @@ def shoelace(vertices: list[Point]) -> int:
 
 
 def parse_simple(s: str) -> list[Point]:
-    DIRS = {"U": Dir.N, "R": Dir.E, "D": Dir.S, "L": Dir.W}
     x, y = 0, 0
     points: list[Point] = [(x, y)]
     for line in s.splitlines():
         dir, length, *_ = line.split(" ")
-        dx, dy = DIRS[dir]
+        dx, dy = Dir.parse(dir)
         length = int(length)
         x = x + dx * length
         y = y + dy * length

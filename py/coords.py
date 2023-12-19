@@ -19,10 +19,16 @@ class Dir(metaclass=IterableClass[VVector]):
     E: VVector = (1, 0)
     S: VVector = (0, 1)
     W: VVector = (-1, 0)
+    _strings = {N: "NU^", E: "ER>", S: "SDv", W: "WL<"}
+    _parse_map = {k: dir for dir, s in _strings.items() for k in s}
 
     @classmethod
     def classiter(cls) -> Iterator[VVector]:
         return iter([cls.N, cls.E, cls.S, cls.W])
+
+    @classmethod
+    def parse(cls, s: str) -> VVector | None:
+        return cls._parse_map.get(s)
 
 
 class Grid(Generic[T]):
