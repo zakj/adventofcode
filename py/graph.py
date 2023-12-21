@@ -17,10 +17,19 @@ class Graph(Generic[Node]):
         self.nodes = defaultdict(dict)
         self.edges = defaultdict(lambda: defaultdict(dict))
 
+    def __repr__(self) -> str:
+        nodes = len(self.nodes)
+        edges = sum(len(target) for target in self.edges.values())
+        return f"Graph with {nodes} nodes, {edges} edges"
+
     def add_node(self, node: Node, **attrs) -> None:
         self.nodes[node].update(**attrs)
 
     def add_edge(self, a: Node, b: Node, **attrs) -> None:
+        if a not in self.nodes:
+            self.add_node(a)
+        if b not in self.nodes:
+            self.add_node(b)
         self.edges[a][b].update(**attrs)
 
     def remove_edge(self, a: Node, b: Node) -> None:
@@ -60,6 +69,21 @@ class Graph(Generic[Node]):
                     G.add_edge(a, b, weight=weight)
 
         return G
+
+
+def shortest_path(G: Graph[Node], start: Node, end: Node) -> list[Node]:
+    visited = {start}
+    queue = [(start, [start])]
+    while queue:
+        cur, path = queue.pop(0)
+        for neighbor in G.neighbors(cur):
+            npath = path + [neighbor]
+            if neighbor == end:
+                return npath
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append((neighbor, npath))
+    return []
 
 
 def shortest_path_lengths_from(
