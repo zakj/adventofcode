@@ -1,11 +1,15 @@
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from enum import IntEnum, auto
+from itertools import count
+from math import lcm
 
 from aoc import main
+from graph import Graph, shortest_path
 
-HIGH = 1
-LOW = 0
+Pulse = int
+HIGH: Pulse = 1
+LOW: Pulse = 0
 
 
 class ModuleType(IntEnum):
@@ -17,159 +21,115 @@ class ModuleType(IntEnum):
 
 @dataclass
 class Module:
-    type: ModuleType
     outputs: list[str] = field(default_factory=lambda: [])
+    is_default = True
 
 
 @dataclass
 class FlipFlop(Module):
-    type: ModuleType = ModuleType.FlipFlop
     is_on: bool = False
+
+    @property
+    def is_default(self):
+        return not self.is_on
 
 
 @dataclass
 class Conjuction(Module):
-    type: ModuleType = ModuleType.Conjunction
-    memory: dict[str, int] = field(default_factory=lambda: {})
+    memory: dict[str, Pulse] = field(default_factory=lambda: {})
+
+    @property
+    def is_default(self):
+        return all(v == LOW for v in self.memory.values())
 
 
 def parse(s: str) -> dict[str, Module]:
-    modules = {"button": Module(type=ModuleType.Button, outputs=["broadcaster"])}
-    inputs = defaultdict(list)
+    modules = {"button": Module(outputs=["broadcaster"])}
     for line in s.splitlines():
         name, outputs = line.split(" -> ")
         outputs = outputs.split(", ")
         if name == "broadcaster":
-            modules[name] = Module(type=ModuleType.Broadcast, outputs=outputs)
-        else:
-            type_str = name[0]
-            name = name[1:]
-            if type_str == "%":
-                modules[name] = FlipFlop(outputs=outputs)
-            if type_str == "&":
-                modules[name] = Conjuction(outputs=outputs)
-        for target in outputs:
-            inputs[target].append(name)
+            modules[name] = Module(outputs=outputs)
+            continue
+        type = name[0]
+        name = name[1:]
+        if type == "%":
+            modules[name] = FlipFlop(outputs=outputs)
+        if type == "&":
+            modules[name] = Conjuction(outputs=outputs)
 
     for name, mod in modules.items():
-        if isinstance(mod, Conjuction):
-            mod.memory = {k: LOW for k in inputs[name]}
+        for output in mod.outputs:
+            omod = modules.get(output)
+            if isinstance(omod, Conjuction):
+                omod.memory[name] = LOW
 
     return modules
 
 
-class RxLow(Exception):
-    pass
-
-
-def pulse(modules: dict[str, Module], type: int, sender: str) -> tuple[int, int]:
-    queue: deque[tuple[int, str]] = deque([(type, sender)])
+def press_button(modules: dict[str, Module]) -> tuple[int, int]:
+    queue: deque[tuple[int, str]] = deque([(LOW, "button")])
     sent = {LOW: 0, HIGH: 0}
     while queue:
         pulse, sender = queue.popleft()
-        targets = modules[sender].outputs
-        for name in targets:
+        for name in modules[sender].outputs:
             sent[pulse] += 1
-            # print(f"{sender} -{'low' if pulse ==LOW else 'high'}-> {name}")
-            if name == "rx":
-                if pulse == LOW:
-                    print(f"{sender} -{'low' if pulse ==LOW else 'high'}-> {name}")
-                    raise RxLow
-            if name not in modules:
-                continue
-            mod = modules[name]
-            if mod.type == ModuleType.Broadcast:
-                queue.append((pulse, name))
-            elif isinstance(mod, FlipFlop):
-                if pulse == LOW:
-                    queue.append((LOW if mod.is_on else HIGH, name))
-                    mod.is_on = not mod.is_on
-            elif isinstance(mod, Conjuction):
-                mod.memory[sender] = pulse
-                all_high = all(pulse == HIGH for pulse in mod.memory.values())
-                # print(f"  {str(mod.memory)} {all_high}")
-                queue.append((LOW if all_high else HIGH, name))
-            else:
-                raise ValueError
+            mod = modules.get(name)
+            match mod:
+                case FlipFlop():
+                    if pulse == LOW:
+                        queue.append((LOW if mod.is_on else HIGH, name))
+                        mod.is_on = not mod.is_on
+                case Conjuction():
+                    mod.memory[sender] = pulse
+                    all_high = all(pulse == HIGH for pulse in mod.memory.values())
+                    queue.append((LOW if all_high else HIGH, name))
+                case Module():
+                    queue.append((pulse, name))
     return sent[LOW], sent[HIGH]
 
 
-def is_default(module: Module) -> bool:
-    if module.type in [ModuleType.Button, ModuleType.Broadcast]:
-        return True
-    elif isinstance(module, FlipFlop):
-        return not module.is_on
-    elif isinstance(module, Conjuction):
-        return all(v == LOW for v in module.memory.values())
-    else:
-        raise ValueError
-
-
-def part1(s: str) -> int:
-    # if len(s) > 500:
-    #     return -1
+def total_pulses(s: str) -> int:
     modules = parse(s)
-    pushes = 1
-    low, high = pulse(modules, LOW, "button")
-    while pushes < 1000:
-        if all(is_default(m) for m in modules.values()):
-            break
-        pushes += 1
-        nl, nh = pulse(modules, LOW, "button")
+    presses = 1
+    low, high = press_button(modules)
+    while not all(m.is_default for m in modules.values()) and presses < 1000:
+        nl, nh = press_button(modules)
         low += nl
         high += nh
-    return (1000 // pushes * low) * (1000 // pushes * high)
+        presses += 1
+    return (1000 // presses * low) * (1000 // presses * high)
 
 
-from itertools import count
-
-from graph import Graph, shortest_path
-
-
-def pulse2(modules: dict[str, Module], search: list[str]) -> dict[str, int]:
+def find_cycles_in(modules: dict[str, Module], search: list[str]) -> dict[str, int]:
     cycles = {}
     for i in count(1):
         queue: deque[tuple[int, str]] = deque([(LOW, "broadcaster")])
         while queue:
             pulse, sender = queue.popleft()
-            targets = modules[sender].outputs
-            for name in targets:
-                # print(f"{sender} -{'low' if pulse ==LOW else 'high'}-> {name}")
-                if name == "rx":
-                    if pulse == LOW:
-                        print(
-                            f"{i} {sender} -{'low' if pulse ==LOW else 'high'}-> {name}"
-                        )
-                        raise RxLow
-                if name not in modules:
-                    continue
-                mod = modules[name]
-                if mod.type == ModuleType.Broadcast:
-                    queue.append((pulse, name))
-                elif isinstance(mod, FlipFlop):
-                    if pulse == LOW:
-                        queue.append((LOW if mod.is_on else HIGH, name))
-                        mod.is_on = not mod.is_on
-                elif isinstance(mod, Conjuction):
-                    mod.memory[sender] = pulse
-                    all_high = all(pulse == HIGH for pulse in mod.memory.values())
-                    if not all_high and name in search and name not in cycles:
-                        cycles[name] = i
-                        if len(cycles) == len(search):
-                            return cycles
-                    # print(f"  {str(mod.memory)} {all_high}")
-                    queue.append((LOW if all_high else HIGH, name))
-                else:
-                    raise ValueError
+            for name in modules[sender].outputs:
+                mod = modules.get(name)
+                match mod:
+                    case FlipFlop():
+                        if pulse == LOW:
+                            queue.append((LOW if mod.is_on else HIGH, name))
+                            mod.is_on = not mod.is_on
+                    case Conjuction():
+                        mod.memory[sender] = pulse
+                        all_high = all(pulse == HIGH for pulse in mod.memory.values())
+                        queue.append((LOW if all_high else HIGH, name))
+                        if not all_high and name in search and name not in cycles:
+                            cycles[name] = i
+                            if len(cycles) == len(search):
+                                return cycles
+                    case Module():
+                        queue.append((pulse, name))
     raise ValueError
 
 
-from math import lcm
-
-
-def part2(s: str) -> int:
+def presses_to_low_rx(s: str) -> int:
     if len(s) < 500:
-        # skip examples TODO remove this
+        # TODO: skip examples
         return -1
     modules = parse(s)
 
@@ -177,75 +137,15 @@ def part2(s: str) -> int:
     for name, mod in modules.items():
         for target in mod.outputs:
             G.add_edge(name, target)
-    paths = []
-    for start in G.edges["broadcaster"].keys():
-        paths.append(shortest_path(G, start, "rx"))
 
-    search = []
-    for items in zip(*(reversed(p) for p in paths)):
-        if len(set(items)) == 1:
-            continue
-        search = items
-        break
+    paths = (
+        reversed(shortest_path(G, start, "rx"))
+        for start in G.edges["broadcaster"].keys()
+    )
+    search = next(items for items in zip(*paths) if len(set(items)) > 1)
 
-    cycles = pulse2(modules, search)
-    return lcm(*cycles.values())
-
-    searching = "zp"
-    cc = 0
-    # while True:
-    #     cc += 1
-    #     pulse(modules, LOW, "broadcaster")
-    #     if all(v == HIGH for v in modules[searching].memory.values()):
-    #         print("GOT IT", cc)
-    #         break
-
-    inputs = defaultdict(list)
-    for src, mod in modules.items():
-        for dst in mod.outputs:
-            inputs[dst].append(src)
-
-    cur = "rx"
-    while len(inputs[cur]) == 1:
-        cur = inputs[cur][0]
-    watch = inputs[cur]
-    cycles = {}
-
-    level = 0
-    mod = "broadcaster"
-
-    seen = set(mod)
-
-    def pmod(name, level):
-        if name in seen:
-            return
-        seen.add(name)
-        if name in modules:
-            mod = modules[name]
-            print(level * "  ", name, mod.type.name, "->", ", ".join(mod.outputs))
-            for oo in mod.outputs:
-                pmod(oo, level + 1)
-        else:
-            print(level * "  ", name)
-
-    # find path between broadcaster targets and rx feeder
-    # run each of those loops to find a cycle
-    # pmod("broadcaster", 0)
-
-    # for pushes in count(1):
-    #     push_button(modules)
-    #     for name, value in modules[cur].memory.items():
-    #         if value == HIGH and name not in cycles:
-    #             print(f"found: {name=}")
-    #             cycles[name] = pushes
-    #     if len(cycles) == len(watch):
-    #         print(f"{pushes=}")
-    #         break
-    return -1
+    return lcm(*find_cycles_in(modules, search).values())
 
 
 if __name__ == "__main__":
-    main(
-        lambda s: part1(s),
-        lambda s: part2(s),
-    )
+    main(total_pulses, presses_to_low_rx)
