@@ -86,6 +86,24 @@ def shortest_path(G: Graph[Node], start: Node, end: Node) -> list[Node]:
     return []
 
 
+def shortest_path_length(G: Graph[Node], start: Node, end: Node) -> int:
+    distance = 0
+    visited = {start}
+    queue = [start]
+    while queue:
+        distance += 1
+        current = queue
+        queue = []
+        for node in current:
+            for neighbor in G.neighbors(node):
+                if neighbor == end:
+                    return distance
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+    return -1
+
+
 def shortest_path_lengths_from(
     G: Graph[Node], start: Node
 ) -> Iterable[tuple[Node, int]]:
