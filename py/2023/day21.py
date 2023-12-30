@@ -1,108 +1,39 @@
+# TODO: cleanup
 from collections import defaultdict
-from typing import Any
+from itertools import count
 
 from aoc import main
 from coords import Point
-from graph import Graph, shortest_path_length
+from graph import DiGraph
 
 
-def part1(s: str, steps: int) -> int:
-    # if len(s) > 500:
-    #     return -1
-
+def parse(s: str) -> tuple[DiGraph[Point], Point]:
     def edgeweights(from_node, from_data, to_node, to_data) -> bool:
         return from_data["label"] == "." and to_data["label"] == "."
 
-    def attrs(c: str) -> dict[str, Any]:
+    def attrs(c: str) -> dict:
         is_start = c == "S"
         label = "." if is_start else c
         return {"label": label, "is_start": is_start}
 
-    G = Graph.from_grid(s, edgeweights, attrs)
-    start = next(node for node, data in G.nodes.items() if data["is_start"])
+    G = DiGraph.from_grid(s, edgeweights, attrs)
+    start = next(n for n, is_start in G.attr("is_start") if is_start)
+    return G, start
 
-    visited = defaultdict(set)
+
+def part1(s: str, steps: int) -> int:
+    G, start = parse(s)
+
+    seen = defaultdict(set)
     queue = [start]
     for step in range(1, steps + 1):
         current = set(queue)
         queue = []
         for node in current:
             for neighbor in G.neighbors(node):
-                visited[step].add(neighbor)
+                seen[step].add(neighbor)
                 queue.append(neighbor)
-    return len(visited[steps])
-
-
-from typing import Iterable
-
-
-class RepeatingGraph(Graph[Point]):
-    width: int
-    height: int
-
-    def neighbors(self, node: Point) -> Iterable[Point]:
-        if node in self.edges:
-            return self.edges[node]
-        x, y = node
-        grids_x = (self.width // x) * x if x else 0
-        grids_y = (self.height // y) * y if y else 0
-        x %= self.width
-        y %= self.height
-        return ((nx + grids_x, ny + grids_y) for nx, ny in self.edges[x, y])
-
-
-def part2_orig(s: str, steps: int) -> int:
-    if len(s) > 500:
-        return -1
-
-    # map how many steps it takes to get from each spot to each other spot
-    # extrapolate edges
-
-    def edgeweights(from_node, from_data, to_node, to_data) -> bool:
-        return from_data["label"] == "." and to_data["label"] == "."
-
-    def attrs(c: str) -> dict[str, Any]:
-        is_start = c == "S"
-        label = "." if is_start else c
-        return {"label": label, "is_start": is_start}
-
-    G = RepeatingGraph.from_grid(s, edgeweights, attrs)
-    start = next(node for node, data in G.nodes.items() if data["is_start"])
-    lines = s.splitlines()
-    max_x = len(lines[0]) - 1
-    max_y = len(lines) - 1
-
-    # for x in range(0, G.width):
-    #     G.add_edge((x, 0), (x, G.height - 1))
-    #     G.add_edge((x, 0), (x, G.height - 1))
-
-    # print(f"{G.neighbors((0, 0))=}")
-    # print(f"{list(G.neighbors((G.width, 0)))=}")
-
-    # count how many farms I can get to and the minimum number of steps it takes to get to each
-
-    garden = [n for n, d in G.nodes.items() if d["label"] == "."]
-    perimeter = [(x, y) for x, y in garden if x in [0, max_x] or y in [0, max_y]]
-
-    lengths = {}
-    for start in garden:
-        for end in garden:
-            lengths[start, end] = shortest_path_length(G, start, end)
-
-    print(f"{max(lengths.values())=}")
-    for a in perimeter:
-        x, y = a
-        if x != 0:
-            continue
-        for b in perimeter:
-            if b[0] != max_x:
-                continue
-            print(a, b, lengths[a, b])
-
-    return -1
-
-
-from itertools import count
+    return len(seen[steps])
 
 
 def part2(s: str, steps: int) -> int:
@@ -110,16 +41,7 @@ def part2(s: str, steps: int) -> int:
         # TODO skip example
         return -1
 
-    def edgeweights(from_node, from_data, to_node, to_data) -> bool:
-        return from_data["label"] == "." and to_data["label"] == "."
-
-    def attrs(c: str) -> dict[str, Any]:
-        is_start = c == "S"
-        label = "." if is_start else c
-        return {"label": label, "is_start": is_start}
-
-    G = Graph.from_grid(s, edgeweights, attrs)
-    start = next(node for node, data in G.nodes.items() if data["is_start"])
+    G, start = parse(s)
 
     evens = set()
     odds = set()
@@ -167,28 +89,21 @@ def part2(s: str, steps: int) -> int:
     # top, right, bottom, left: one of each type, at each corner
     assert height == width
     steps_remaining = (steps - start[0] - 1) % width
-    total += walk((start[0], height - 1), steps_remaining)
-    total += walk((0, start[1]), steps_remaining)
-    total += walk((start[0], 0), steps_remaining)
-    total += walk((width - 1, start[1]), steps_remaining)
+    for cstart in [
+        (start[0], height - 1),
+        (0, start[1]),
+        (start[0], 0),
+        (width - 1, start[1]),
+    ]:
+        total += walk(cstart, steps_remaining)
 
     # diagonal edges, two sizes for each direction
-    # THERE ARE FEWER OF THE CLOSE ONES
     steps_remaining = (steps - start[0] - start[1] - 2) % (height + width)
-    close_diagonals = 0
-    close_diagonals += walk((0, height - 1), steps_remaining)
-    close_diagonals += walk((0, 0), steps_remaining)
-    close_diagonals += walk((width - 1, 0), steps_remaining)
-    close_diagonals += walk((width - 1, height - 1), steps_remaining)
-    total += close_diagonals * (reachable_full_grids - 1)
-
+    for dstart in [(0, height - 1), (0, 0), (width - 1, 0), (width - 1, height - 1)]:
+        total += walk(dstart, steps_remaining) * (reachable_full_grids - 1)
     steps_remaining = (steps - start[0] - start[1] - height - 2) % (height + width)
-    far_diagonals = 0
-    far_diagonals += walk((0, height - 1), steps_remaining)
-    far_diagonals += walk((0, 0), steps_remaining)
-    far_diagonals += walk((width - 1, 0), steps_remaining)
-    far_diagonals += walk((width - 1, height - 1), steps_remaining)
-    total += far_diagonals * (reachable_full_grids)
+    for dstart in [(0, height - 1), (0, 0), (width - 1, 0), (width - 1, height - 1)]:
+        total += walk(dstart, steps_remaining) * reachable_full_grids
 
     return total
 
