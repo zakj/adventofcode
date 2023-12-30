@@ -1,5 +1,5 @@
 import collections
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from itertools import islice
 from typing import Generic, Iterable, Iterator, TypeVar
 
@@ -24,6 +24,13 @@ def sliding_window(iterable: Iterable[T], n: int) -> Iterable[Iterable[T]]:
     for x in it:
         window.append(x)
         yield tuple(window)
+
+
+def takeuntil(predicate: Callable[[T], bool], iterable: Iterable[T]) -> Iterable[T]:
+    for x in iterable:
+        yield x
+        if predicate(x):
+            return
 
 
 def mod(x: int, mod: int, min: int = 0) -> int:

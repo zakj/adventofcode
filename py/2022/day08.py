@@ -1,38 +1,43 @@
-import numpy as np
+from collections.abc import Iterable
+
 from aoc import main
+from coords import Grid
+from util import takeuntil
 
 
-def parse(s: str) -> np.ndarray:
-    return np.array([[int(c) for c in line] for line in s.splitlines()])
+def ranges(grid: Grid[int], x: int, y: int) -> tuple[Iterable[int], ...]:
+    return (
+        (grid[x, yy] for yy in reversed(range(0, y))),
+        (grid[x, yy] for yy in range(y + 1, grid.height)),
+        (grid[xx, y] for xx in reversed(range(0, x))),
+        (grid[xx, y] for xx in range(x + 1, grid.width)),
+    )
 
 
-def visible_trees(grid: np.ndarray) -> np.ndarray:
-    is_visible = np.zeros_like(grid)
-
-    for _ in range(4):
-        for x, y in np.ndindex(grid.shape):
-            is_visible[x, y] |= all(grid[x, :y] < grid[x, y])
-        grid = np.rot90(grid)
-        is_visible = np.rot90(is_visible)
-
-    return is_visible
+def visible_trees(s: str) -> int:
+    grid = Grid(s, int)
+    count = 0
+    for (x, y), val in grid.data.items():
+        if any([all(other < val for other in vals) for vals in ranges(grid, x, y)]):
+            count += 1
+    return count
 
 
-def scenic_score(grid: np.ndarray) -> np.ndarray:
-    score = np.ones_like(grid)
+def scenic_score(s: str) -> int:
+    grid = Grid(s, int)
+    scores = []
 
-    for _ in range(4):
-        for x, y in np.ndindex(grid.shape):
-            (view,) = np.nonzero(grid[x, y + 1 :] >= grid[x, y])
-            score[x, y] *= view[0] + 1 if view.size else len(grid[x, y + 1 :])
-        grid = np.rot90(grid)
-        score = np.rot90(score)
+    for (x, y), val in grid.data.items():
+        score = 1
+        for vals in ranges(grid, x, y):
+            score *= len(list(takeuntil((lambda other: other >= val), vals)))
+        scores.append(score)
 
-    return score
+    return max(scores)
 
 
 if __name__ == "__main__":
     main(
-        lambda s: visible_trees(parse(s)).sum(),
-        lambda s: scenic_score(parse(s)).max(),
+        lambda s: visible_trees(s),
+        lambda s: scenic_score(s),
     )
