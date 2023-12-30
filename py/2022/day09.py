@@ -1,26 +1,32 @@
 import itertools
 
-import numpy as np
 from aoc import main
-from coords import Dir, Vector
+from coords import Dir, Point
+from coords import VVector as Vector
+from coords import addp, subp
 
 
 def parse(s: str) -> list[Vector]:
     rv = []
     for line in s.splitlines():
         dir, count = line.split(" ")
-        rv.extend([np.array(Dir.parse(dir))] * int(count))
+        rv.extend([Dir.parse(dir)] * int(count))
     return rv
 
 
-def follow(t: Vector, h: Vector) -> Vector:
-    delta = h - t
-    return t if all(abs(delta) < 2) else t + np.sign(delta)
+def sign(v: Vector) -> Vector:
+    _sign = lambda n: -1 if n < 0 else 1 if n > 0 else 0
+    return (_sign(v[0]), _sign(v[1]))
+
+
+def follow(t: Point, h: Point) -> Point:
+    delta = subp(h, t)
+    return t if all(abs(x) < 2 for x in delta) else addp(t, sign(delta))
 
 
 def walk(moves: list[Vector], n: int):
-    origin = np.array((0, 0))
-    visits = itertools.accumulate(moves, initial=origin)
+    origin = (0, 0)
+    visits = itertools.accumulate(moves, addp, initial=origin)
     for _ in range(n - 1):
         visits = itertools.accumulate(visits, follow, initial=origin)
     return len(set(tuple(p) for p in visits))
