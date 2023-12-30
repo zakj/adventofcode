@@ -4,10 +4,10 @@ from collections import Counter
 from itertools import pairwise
 
 from aoc import main
-from graph import Graph, shortest_path
+from graph import DiGraph, shortest_path
 
 
-def reachable_nodes_count(G: Graph, node) -> int:
+def reachable_nodes_count(G: DiGraph, node) -> int:
     queue = [node]
     seen = set()
     while queue:
@@ -23,7 +23,7 @@ def reachable_nodes_count(G: Graph, node) -> int:
 
 
 def cut_wires(s: str) -> int:
-    G = Graph()
+    G = DiGraph()
     for line in s.splitlines():
         src, *dsts = re.split(r":? ", line)
         for dst in dsts:

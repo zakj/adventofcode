@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from aoc import main
 from coords import Dir, Point, subp
-from graph import Graph, shortest_path_lengths_from
+from graph import DiGraph, shortest_path_lengths_from
 
 PIPES = {
     "|": set([Dir.N, Dir.S]),
@@ -15,18 +15,17 @@ PIPES = {
 }
 
 
-def is_valid_edge(from_node, from_data, to_node, to_data) -> bool:
-    if "S" in [from_data["label"], to_data["label"]]:
+def edgeweight(from_node, from_data, to_node, to_data) -> bool:
+    fl, tl = from_data["label"], to_data["label"]
+    if "S" in [fl, tl]:
         return True
     from_delta = subp(to_node, from_node)
     to_delta = subp(from_node, to_node)
-    return (
-        from_delta in PIPES[from_data["label"]] and to_delta in PIPES[to_data["label"]]
-    )
+    return from_delta in PIPES[fl] and to_delta in PIPES[tl]
 
 
-def build_graph(s: str) -> tuple[Graph, Point]:
-    G = Graph.from_grid(s, is_valid_edge)
+def build_graph(s: str) -> tuple[DiGraph, Point]:
+    G = DiGraph.from_grid(s, edgeweight)
 
     start = next(n for n, d in G.nodes.items() if d["label"] == "S")
     start_edges = set()
@@ -45,7 +44,7 @@ def build_graph(s: str) -> tuple[Graph, Point]:
     return G, start
 
 
-def farthest_from_start(G: Graph, start: Point) -> int:
+def farthest_from_start(G: DiGraph, start: Point) -> int:
     return max(d for _, d in shortest_path_lengths_from(G, start))
 
 
@@ -56,7 +55,7 @@ def ray_northwest(x: int, y: int) -> Iterable[Point]:
         yield (x, y)
 
 
-def enclosed(G: Graph, start: Point) -> int:
+def enclosed(G: DiGraph, start: Point) -> int:
     loop = set(n for n, _ in shortest_path_lengths_from(G, start))
     valid_crossings = set(n for n in loop if G.nodes[n]["label"] not in "7L")
     enclosed = 0

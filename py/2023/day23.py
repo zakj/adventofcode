@@ -2,7 +2,7 @@ from aoc import main
 from coords import Dir, Point
 from coords import VVector as Vector
 from coords import addp
-from graph import DirectedGraph, Node
+from graph import DiGraph
 
 SLOPES = {
     "^": Dir.N,
@@ -12,7 +12,7 @@ SLOPES = {
 }
 
 
-def dfs(G: DirectedGraph[Point], start: Point, end: Point):
+def dfs(G: DiGraph[Point], start: Point, end: Point):
     seen = set()
     queue: list[tuple[Point, int]] = [(start, 0)]
     best = 0
@@ -34,7 +34,7 @@ def dfs(G: DirectedGraph[Point], start: Point, end: Point):
     return best
 
 
-def compress(G: DirectedGraph[Point], start: Point) -> DirectedGraph[Point]:
+def compress(G: DiGraph[Point], start: Point) -> DiGraph[Point]:
     def next_branch(start, seen) -> tuple[Point, int]:
         cur = start
         distance = 0
@@ -46,7 +46,7 @@ def compress(G: DirectedGraph[Point], start: Point) -> DirectedGraph[Point]:
                 return cur, distance
             cur = neighbors.pop()
 
-    H = DirectedGraph()
+    H = DiGraph()
     queue: list[Point] = [start]
     seen = set()
     while queue:
@@ -69,7 +69,7 @@ def longest_path(s: str, slopes: dict[str, Vector] = {}) -> int:
             return addp(from_node, slopes[c]) == to_node
         return c != "#" and to_data["label"] != "#"
 
-    G = DirectedGraph.from_grid(s, edgeweight)
+    G = DiGraph.from_grid(s, edgeweight)
     lines = s.splitlines()
     start = (lines[0].index("."), 0)
     end = (lines[-1].index("."), len(lines) - 1)

@@ -1,11 +1,11 @@
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import dataclass, field
 from enum import IntEnum, auto
 from itertools import count
 from math import lcm
 
 from aoc import main
-from graph import Graph, shortest_path
+from graph import DiGraph, shortest_path
 
 Pulse = int
 HIGH: Pulse = 1
@@ -133,14 +133,13 @@ def presses_to_low_rx(s: str) -> int:
         return -1
     modules = parse(s)
 
-    G = Graph()
+    G = DiGraph()
     for name, mod in modules.items():
         for target in mod.outputs:
             G.add_edge(name, target)
 
     paths = (
-        reversed(shortest_path(G, start, "rx"))
-        for start in G.edges["broadcaster"].keys()
+        reversed(shortest_path(G, start, "rx")) for start in G.neighbors("broadcaster")
     )
     search = next(items for items in zip(*paths) if len(set(items)) > 1)
 

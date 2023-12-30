@@ -9,7 +9,7 @@ Node = TypeVar("Node")
 GraphAttrs = dict[str, Any]
 
 
-class DirectedGraph(Generic[Node]):
+class DiGraph(Generic[Node]):
     def __init__(self) -> None:
         self._adj: dict[Node, set[Node]] = defaultdict(set)
         self._attrs: dict[Node, dict] = defaultdict(dict)
@@ -27,6 +27,9 @@ class DirectedGraph(Generic[Node]):
     @property
     def nodes(self) -> dict[Node, dict]:
         return self._attrs
+
+    def attr(self, key: str) -> Iterator[tuple[Node, Any]]:
+        return ((n, d[key]) for n, d in self.nodes.items())
 
     @property
     def edges(self) -> dict[tuple[Node, Node], int]:

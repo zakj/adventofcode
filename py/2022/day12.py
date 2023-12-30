@@ -1,39 +1,34 @@
-import collections
-
-import numpy as np
 from aoc import main
+from coords import Point
+from graph import DiGraph, shortest_path_length, shortest_path_lengths_from
 
 
-def parse(s: str):
-    return np.array([list(line) for line in s.splitlines()])
+def build_inverse_graph(s: str) -> DiGraph[Point]:
+    height = lambda c: ord({"S": "a", "E": "z"}.get(c, c))
+
+    def edgeweight(from_node, from_data, to_node, to_data) -> bool:
+        return from_data["height"] - 1 <= to_data["height"]
+
+    def attrs(c: str) -> dict:
+        return {"label": c, "height": height(c)}
+
+    return DiGraph.from_grid(s, edgeweight, attrs)
 
 
-map_height = np.vectorize(lambda c: ord({"S": "a", "E": "z"}.get(c, c)))
-adjacent = [np.array(p) for p in ((0, 1), (0, -1), (1, 0), (-1, 0))]
+def to_start(s: str) -> int:
+    G = build_inverse_graph(s)
+    start = next(n for n, c in G.attr("label") if c == "S")
+    end = next(n for n, c in G.attr("label") if c == "E")
+    return shortest_path_length(G, end, start)
 
 
-def shortest(grid: np.ndarray, goal: str) -> int:
-    start = tuple(*np.argwhere(grid == "E"))
-    heights: np.ndarray = map_height(grid)
-
-    q: collections.deque[tuple[tuple, int]] = collections.deque([(start, 0)])
-    visited = {start}
-    while q:
-        cur, distance = q.popleft()
-        if grid[cur] in goal:  # type: ignore
-            return distance
-        for move in (tuple(cur + dir) for dir in adjacent):
-            if any(m >= g or m < 0 for m, g in zip(move, grid.shape)):
-                continue
-            if move in visited or heights[cur] - heights[move] > 1:
-                continue
-            q.append((move, distance + 1))
-            visited.add(move)
-    raise Exception
+def to_any_a(s: str) -> int:
+    G = build_inverse_graph(s)
+    end = next(n for n, c in G.attr("label") if c == "E")
+    return min(
+        d for n, d in shortest_path_lengths_from(G, end) if G.nodes[n]["label"] in "Sa"
+    )
 
 
 if __name__ == "__main__":
-    main(
-        lambda s: shortest(parse(s), "S"),
-        lambda s: shortest(parse(s), "Sa"),
-    )
+    main(to_start, to_any_a)
