@@ -1,9 +1,7 @@
 from collections import deque
 
 from aoc import main
-from coords import Dir, Grid, Point
-from coords import VVector as Vector
-from coords import addp
+from coords import Dir, Grid, Point, Vector, addp
 
 REFLECTORS: dict[str, dict[Vector, Vector]] = {
     "/": {Dir.E: Dir.N, Dir.N: Dir.E, Dir.W: Dir.S, Dir.S: Dir.W},

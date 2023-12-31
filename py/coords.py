@@ -1,34 +1,30 @@
 from collections.abc import Iterable
-from enum import Enum
 from typing import Callable, Generic, Iterable, Iterator, TypeVar
 
-import numpy as np
-import numpy.typing as npt
 from util import IterableClass
 
 Point = tuple[int, int]
+Vector = tuple[int, int]  # distinct from Point just for bookkeeping
 Rect = tuple[Point, Point]
 Point3 = tuple[int, int, int]
-Vector = npt.NDArray[np.int8]
-VVector = tuple[int, int]  # TODO
 T = TypeVar("T")
 
 
-class Dir(metaclass=IterableClass[VVector]):
-    N: VVector = (0, -1)
-    E: VVector = (1, 0)
-    S: VVector = (0, 1)
-    W: VVector = (-1, 0)
+class Dir(metaclass=IterableClass[Vector]):
+    N: Vector = (0, -1)
+    E: Vector = (1, 0)
+    S: Vector = (0, 1)
+    W: Vector = (-1, 0)
     _strings = {N: "NU^", E: "ER>", S: "SDv", W: "WL<"}
     _parse_map = {k: dir for dir, s in _strings.items() for k in s}
 
     @classmethod
-    def classiter(cls) -> Iterator[VVector]:
+    def classiter(cls) -> Iterator[Vector]:
         return iter([cls.N, cls.E, cls.S, cls.W])
 
     @classmethod
-    def parse(cls, s: str) -> VVector | None:
-        return cls._parse_map.get(s)
+    def parse(cls, s: str) -> Vector:
+        return cls._parse_map[s]
 
 
 class Grid(Generic[T]):
@@ -71,35 +67,27 @@ def mdist(a: Point, b: Point):
     return abs(ax - bx) + abs(ay - by)
 
 
-def opposite(d: VVector) -> VVector:
+def opposite(d: Vector) -> Vector:
     x, y = d
     return (-x, -y)
 
 
-def addp(p: Point, d: VVector) -> Point:
+def addp(p: Point, d: Vector) -> Point:
     return p[0] + d[0], p[1] + d[1]
 
 
-def subp(p: Point, d: VVector) -> Point:
+def subp(p: Point, d: Vector) -> Point:
     return p[0] - d[0], p[1] - d[1]
 
 
-def turn_right(d: VVector) -> Point:
+def turn_right(d: Vector) -> Point:
     x, y = d
     return -y, x
 
 
-def turn_left(d: VVector) -> Point:
+def turn_left(d: Vector) -> Point:
     x, y = d
     return y, -x
-
-
-def turn_right_around(dir: Vector, axis: Vector) -> Vector:
-    return np.cross(dir, axis)
-
-
-def turn_left_around(dir: Vector, axis: Vector) -> Vector:
-    return np.cross(axis, dir)
 
 
 def find_bounds(points: Iterable[Point]) -> Rect:

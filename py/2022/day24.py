@@ -2,9 +2,7 @@ from functools import cache, partial
 from typing import Callable
 
 from aoc import main
-from coords import Dir, Point
-from coords import VVector as Vector
-from coords import find_bounds
+from coords import Dir, Point, Vector, find_bounds
 from util import mod
 
 Blizzard = tuple[Point, Vector]

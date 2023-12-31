@@ -1,7 +1,5 @@
 from aoc import main
-from coords import Dir, Point
-from coords import VVector as Vector
-from coords import addp
+from coords import Dir, Point, Vector, addp
 from graph import DiGraph
 
 SLOPES = {
