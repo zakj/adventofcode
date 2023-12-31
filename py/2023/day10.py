@@ -29,7 +29,7 @@ def build_graph(s: str) -> tuple[DiGraph, Point]:
 
     start = next(n for n, d in G.nodes.items() if d["label"] == "S")
     start_edges = set()
-    for node in list(G.neighbors(start)):
+    for node in G[start].copy():
         node_to_start_dir = subp(start, node)
         if node_to_start_dir not in PIPES[G.nodes[node]["label"]]:
             G.remove_edge(node, start)

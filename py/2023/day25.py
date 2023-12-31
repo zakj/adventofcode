@@ -17,8 +17,7 @@ def reachable_nodes_count(G: DiGraph, node) -> int:
             if node in seen:
                 continue
             seen.add(node)
-            for neighbor in G.neighbors(node):
-                queue.append(neighbor)
+            queue.extend(G[node])
     return len(seen)
 
 

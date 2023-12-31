@@ -30,7 +30,7 @@ def part1(s: str, steps: int) -> int:
         current = set(queue)
         queue = []
         for node in current:
-            for neighbor in G.neighbors(node):
+            for neighbor in G[node]:
                 seen[step].add(neighbor)
                 queue.append(neighbor)
     return len(seen[steps])
@@ -53,7 +53,7 @@ def part2(s: str, steps: int) -> int:
         queue = []
         seen = evens if step % 2 == 0 else odds
         for node in current:
-            for neighbor in G.neighbors(node):
+            for neighbor in G[node]:
                 if neighbor in seen:
                     continue
                 seen.add(neighbor)
@@ -77,7 +77,7 @@ def part2(s: str, steps: int) -> int:
             queue = []
             seen = evens if step % 2 == 0 else odds
             for node in current:
-                for neighbor in G.neighbors(node):
+                for neighbor in G[node]:
                     if neighbor in seen:
                         continue
                     seen.add(neighbor)
@@ -85,6 +85,9 @@ def part2(s: str, steps: int) -> int:
         if steps % 2 == 0:
             return len(evens)
         return len(odds)
+
+    # TODO zone-based approach
+    # https://www.reddit.com/r/adventofcode/comments/18nevo3/comment/keanfsh/
 
     # top, right, bottom, left: one of each type, at each corner
     assert height == width

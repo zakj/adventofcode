@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 from collections.abc import Callable, Iterator
 from itertools import pairwise
 from typing import Any, Generic, TypeVar
@@ -9,10 +9,18 @@ Node = TypeVar("Node")
 
 
 class DiGraph(Generic[Node]):
+    """A representation of a directed graph.
+
+    Instances work like a dictionary of node -> set of adjacent nodes.
+    """
+
     def __init__(self) -> None:
+        # node -> set of adjacent nodes
         self._adj: dict[Node, set[Node]] = defaultdict(set)
-        self._attrs: dict[Node, dict] = defaultdict(dict)
-        self._weight: dict[tuple[Node, Node], int] = {}
+        # node -> dict of attributes
+        self.nodes: dict[Node, dict] = defaultdict(dict)
+        # (u, v) -> int weight
+        self.edges: dict[tuple[Node, Node], int] = {}
 
     def __repr__(self) -> str:
         return f"Graph with {len(self)} nodes, {len(list(self.edges))} edges"
@@ -20,43 +28,40 @@ class DiGraph(Generic[Node]):
     def __contains__(self, node: Node) -> bool:
         return node in self._adj
 
+    def __getitem__(self, node: Node) -> set[Node]:
+        return self._adj[node]
+
     def __len__(self):
         return len(self._adj)
 
-    @property
-    def nodes(self) -> dict[Node, dict]:
-        return self._attrs
-
     def attr(self, key: str) -> Iterator[tuple[Node, Any]]:
+        """Select a single attribute and return node, value pairs.
+
+        Example:
+            start = next(n for n, c in G.attr("label") if c == "S")
+        """
         return ((n, d[key]) for n, d in self.nodes.items())
-
-    @property
-    def edges(self) -> dict[tuple[Node, Node], int]:
-        return self._weight
-
-    def neighbors(self, node: Node) -> set[Node]:
-        return self._adj[node]
 
     def add_node(self, node: Node, **kwargs) -> None:
         self._adj[node]
-        self._attrs[node].update(**kwargs)
+        self.nodes[node].update(**kwargs)
 
     def add_edge(self, a: Node, b: Node, weight: int = 1) -> None:
         self.add_node(a)
         self.add_node(b)
         self._adj[a].add(b)
-        self._weight[a, b] = weight
+        self.edges[a, b] = weight
 
     def remove_node(self, node: Node) -> None:
         edges = [(u, v) for (u, v) in self.edges if node in (u, v)]
         for u, v in edges:
             self.remove_edge(u, v)
         del self._adj[node]
-        del self._attrs[node]
+        del self.nodes[node]
 
     def remove_edge(self, a: Node, b: Node) -> None:
         self._adj[a].remove(b)
-        del self._weight[a, b]
+        del self.edges[a, b]
 
     @classmethod
     def from_grid(
@@ -94,13 +99,12 @@ class DiGraph(Generic[Node]):
 def compress(G: DiGraph) -> None:
     """Remove nodes between exactly two other nodes. Slow, but generic."""
     for node in list(G.nodes):
-        neighbors = G.neighbors(node)
-        if len(neighbors) != 2:
+        if len(G[node]) != 2:
             continue
-        a, b = neighbors
+        a, b = G[node]
         # a and b must not already be connected, and a<->node<->b must be two-way.
-        assert b not in G.neighbors(a) and a not in G.neighbors(b)
-        assert node in G.neighbors(a) and node in G.neighbors(b)
+        assert b not in G[a] and a not in G[b]
+        assert node in G[a] and node in G[b]
         weight = G.edges[a, node] + G.edges[node, b]
         G.add_edge(a, b, weight)
         G.add_edge(b, a, weight)
@@ -109,16 +113,15 @@ def compress(G: DiGraph) -> None:
 
 def shortest_path(G: DiGraph[Node], start: Node, end: Node) -> list[Node]:
     visited = {start}
-    queue = [(start, [start])]
+    queue = deque([(start, [start])])
     while queue:
-        cur, path = queue.pop(0)
-        for neighbor in G.neighbors(cur):
+        cur, path = queue.popleft()
+        for neighbor in G[cur] - visited:
             npath = path + [neighbor]
             if neighbor == end:
                 return npath
-            if neighbor not in visited:
-                visited.add(neighbor)
-                queue.append((neighbor, npath))
+            visited.add(neighbor)
+            queue.append((neighbor, npath))
     return []
 
 
@@ -131,12 +134,11 @@ def shortest_path_length(G: DiGraph[Node], start: Node, end: Node) -> int:
         current = queue
         queue = []
         for node in current:
-            for neighbor in G.neighbors(node):
+            for neighbor in G[node] - visited:
                 if neighbor == end:
                     return distance
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append(neighbor)
+                visited.add(neighbor)
+                queue.append(neighbor)
     return -1
 
 
@@ -152,8 +154,7 @@ def shortest_path_lengths_from(
         current = queue
         queue = []
         for node in current:
-            for neighbor in G.neighbors(node):
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append(neighbor)
-                    yield neighbor, distance
+            for neighbor in G[node] - visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+                yield neighbor, distance

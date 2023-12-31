@@ -27,7 +27,7 @@ def dfs(G: DiGraph[Point], start: Point, end: Point):
         seen.add(cur)
         # Mark the node as visitable again after processing its children.
         queue.append((cur, -1))
-        for neighbor in G.neighbors(cur):
+        for neighbor in G[cur]:
             queue.append((neighbor, distance + G.edges[cur, neighbor]))
     return best
 
@@ -39,7 +39,7 @@ def compress(G: DiGraph[Point], start: Point) -> DiGraph[Point]:
         while True:
             seen.add(cur)
             distance += 1
-            neighbors = G.neighbors(cur) - seen
+            neighbors = G[cur] - seen
             if len(neighbors) != 1:
                 return cur, distance
             cur = neighbors.pop()
@@ -52,7 +52,7 @@ def compress(G: DiGraph[Point], start: Point) -> DiGraph[Point]:
         if cur in seen:
             continue
         seen.add(cur)
-        for neighbor in G.neighbors(cur):
+        for neighbor in G[cur]:
             branch, weight = next_branch(neighbor, {cur})
             H.add_edge(cur, branch, weight)
             H.add_edge(branch, cur, weight)

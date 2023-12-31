@@ -138,9 +138,7 @@ def presses_to_low_rx(s: str) -> int:
         for target in mod.outputs:
             G.add_edge(name, target)
 
-    paths = (
-        reversed(shortest_path(G, start, "rx")) for start in G.neighbors("broadcaster")
-    )
+    paths = (reversed(shortest_path(G, start, "rx")) for start in G["broadcaster"])
     search = next(items for items in zip(*paths) if len(set(items)) > 1)
 
     return lcm(*find_cycles_in(modules, search).values())
