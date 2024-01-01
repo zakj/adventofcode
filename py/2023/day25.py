@@ -32,7 +32,7 @@ def cut_wires(s: str) -> int:
     counts = Counter()
     # TODO: got to be a cleaner way than this
     for _ in range(100):
-        a, b = random.sample(list(G.nodes), 2)
+        a, b = random.sample(list(G), 2)
         path = shortest_path(G, a, b)
         for l, r in pairwise(path):
             key = tuple(sorted([l, r]))

@@ -1,6 +1,6 @@
 from aoc import main
 from coords import Dir, Point, Vector, addp
-from graph import DiGraph
+from graph import DiGraph, GridGraph
 
 SLOPES = {
     "^": Dir.N,
@@ -10,7 +10,7 @@ SLOPES = {
 }
 
 
-def dfs(G: DiGraph[Point], start: Point, end: Point):
+def dfs(G: DiGraph, start: Point, end: Point):
     seen = set()
     queue: list[tuple[Point, int]] = [(start, 0)]
     best = 0
@@ -61,13 +61,12 @@ def compress(G: DiGraph[Point], start: Point) -> DiGraph[Point]:
 
 
 def longest_path(s: str, slopes: dict[str, Vector] = {}) -> int:
-    def edgeweight(from_node: Point, from_data, to_node: Point, to_data) -> bool:
-        c = from_data["label"]
-        if c in slopes:
-            return addp(from_node, slopes[c]) == to_node
-        return c != "#" and to_data["label"] != "#"
+    def edgeweight(src: Point, stype: str, dst: Point, dtype: str) -> bool:
+        if stype in slopes:
+            return addp(src, slopes[stype]) == dst
+        return stype != "#" and dtype != "#"
 
-    G = DiGraph.from_grid(s, edgeweight)
+    G = GridGraph(s, edgeweight)
     lines = s.splitlines()
     start = (lines[0].index("."), 0)
     end = (lines[-1].index("."), len(lines) - 1)

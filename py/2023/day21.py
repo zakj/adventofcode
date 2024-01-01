@@ -4,20 +4,15 @@ from itertools import count
 
 from aoc import main
 from coords import Point
-from graph import DiGraph
+from graph import GridGraph
 
 
-def parse(s: str) -> tuple[DiGraph[Point], Point]:
-    def edgeweights(from_node, from_data, to_node, to_data) -> bool:
-        return from_data["label"] == "." and to_data["label"] == "."
+def parse(s: str) -> tuple[GridGraph, Point]:
+    def edgeweights(src: Point, stype: str, dst: Point, dtype: str) -> bool:
+        return stype in "S." and dtype in "S."
 
-    def attrs(c: str) -> dict:
-        is_start = c == "S"
-        label = "." if is_start else c
-        return {"label": label, "is_start": is_start}
-
-    G = DiGraph.from_grid(s, edgeweights, attrs)
-    start = next(n for n, is_start in G.attr("is_start") if is_start)
+    G = GridGraph(s, edgeweights)
+    start = next(n for n, c in G.type.items() if c == "S")
     return G, start
 
 

@@ -1,7 +1,7 @@
 from collections import defaultdict, deque
 from collections.abc import Callable, Iterator
 from itertools import pairwise
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from coords import Point
 
@@ -14,16 +14,15 @@ class DiGraph(Generic[Node]):
     Instances work like a dictionary of node -> set of adjacent nodes.
     """
 
+    _adj: dict[Node, set[Node]]  # node -> set of adjacent nodes
+    edges: dict[tuple[Node, Node], int]  # (u, v) -> int weight
+
     def __init__(self) -> None:
-        # node -> set of adjacent nodes
-        self._adj: dict[Node, set[Node]] = defaultdict(set)
-        # node -> dict of attributes
-        self.nodes: dict[Node, dict] = defaultdict(dict)
-        # (u, v) -> int weight
-        self.edges: dict[tuple[Node, Node], int] = {}
+        self._adj = defaultdict(set)
+        self.edges = {}
 
     def __repr__(self) -> str:
-        return f"Graph with {len(self)} nodes, {len(list(self.edges))} edges"
+        return f"{self.__class__.__name__} with {len(self)} nodes, {len(list(self.edges))} edges"
 
     def __contains__(self, node: Node) -> bool:
         return node in self._adj
@@ -31,20 +30,14 @@ class DiGraph(Generic[Node]):
     def __getitem__(self, node: Node) -> set[Node]:
         return self._adj[node]
 
+    def __iter__(self) -> Iterator[Node]:
+        return iter(self._adj)
+
     def __len__(self):
         return len(self._adj)
 
-    def attr(self, key: str) -> Iterator[tuple[Node, Any]]:
-        """Select a single attribute and return node, value pairs.
-
-        Example:
-            start = next(n for n, c in G.attr("label") if c == "S")
-        """
-        return ((n, d[key]) for n, d in self.nodes.items())
-
     def add_node(self, node: Node, **kwargs) -> None:
         self._adj[node]
-        self.nodes[node].update(**kwargs)
 
     def add_edge(self, a: Node, b: Node, weight: int = 1) -> None:
         self.add_node(a)
@@ -57,48 +50,49 @@ class DiGraph(Generic[Node]):
         for u, v in edges:
             self.remove_edge(u, v)
         del self._adj[node]
-        del self.nodes[node]
 
     def remove_edge(self, a: Node, b: Node) -> None:
         self._adj[a].remove(b)
         del self.edges[a, b]
 
-    @classmethod
-    def from_grid(
-        cls,
-        s: str,
-        edgeweightfn: Callable[[Point, dict, Point, dict], bool | int],
-        attrsfn: Callable[[str], dict] = lambda c: {"label": c},
-    ) -> "DiGraph[Point]":
+
+# TODO: del self.type[node] in remove_node; does it matter?
+class GridGraph(DiGraph[Point]):
+    type: dict[Point, str]  # node -> character
+
+    def __init__(
+        self, s: str, edgeweightfn: Callable[[Point, str, Point, str], bool | int]
+    ) -> None:
+        super().__init__()
+        self.type = {}
+
         lines = s.splitlines()
         cols = range(len(lines[0]))
         rows = range(len(lines))
 
-        G = DiGraph()
         for y in rows:
             for x in cols:
-                G.add_node((x, y), **attrsfn(lines[y][x]))
+                self.add_node((x, y))
+                self.type[x, y] = lines[y][x]
 
         adjacents = [((x, y), (px, y)) for y in rows for px, x in pairwise(cols)]
         adjacents += [((x, y), (x, py)) for py, y in pairwise(rows) for x in cols]
         adjacents += [(b, a) for a, b in adjacents]
 
         for a, b in adjacents:
-            r = edgeweightfn(a, G.nodes[a], b, G.nodes[b])
+            r = edgeweightfn(a, self.type[a], b, self.type[b])
             match r:
                 case True:
-                    G.add_edge(a, b, weight=1)
+                    self.add_edge(a, b, weight=1)
                 case False:
                     pass
                 case int(weight):
-                    G.add_edge(a, b, weight=weight)
-
-        return G
+                    self.add_edge(a, b, weight=weight)
 
 
 def compress(G: DiGraph) -> None:
     """Remove nodes between exactly two other nodes. Slow, but generic."""
-    for node in list(G.nodes):
+    for node in list(G):
         if len(G[node]) != 2:
             continue
         a, b = G[node]
