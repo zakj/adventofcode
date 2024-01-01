@@ -1,12 +1,10 @@
 import collections
 from collections.abc import Callable, Sequence
 from itertools import islice
-from typing import Generic, Iterable, Iterator, TypeVar
-
-T = TypeVar("T")
+from typing import Iterable, Iterator, TypeVar
 
 
-def chunks(xs: list[T], n: int) -> list[list[T]]:
+def chunks[T](xs: list[T], n: int) -> list[list[T]]:
     """Split xs into sublists of length n."""
     return [xs[i : i + n] for i in range(0, len(xs), n)]
 
@@ -15,7 +13,7 @@ chunk = lambda x, n: zip(*[iter(x)] * n)
 
 
 # From itertools recipes
-def sliding_window(iterable: Iterable[T], n: int) -> Iterable[Iterable[T]]:
+def sliding_window[T](iterable: Iterable[T], n: int) -> Iterable[Iterable[T]]:
     # sliding_window('ABCDEFG', 4) --> ABCD BCDE CDEF DEFG
     it = iter(iterable)
     window = collections.deque(islice(it, n), maxlen=n)
@@ -26,7 +24,7 @@ def sliding_window(iterable: Iterable[T], n: int) -> Iterable[Iterable[T]]:
         yield tuple(window)
 
 
-def takeuntil(predicate: Callable[[T], bool], iterable: Iterable[T]) -> Iterable[T]:
+def takeuntil[T](predicate: Callable[[T], bool], iterable: Iterable[T]) -> Iterable[T]:
     for x in iterable:
         yield x
         if predicate(x):
@@ -52,7 +50,7 @@ def flip_rows_cols(lines: Sequence[str]) -> list[str]:
 
 
 # To make a class (vs its instance) iterable, used by coords.Dir.
-class IterableClass(type, Generic[T]):
+class IterableClass[T](type):
     def classiter(self):
         raise NotImplementedError
 
