@@ -4,5 +4,6 @@
     "**/.mypy_cache": true,
     "**/.venv": true,
     "**/node_modules": true
-  }
+  },
+  "python.analysis.typeCheckingMode": "basic"
 }
