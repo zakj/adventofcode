@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Callable, Generic, Iterable, Iterator, TypeVar
+from typing import Callable, Iterable, Iterator
 
 from util import IterableClass
 
@@ -7,7 +7,6 @@ Point = tuple[int, int]
 Vector = tuple[int, int]  # distinct from Point just for bookkeeping
 Rect = tuple[Point, Point]
 Point3 = tuple[int, int, int]
-T = TypeVar("T")
 
 
 class Dir(metaclass=IterableClass[Vector]):
@@ -27,7 +26,7 @@ class Dir(metaclass=IterableClass[Vector]):
         return cls._parse_map[s]
 
 
-class Grid(Generic[T]):
+class Grid[T]:
     height: int
     width: int
 

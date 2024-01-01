@@ -1,14 +1,11 @@
 from collections import defaultdict, deque
 from collections.abc import Callable, Iterator
 from itertools import pairwise
-from typing import Generic, TypeVar
 
 from coords import Point
 
-Node = TypeVar("Node")
 
-
-class DiGraph(Generic[Node]):
+class DiGraph[Node]:
     """A representation of a directed graph.
 
     Instances work like a dictionary of node -> set of adjacent nodes.
@@ -105,7 +102,7 @@ def compress(G: DiGraph) -> None:
         G.remove_node(node)
 
 
-def shortest_path(G: DiGraph[Node], start: Node, end: Node) -> list[Node]:
+def shortest_path[Node](G: DiGraph[Node], start: Node, end: Node) -> list[Node]:
     visited = {start}
     queue = deque([(start, [start])])
     while queue:
@@ -119,7 +116,7 @@ def shortest_path(G: DiGraph[Node], start: Node, end: Node) -> list[Node]:
     return []
 
 
-def shortest_path_length(G: DiGraph[Node], start: Node, end: Node) -> int:
+def shortest_path_length[Node](G: DiGraph[Node], start: Node, end: Node) -> int:
     distance = 0
     visited = {start}
     queue = [start]
@@ -136,7 +133,7 @@ def shortest_path_length(G: DiGraph[Node], start: Node, end: Node) -> int:
     return -1
 
 
-def shortest_path_lengths_from(
+def shortest_path_lengths_from[Node](
     G: DiGraph[Node], start: Node
 ) -> Iterator[tuple[Node, int]]:
     distance = 0
