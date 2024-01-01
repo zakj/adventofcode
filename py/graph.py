@@ -1,11 +1,12 @@
+import sys
 from collections import defaultdict, deque
-from collections.abc import Callable, Iterator
-from itertools import pairwise
+from collections.abc import Callable, Hashable, Iterator
+from itertools import pairwise, product
 
 from coords import Point
 
 
-class DiGraph[Node]:
+class DiGraph[Node: Hashable]:
     """A representation of a directed graph.
 
     Instances work like a dictionary of node -> set of adjacent nodes.
@@ -32,6 +33,9 @@ class DiGraph[Node]:
 
     def __len__(self):
         return len(self._adj)
+
+    def items(self):
+        return self._adj.items()
 
     def add_node(self, node: Node, **kwargs) -> None:
         self._adj[node]
@@ -102,6 +106,17 @@ def compress(G: DiGraph) -> None:
         G.remove_node(node)
 
 
+# https://en.wikipedia.org/wiki/Floyd–Warshall_algorithm
+def all_shortest_path_lengths[Node](G: DiGraph[Node]) -> dict[tuple[Node, Node], int]:
+    distance = defaultdict[tuple[Node, Node], int](lambda: sys.maxsize)
+    for src, dsts in G.items():
+        for dst in dsts:
+            distance[src, dst] = 1
+    for k, i, j in product(G, G, G):
+        distance[i, j] = min(distance[i, j], distance[i, k] + distance[k, j])
+    return dict(distance)
+
+
 def shortest_path[Node](G: DiGraph[Node], start: Node, end: Node) -> list[Node]:
     visited = {start}
     queue = deque([(start, [start])])
@@ -133,9 +148,9 @@ def shortest_path_length[Node](G: DiGraph[Node], start: Node, end: Node) -> int:
     return -1
 
 
-def shortest_path_lengths_from[Node](
-    G: DiGraph[Node], start: Node
-) -> Iterator[tuple[Node, int]]:
+def shortest_path_lengths_from[
+    Node
+](G: DiGraph[Node], start: Node) -> Iterator[tuple[Node, int]]:
     distance = 0
     visited = {start}
     yield start, distance
