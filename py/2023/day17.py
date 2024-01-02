@@ -13,7 +13,7 @@ def min_heat_loss(grid: Grid[int], max_dir=3, min_dir=0) -> int:
         (0, (0, 0), Dir.S, 0),
     ]
     seen: set[tuple[Point, Vector, int]] = set()
-    goal = (grid.height - 1, grid.width - 1)
+    goal = (grid.width - 1, grid.height - 1)
     while q:
         heat, cur, dir, count = heappop(q)
         if cur == goal and count >= min_dir:
