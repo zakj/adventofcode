@@ -118,24 +118,29 @@ export function main(
   ...fns: ((input: string, args: Record<string, unknown>) => unknown)[]
 ) {
   // TODO support for multiple inputs
-  process.stdin.on('data', (data) => {
-    const [input, ...extra] = data.toString().split(String.fromCharCode(30));
-    const args = JSON.parse(extra[0] ?? '{}');
-    if (process.argv.length > 2) {
-      const ws = new WebSocket(process.argv[2]);
-      ws.on('open', () => {
-        for (const fn of fns) {
-          const start = performance.now();
-          const answer = fn(input, args);
-          const duration = (performance.now() - start) / 1000;
-          ws.send(JSON.stringify({ type: 'result', answer, duration }));
-        }
-        ws.close();
-      });
-    } else {
+  if (process.argv.length > 2) {
+    const ws = new WebSocket(process.argv[2]);
+    ws.on('message', (msg) => {
+      const { input, args, part } = JSON.parse(msg);
+      let i = 1;
+      for (const fn of fns) {
+        if (part && i !== part) continue;
+        const start = performance.now();
+        const answer = fn(input, args);
+        const duration = (performance.now() - start) / 1000;
+        ws.send(JSON.stringify({ type: 'result', answer, duration }));
+        i++;
+      }
+      ws.close();
+    });
+  } else {
+    process.stdin.on('data', (data) => {
+      // TODO drop this args support
+      const [input, ...extra] = data.toString().split(String.fromCharCode(30));
+      const args = JSON.parse(extra[0] ?? '{}');
       for (const fn of fns) console.log(fn(input, args));
-    }
-  });
+    });
+  }
 }
 
 const assertHandler: ProxyHandler<typeof assert> = {
