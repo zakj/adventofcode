@@ -1,7 +1,7 @@
 [[examples]]
-answers = [16, -1]
+answers = [16]
+part = 1
 args.steps_p1 = 6
-args.steps_p2 = 50
 input = '''
 ...........
 .....###.#.

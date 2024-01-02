@@ -32,10 +32,6 @@ def part1(s: str, steps: int) -> int:
 
 
 def part2(s: str, steps: int) -> int:
-    if len(s) < 500:
-        # TODO skip example
-        return -1
-
     G, start = parse(s)
 
     evens = set()
