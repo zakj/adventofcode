@@ -1,6 +1,6 @@
 [[examples]]
 answers = [6]
-only = 1
+part = 1
 input = '''
 LLR
 
@@ -10,7 +10,7 @@ ZZZ = (ZZZ, ZZZ)'''
 
 [[examples]]
 answers = [6]
-only = 2
+part = 2
 input = '''
 LR
 

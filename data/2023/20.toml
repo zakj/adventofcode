@@ -1,7 +1,6 @@
-# TODO: fix examples that are only relevant for one part
 [[examples]]
 answers = [32000000, -1]
-only = 1
+part = 1
 input = '''
 broadcaster -> a, b, c
 %a -> b
@@ -11,7 +10,7 @@ broadcaster -> a, b, c
 
 [[examples]]
 answers = [11687500, -1]
-only = 1
+part = 1
 input = '''
 broadcaster -> a
 %a -> inv, con

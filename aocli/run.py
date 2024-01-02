@@ -5,15 +5,15 @@ import threading
 from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
-from queue import Empty, SimpleQueue
+from queue import Empty
 from typing import IO
 
 from rich.console import Console
 
 from . import BASE_DIR, RUNNERS
-from .data import Input, load_data
+from .data import Example, Input, load_data
 from .ui import Day, Year
-from .websocket import WS_URL, Message
+from .websocket import WebsocketThread
 
 FILE_SEP = chr(28)
 RECORD_SEP = chr(30)
@@ -41,6 +41,7 @@ class StdoutThread(threading.Thread):
 
     def run(self):
         for line in self.fd:
+            # TODO check here if we're trying to cancel and exit early
             self.console.print(line.rstrip())
 
 
@@ -52,24 +53,22 @@ def most_recently_modified(path: Path) -> Path:
 
 
 class Runner:
-    message_queue: SimpleQueue[Message]
+    ws_thread: WebsocketThread
     proc: subprocess.Popen | None
     running: threading.Lock
 
-    def __init__(self, message_queue: SimpleQueue[Message]) -> None:
-        self.message_queue = message_queue
+    def __init__(self, ws_thread: WebsocketThread) -> None:
+        self.ws_thread = ws_thread
         self.proc = None
         self.running = threading.Lock()
 
     def run(self, filename: str) -> None:
         if not self.running.acquire(blocking=False):
-            if self.proc:
+            if self.proc and self.proc.poll() is None:
                 self.proc.terminate()
                 self.proc.wait()
             if not self.running.acquire(timeout=0.2):
-                # Unexpected lock holder. This can happen if multiple different files
-                # are all saved at once, best to just abandon this attempt.
-                # TODO: debugging feedback? better concurrency model?
+                print("runner lock is stuck; giving up")
                 return
 
         # Newline between runs.
@@ -103,26 +102,53 @@ class Runner:
                         self.spawn(path, ui, data.main)
         self.running.release()
 
+    # TODO something like
+    # def test(self, data, ui: Day|Year):
+    #     # spawn
+    #     with data.examples:
+    #         for example in data.examples:
+    #             self.sendq.put(example)
+    #             # process results until done message
+    #     self.sendq.put(data.main)
+    #     # process results until done message
+
+    # TODO: ui shows a loading spinner if we've got a complete message but are still printing from stdin
     def spawn(self, path: Path, ui: Day | Year, input: Input) -> None:
-        args = [x.format(path) for x in RUNNERS[path.suffix].split()] + [WS_URL]
-        with input_fd(input) as stdin:
-            self.proc = proc = subprocess.Popen(
-                args,
-                stdin=stdin,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-            )
+        args = [x.format(path) for x in RUNNERS[path.suffix].split()] + [
+            self.ws_thread.url
+        ]
+        self.proc = proc = subprocess.Popen(
+            args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
         assert proc.stdout is not None  # for type system
         stdout = StdoutThread(proc.stdout, ui.live.console)
         stdout.start()
 
+        try:
+            send, messages = self.ws_thread.queue.get(timeout=1)
+        except Empty:
+            # TODO better handling here; check self.proc etc
+            print("runner never got a websocket connection; giving up")
+            return
+
+        msg = {
+            "args": input.args,
+            "input": input.input,
+        }
+        if isinstance(input, Example):
+            msg["part"] = input.part
+        send(json.dumps(msg))
         answers = iter(input.answers)
-        while proc.poll() is None or not self.message_queue.empty():
+        while proc.poll() is None:
+            # XXX need to bail here if we're trying to respawn
             try:
-                msg = self.message_queue.get(timeout=0.2)
+                msg = messages.get(timeout=0.2)
             except Empty:
                 continue
+
             if "complete" in msg:
                 break
             if "answer" in msg:

@@ -39,7 +39,7 @@ if not path.exists():
 
 websocket_thread = WebsocketThread()
 websocket_thread.start()
-runner = Runner(websocket_thread.queue)
+runner = Runner(websocket_thread)
 
 if args.watch:
     patterns = [f"*{ext}" for ext in RUNNERS.keys()]
