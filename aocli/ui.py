@@ -18,6 +18,7 @@ class DayRun(NamedTuple):
     result: str
     duration: str
     is_correct: bool
+    has_aside: bool = False
 
 
 def format_duration(seconds: float):
@@ -153,7 +154,11 @@ class Day(BaseUI):
 
         # Main output.
         for i, row in enumerate(self.runs):
-            table.add_row(f"{i + 1}:", row.result, row.duration)
+            table.add_row(
+                f"{i + 1}:",
+                row.result,
+                row.duration + (" [bright_white]→" if row.has_aside else ""),
+            )
 
         # Loading spinner, showing the part number when appropriate.
         if not self.done:
@@ -172,8 +177,12 @@ class Day(BaseUI):
         yield
         self.examples_running = False
 
+    @property
+    def current_runs(self):
+        return self.example_runs if self.examples_running else self.runs
+
     def complete(self, result, expected, duration):
-        (self.example_runs if self.examples_running else self.runs).append(
+        self.current_runs.append(
             DayRun(
                 format_result(result, expected),
                 format_duration(duration),
@@ -182,8 +191,7 @@ class Day(BaseUI):
         )
 
     def error(self):
-        # TODO DRY
-        (self.example_runs if self.examples_running else self.runs).append(
+        self.current_runs.append(
             DayRun(
                 "[red]Error",
                 "[red]×",
@@ -195,7 +203,6 @@ class Day(BaseUI):
         table = Table(*aside["header"], box=box.ROUNDED)
         for row in aside["rows"]:
             table.add_row(*row)
-        # TODO restore this behavior
-        # if self.row and isinstance(self.row.duration.renderable, str):
-        #     self.row.duration.renderable += " [bright_white]→"
+        current_runs = self.example_runs if self.examples_running else self.runs
+        current_runs[-1] = current_runs[-1]._replace(has_aside=True)
         self.asides.renderables.append(table)
