@@ -1,5 +1,6 @@
 import functools
 import json
+import threading
 from collections.abc import Callable
 from queue import SimpleQueue
 from typing import Any, Literal, NotRequired, TypedDict
@@ -45,10 +46,12 @@ class WebsocketThread(BaseThread):
     host = "localhost"
     port = 8765
     queue: SimpleQueue[Connection]
+    ready: threading.Event
 
     def __init__(self):
         super().__init__()
         self.queue = SimpleQueue()
+        self.ready = threading.Event()
 
     def run(self) -> None:
         handler = functools.partial(on_connection, self.queue)
@@ -56,6 +59,7 @@ class WebsocketThread(BaseThread):
             try:
                 with serve(handler, self.host, self.port) as server:
                     self.server = server
+                    self.ready.set()
                     server.serve_forever()
                     break
             except OSError:

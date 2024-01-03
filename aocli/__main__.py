@@ -39,6 +39,7 @@ if not path.exists():
 
 websocket_thread = WebsocketThread()
 websocket_thread.start()
+websocket_thread.ready.wait()
 runner = Runner(websocket_thread)
 
 if args.watch:
@@ -59,3 +60,4 @@ if args.watch:
 else:
     runner.run(args.path)
     websocket_thread.stop()
+    websocket_thread.join()
