@@ -2,7 +2,7 @@ import functools
 import json
 from collections.abc import Callable
 from queue import SimpleQueue
-from typing import Any, NotRequired, TypedDict
+from typing import Any, Literal, NotRequired, TypedDict
 
 from watchdog.utils import BaseThread
 from websockets import ConnectionClosedError
@@ -21,11 +21,11 @@ class ResultMessage(TypedDict):
     aside: NotRequired[Aside]
 
 
-class CompleteMessage(TypedDict):
-    complete: bool
+class DoneMessage(TypedDict):
+    done: Literal[True]
 
 
-Message = ResultMessage | CompleteMessage
+Message = ResultMessage | DoneMessage
 
 Connection = tuple[Callable[[str], None], SimpleQueue[Message]]
 

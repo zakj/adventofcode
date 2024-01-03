@@ -162,16 +162,8 @@ class Day(BaseUI):
             else:
                 table.add_row(f"{len(self.runs) + 1}:", Spinner("line"))
 
-        # We quit an in-progress run to start a new one sometimes.
         panel = Panel.fit(table, title=self.title, title_align="left")
-        if self.killed:
-            table.add_row("", "[dim red]KILLED")
-            panel.border_style = "dim"
-
         return Columns([panel, self.asides])
-
-    def quit(self):
-        self.killed = True
 
     @property
     @contextmanager
@@ -200,11 +192,10 @@ class Day(BaseUI):
         )
 
     def aside(self, aside: Aside):
-        # TODO: how to handle extras when there are examples? aoc.py needs to
-        # know not to send it unless it's running an example
         table = Table(*aside["header"], box=box.ROUNDED)
         for row in aside["rows"]:
             table.add_row(*row)
+        # TODO restore this behavior
         # if self.row and isinstance(self.row.duration.renderable, str):
         #     self.row.duration.renderable += " [bright_white]→"
         self.asides.renderables.append(table)
