@@ -127,8 +127,7 @@ class Day(BaseUI):
 
     def __init__(self, path: Path):
         super().__init__()
-        self.asides = Group()  # TODO
-
+        self.asides = Group()
         self.title = "/".join(path.parts[-2:])
         self.examples_running = False
         # TODO: just keep them all in one list with an is_example?
