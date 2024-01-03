@@ -90,6 +90,6 @@ def main(*fns: Callable[..., Any], profile: int = -1):
                         response["answer"] = fn(input, **kwargs)
                         response["duration"] = time.perf_counter() - start
                     websocket.send(json.dumps(response, cls=ResultsEncoder))
-                websocket.send(json.dumps({'done': True}, cls=ResultsEncoder))
+                websocket.send(json.dumps({"done": True}, cls=ResultsEncoder))
     except KeyboardInterrupt:
         pass
