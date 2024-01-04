@@ -1,0 +1,10 @@
+[[examples]]
+answers = ['18f47a30']
+part = 1
+input = 'abc'
+
+[main]
+answers = ['f77a0e6e', '999828ec']
+input = '''
+cxdnnyjw
+'''
