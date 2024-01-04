@@ -114,13 +114,13 @@ export function solve(...fns: SolverFn[]): Solver {
   };
 }
 
-export function main(
+export async function main(
   ...fns: ((input: string, args: Record<string, unknown>) => unknown)[]
 ) {
   // TODO support for multiple inputs
   if (process.argv.length > 2) {
     const ws = new WebSocket(process.argv[2]);
-    ws.on('message', (msg) => {
+    ws.on('message', async (msg) => {
       const { input, args, part } = JSON.parse(msg);
       let i = 1;
       for (const fn of fns) {
@@ -128,7 +128,10 @@ export function main(
         const start = performance.now();
         const answer = fn(input, args);
         const duration = (performance.now() - start) / 1000;
-        ws.send(JSON.stringify({ type: 'result', answer, duration }));
+        // Doing work in another solver on the main thread can delay ws.send.
+        await new Promise((resolve) =>
+          ws.send(JSON.stringify({ type: 'result', answer, duration }), resolve)
+        );
         i++;
       }
       ws.close();
