@@ -1,4 +1,3 @@
-# TODO: cleanup
 from collections import defaultdict
 from itertools import count
 
@@ -16,7 +15,7 @@ def parse(s: str) -> tuple[GridGraph, Point]:
     return G, start
 
 
-def part1(s: str, steps: int) -> int:
+def reachable(s: str, steps: int) -> int:
     G, start = parse(s)
 
     seen = defaultdict(set)
@@ -31,7 +30,7 @@ def part1(s: str, steps: int) -> int:
     return len(seen[steps])
 
 
-def part2(s: str, steps: int) -> int:
+def infinite_reachable(s: str, steps: int) -> int:
     G, start = parse(s)
 
     evens = set()
@@ -77,9 +76,6 @@ def part2(s: str, steps: int) -> int:
             return len(evens)
         return len(odds)
 
-    # TODO zone-based approach
-    # https://www.reddit.com/r/adventofcode/comments/18nevo3/comment/keanfsh/
-
     # top, right, bottom, left: one of each type, at each corner
     assert height == width
     steps_remaining = (steps - start[0] - 1) % width
@@ -104,6 +100,6 @@ def part2(s: str, steps: int) -> int:
 
 if __name__ == "__main__":
     main(
-        lambda s, steps_p1: part1(s, steps_p1),
-        lambda s, steps_p2: part2(s, steps_p2),
+        lambda s, steps_p1: reachable(s, steps_p1),
+        lambda s, steps_p2: infinite_reachable(s, steps_p2),
     )

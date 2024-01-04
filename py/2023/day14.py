@@ -22,7 +22,6 @@ def tilt(map: Map) -> Map:
     return map
 
 
-# TODO: try storing map as two sets of rolling/block points
 def spin_cycle(s: str, goal=1_000_000_000) -> int:
     map = [list(line) for line in s.splitlines()]
 
@@ -43,5 +42,4 @@ if __name__ == "__main__":
     main(
         lambda s: weight(tilt([list(line) for line in s.splitlines()])),
         lambda s: spin_cycle(s),
-        # profile=1,
     )

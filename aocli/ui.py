@@ -199,9 +199,10 @@ class Day(BaseUI):
         )
 
     def aside(self, aside: Aside):
+        if self.examples_running:
+            return
         table = Table(*aside["header"], box=box.ROUNDED)
         for row in aside["rows"]:
             table.add_row(*row)
-        current_runs = self.example_runs if self.examples_running else self.runs
-        current_runs[-1] = current_runs[-1]._replace(has_aside=True)
+        self.current_runs[-1] = self.current_runs[-1]._replace(has_aside=True)
         self.asides.renderables.append(table)

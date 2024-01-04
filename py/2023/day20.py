@@ -128,9 +128,6 @@ def find_cycles_in(modules: dict[str, Module], search: list[str]) -> dict[str, i
 
 
 def presses_to_low_rx(s: str) -> int:
-    if len(s) < 500:
-        # TODO: skip examples
-        return -1
     modules = parse(s)
 
     G = DiGraph()

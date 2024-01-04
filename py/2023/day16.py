@@ -13,18 +13,6 @@ SPLITTERS: dict[str, set[Vector]] = {
 }
 
 
-def best_beam_start(grid: Grid) -> int:
-    best = 0
-    for x in range(grid.width):
-        best = max(best, energize(grid, (x, 0), Dir.S))
-        best = max(best, energize(grid, (x, grid.height - 1), Dir.N))
-    for y in range(grid.height):
-        best = max(best, energize(grid, (0, y), Dir.E))
-        best = max(best, energize(grid, (grid.width - 1, y), Dir.W))
-    return best
-
-
-# TODO: cache start/dir -> int runs, hash grid on grid.height
 def energize(grid: Grid, start: Point, dir: Vector) -> int:
     seen = set()
     q: deque[tuple[Point, Vector]] = deque([(start, dir)])
@@ -46,7 +34,18 @@ def energize(grid: Grid, start: Point, dir: Vector) -> int:
             q.append((addp(pos, two), two))
         else:
             q.append((addp(pos, dir), dir))
-    return len(set(p for p, d in seen))
+    return len(set(p for p, _ in seen))
+
+
+def best_beam_start(grid: Grid) -> int:
+    best = 0
+    for x in range(grid.width):
+        best = max(best, energize(grid, (x, 0), Dir.S))
+        best = max(best, energize(grid, (x, grid.height - 1), Dir.N))
+    for y in range(grid.height):
+        best = max(best, energize(grid, (0, y), Dir.E))
+        best = max(best, energize(grid, (grid.width - 1, y), Dir.W))
+    return best
 
 
 if __name__ == "__main__":
