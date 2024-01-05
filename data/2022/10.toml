@@ -1,6 +1,6 @@
 [[examples]]
-# TODO: the example for part 2 doesn't emit letters, what to do?
 answers = [13140]
+part = 1
 input = '''
 addx 15
 addx -11

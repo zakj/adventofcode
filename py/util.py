@@ -1,7 +1,10 @@
 import collections
 from collections.abc import Callable, Sequence
 from itertools import islice
-from typing import Iterable, Iterator, TypeVar
+from pathlib import Path
+from typing import Iterable, Iterator, Literal
+
+from parse import paras
 
 
 def chunks[T](xs: list[T], n: int) -> list[list[T]]:
@@ -56,3 +59,18 @@ class IterableClass[T](type):
 
     def __iter__(self) -> Iterator[T]:
         return self.classiter()
+
+
+def ocr(lines: list[str], font: Literal["4x6"] | Literal["6x10"]) -> str:
+    path = Path(__file__).parent.parent / "lib" / f"figlet-{font}.txt"
+    with open(path) as f:
+        values, *keys = paras(f.read())
+    values = values[0]
+    width = len(keys[0][0])
+    keys = ["".join(letter) for letter in keys]
+    assert len(values) == len(keys)
+    mapping = {k: v for k, v in zip(keys, values)}
+    chars = []
+    for i in range(0, len(lines[0]), width):
+        chars.append(mapping["".join(l[i : i + width] for l in lines)])
+    return "".join(chars)
