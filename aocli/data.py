@@ -16,20 +16,11 @@ class Input:
     answers: list
     args: dict
     input: str
-
-
-@dataclass
-class Example(Input):
+    is_example: bool = False
     part: Literal[1] | Literal[2] | None = None
 
 
-@dataclass
-class Data:
-    main: Input
-    examples: list[Example]
-
-
-def load_data(path: Path) -> Data:
+def load_data(path: Path) -> list[Input]:
     year = path.parent.name
     day = path.stem.removeprefix("day")
     data_file = BASE_DIR / "data" / year / f"{day}.toml"
@@ -37,13 +28,21 @@ def load_data(path: Path) -> Data:
         write_data_skeleton(data_file, fetch_input(year, day))
     with open(data_file, "rb") as f:
         data = tomllib.load(f)
-    m = data["main"]
-    main = Input(m.get("answers", []), m.get("args", {}), m["input"])
-    examples = [
-        Example(ex.get("answers", []), ex.get("args", {}), ex["input"], ex.get("part"))
+
+    inputs = [
+        Input(
+            ex.get("answers", []),
+            ex.get("args", {}),
+            ex["input"],
+            is_example=True,
+            part=ex.get("part"),
+        )
         for ex in data.get("examples", [])
     ]
-    return Data(main, examples)
+    m = data["main"]
+    inputs.append(Input(m.get("answers", []), m.get("args", {}), m["input"]))
+
+    return inputs
 
 
 def write_data_skeleton(path: Path, input: str) -> None:

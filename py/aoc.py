@@ -4,6 +4,7 @@ import json
 import pstats
 import sys
 import time
+import traceback
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -58,6 +59,18 @@ def create_profile_table(profile: cProfile.Profile, src_path: Path):
     }
 
 
+def run_solver(fn, input, **kwargs):
+    response = {}
+    start = time.perf_counter()
+    try:
+        response["answer"] = fn(input, **kwargs)
+        response["duration"] = time.perf_counter() - start
+    except Exception:
+        traceback.print_exc()
+        response["error"] = True
+    return response
+
+
 def main(*fns: Callable[..., Any], profile: int = -1):
     try:
         if len(sys.argv) == 1:
@@ -66,30 +79,29 @@ def main(*fns: Callable[..., Any], profile: int = -1):
                 print(fn(input))
         else:
             with connect(sys.argv[1]) as websocket:
-                # TODO multi file
-                msg = json.loads(websocket.recv())
-                input, args, part = msg["input"], msg["args"], msg.get("part")
-                for i, fn in enumerate(fns):
-                    if part and i + 1 != part:
-                        continue
-                    sig = inspect.signature(fn)
-                    kwargs = {k: v for k, v in args.items() if k in sig.parameters}
-                    response = {}
-                    prof = None
-                    if profile == i:
-                        prof = cProfile.Profile()
-                        start = time.perf_counter()
-                        prof.enable()
-                        response["answer"] = fn(input, **kwargs)
-                        prof.disable()
-                        response["duration"] = time.perf_counter() - start
-                        response["aside"] = create_profile_table(prof, _find_day_file())
-                    else:
-                        start = time.perf_counter()
-                        # TODO: catch and handle exceptions here so we don't abort the whole run
-                        response["answer"] = fn(input, **kwargs)
-                        response["duration"] = time.perf_counter() - start
-                    websocket.send(json.dumps(response, cls=ResultsEncoder))
-                websocket.send(json.dumps({"done": True}, cls=ResultsEncoder))
+                while True:
+                    msg = json.loads(websocket.recv())
+                    if msg.get("done"):
+                        break
+                    input, args, part = msg["input"], msg["args"], msg.get("part")
+                    for i, fn in enumerate(fns):
+                        if part and i + 1 != part:
+                            continue
+                        sig = inspect.signature(fn)
+                        kwargs: dict[str, Any] = {
+                            k: v for k, v in args.items() if k in sig.parameters
+                        }
+                        if profile == i:
+                            prof = cProfile.Profile()
+                            prof.enable()
+                            response = run_solver(fn, input, **kwargs)
+                            prof.disable()
+                            response["aside"] = create_profile_table(
+                                prof, _find_day_file()
+                            )
+                        else:
+                            response = run_solver(fn, input, **kwargs)
+                        websocket.send(json.dumps(response, cls=ResultsEncoder))
+                    websocket.send(json.dumps({"done": True}, cls=ResultsEncoder))
     except KeyboardInterrupt:
         pass

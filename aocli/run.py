@@ -1,33 +1,25 @@
 import json
-import subprocess
-import tempfile
 import threading
+from collections.abc import Callable
 from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
-from queue import Empty
+from queue import Empty, SimpleQueue
+from subprocess import PIPE, STDOUT, Popen
 from typing import IO
+from urllib.error import HTTPError
 
 from rich.console import Console
+from websockets import ConnectionClosedError
 
 from . import BASE_DIR, RUNNERS
-from .data import Example, Input, load_data
-from .ui import Day, Year
-from .websocket import WebsocketThread
-
-FILE_SEP = chr(28)
-RECORD_SEP = chr(30)
+from .data import Input, load_data
+from .ui import BaseUI, Day, Year
+from .websocket import Message, WebsocketThread
 
 
-@contextmanager
-def input_fd(input: Input):
-    with tempfile.TemporaryFile("w+") as tmp:
-        tmp.write(input.input)
-        if input.args:
-            tmp.write(RECORD_SEP)
-            tmp.write(json.dumps(input.args))
-        tmp.seek(0)
-        yield tmp
+class NoWebsocketConnection(Exception):
+    pass
 
 
 class StdoutThread(threading.Thread):
@@ -60,7 +52,7 @@ def most_recently_modified(path: Path) -> Path:
 
 class Runner:
     ws_thread: WebsocketThread
-    proc: subprocess.Popen | None
+    proc: Popen | None
     running: threading.Lock
 
     def __init__(self, ws_thread: WebsocketThread) -> None:
@@ -85,63 +77,63 @@ class Runner:
             path = Path(filename).resolve()
             if path.is_file():
                 path = most_recently_modified(path)
-                try:
-                    data = load_data(path)
-                except Exception as err:
-                    print("*** unable to fetch data:", err)
-                    self.running.release()
-                    return
-                with Day(path) as ui:
-                    with ui.examples:
-                        for example in data.examples:
-                            self.spawn(path, ui, example)
-                    self.spawn(path, ui, data.main)
+                inputs = load_data(path)
+                with Day(path) as ui, self.spawn(path, ui) as (send, messages):
+                    for input in inputs:
+                        if not input.is_example:
+                            ui.finish_examples()
+                        self.process_input(input, ui, send, messages)
+                    send(json.dumps({"done": True}))
             elif path.is_dir():
                 files = sorted(
                     f for suffix in RUNNERS.keys() for f in path.rglob(f"day??{suffix}")
                 )
                 for year, days in groupby(files, lambda f: f.parent.name):
                     with Year(year) as ui:
-                        # TODO: what if we try to cancel here?
                         for path in days:
-                            ui.start_day(path.stem.removeprefix("day"))
-                            data = load_data(path)
-                            self.spawn(path, ui, data.main)
-        except KeyboardInterrupt:
+                            with self.spawn(path, ui) as (send, messages):
+                                ui.start_day(path.stem.removeprefix("day"))
+                                input = load_data(path)[-1]
+                                self.process_input(input, ui, send, messages)
+        except (ConnectionClosedError, KeyboardInterrupt):
             pass
+        except HTTPError as err:
+            print("*** unable to fetch data:", err)
+        except NoWebsocketConnection:
+            print("*** runner never got a websocket connection; giving up")
         finally:
             self.running.release()
 
-    def spawn(self, path: Path, ui: Day | Year, input: Input) -> None:
-        args = [x.format(path) for x in RUNNERS[path.suffix].split()] + [
-            self.ws_thread.url
-        ]
-        self.proc = proc = subprocess.Popen(
-            args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-        )
-        assert proc.stdout is not None  # for type system
+    @contextmanager
+    def spawn(self, path, ui: BaseUI):
+        args = [x.format(path) for x in RUNNERS[path.suffix].split()]
+        args.append(self.ws_thread.url)
+        self.proc = proc = Popen(args, stdout=PIPE, stderr=STDOUT, text=True)
+        assert proc.stdout is not None
         stdout = StdoutThread(proc.stdout, ui.live.console)
         stdout.start()
-
         try:
             send, messages = self.ws_thread.queue.get(timeout=1)
+            yield send, messages
         except Empty:
-            # TODO better handling here; check self.proc etc
-            print("*** runner never got a websocket connection; giving up")
-            return
+            raise NoWebsocketConnection()
+        finally:
+            if proc.wait() != 0:
+                ui.error()
+            stdout.quit()
+            stdout.join()
 
-        msg = {
-            "args": input.args,
-            "input": input.input,
-        }
-        if isinstance(input, Example):
-            msg["part"] = input.part
-        send(json.dumps(msg))  # TODO can get ConnectionClosedError here—why
+    def process_input(
+        self,
+        input: Input,
+        ui: BaseUI,
+        send: Callable[[str], None],
+        messages: SimpleQueue[Message],
+    ):
+        msg = {"args": input.args, "input": input.input, "part": input.part}
+        send(json.dumps(msg))
         answers = iter(input.answers)
-        while proc.poll() is None or not messages.empty():
+        while (self.proc and self.proc.poll() is None) or not messages.empty():
             try:
                 msg = messages.get(timeout=0.2)
             except Empty:
@@ -149,13 +141,10 @@ class Runner:
 
             if msg.get("done"):
                 break
-            if "answer" in msg and "duration" in msg:
+            elif msg.get("error"):
+                ui.error()
+            elif "answer" in msg and "duration" in msg:
                 expected = next(answers, None)
                 ui.complete(msg["answer"], expected, msg["duration"])
-            if "aside" in msg:
-                ui.aside(msg["aside"])
-
-        if proc.wait() != 0:
-            ui.error()
-        stdout.quit()
-        stdout.join()
+                if "aside" in msg:
+                    ui.aside(msg["aside"])

@@ -18,7 +18,6 @@ class DayRun(NamedTuple):
     result: str
     duration: str
     is_correct: bool
-    has_aside: bool = False
 
 
 def format_duration(seconds: float):
@@ -66,9 +65,6 @@ class BaseUI:
         raise NotImplementedError
 
     def error(self) -> None:
-        raise NotImplementedError
-
-    def quit(self) -> None:
         raise NotImplementedError
 
     def aside(self, aside: Aside) -> None:
@@ -119,21 +115,17 @@ class Year(BaseUI):
 
 
 class Day(BaseUI):
-    title: str
-    examples_running: bool
-    example_runs: list[DayRun]
+    asides: Group
+    main_start: int | None
     runs: list[DayRun]
-    killed: bool
+    title: str
 
     def __init__(self, path: Path):
         super().__init__()
         self.asides = Group()
-        self.title = "/".join(path.parts[-2:])
-        self.examples_running = False
-        # TODO: just keep them all in one list with an is_example?
-        self.example_runs = []
+        self.main_start = None
         self.runs = []
-        self.killed = False
+        self.title = "/".join(path.parts[-2:])
 
     # TODO: cache repeated runs?
     def __rich__(self):
@@ -142,46 +134,38 @@ class Day(BaseUI):
         table.add_column("Result", min_width=3)
         table.add_column("Time", min_width=8, justify="right")
 
+        i = len(self.runs) if self.main_start is None else self.main_start
+        example_runs = self.runs[:i]
+        main_runs = self.runs[i:]
+
         # Don't show examples if they're finished and they all succeeded. If
         # any of them failed, show them all with a dim rule between sections.
-        any_example_failed = any(not r.is_correct for r in self.example_runs)
-        if self.examples_running or any_example_failed:
-            for row in self.example_runs:
+        any_example_failed = any(not r.is_correct for r in example_runs)
+        if self.main_start is None or any_example_failed:
+            for row in example_runs:
                 table.add_row("", row.result, row.duration)
-            if any_example_failed and not self.examples_running:
+            if any_example_failed and self.main_start is not None:
                 table.add_row(*[Rule(style="dim")] * 3)
 
         # Main output.
-        for i, row in enumerate(self.runs):
-            table.add_row(
-                f"{i + 1}:",
-                row.result,
-                row.duration + (" [bright_white]→" if row.has_aside else ""),
-            )
+        for i, row in enumerate(main_runs):
+            table.add_row(f"{i + 1}:", row.result, row.duration)
 
         # Loading spinner, showing the part number when appropriate.
         if not self.done:
-            if self.examples_running:
+            if self.main_start is None:
                 table.add_row(Spinner("line"))
             else:
-                table.add_row(f"{len(self.runs) + 1}:", Spinner("line"))
+                table.add_row(f"{len(main_runs) + 1}:", Spinner("line"))
 
         panel = Panel.fit(table, title=self.title, title_align="left")
         return Columns([panel, self.asides])
 
-    @property
-    @contextmanager
-    def examples(self):
-        self.examples_running = True
-        yield
-        self.examples_running = False
-
-    @property
-    def current_runs(self):
-        return self.example_runs if self.examples_running else self.runs
+    def finish_examples(self):
+        self.main_start = len(self.runs)
 
     def complete(self, result, expected, duration):
-        self.current_runs.append(
+        self.runs.append(
             DayRun(
                 format_result(result, expected),
                 format_duration(duration),
@@ -190,19 +174,14 @@ class Day(BaseUI):
         )
 
     def error(self):
-        self.current_runs.append(
-            DayRun(
-                "[red]Error",
-                "[red]×",
-                False,
-            )
-        )
+        self.runs.append(DayRun("[red]Error", "[red]×", False))
 
     def aside(self, aside: Aside):
-        if self.examples_running:
+        if self.main_start is None:
             return
         table = Table(*aside["header"], box=box.ROUNDED)
         for row in aside["rows"]:
             table.add_row(*row)
-        self.current_runs[-1] = self.current_runs[-1]._replace(has_aside=True)
+        run = self.runs[-1]
+        self.runs[-1] = run._replace(duration=run.duration + " [bright_white]→")
         self.asides.renderables.append(table)

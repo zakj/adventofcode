@@ -3,7 +3,9 @@ Each day's solver should expect to be called with a single command-line
 argument: the URL to a websocket server. It should connect to that solver and
 expect to receive one or more Input messages, followed by a Done message. For
 each Input message, it should run its solvers on the input. For each solver, it
-should emit a Results message.
+should emit a Results message. If a solver encounters an error, it should
+instead emit an Error message and ideally print some debugging information to
+stdout.
 
 When it has run all solvers on a given input, it should send a Done message to
 indicate it is ready for another input, if any. When the server has exhausted
@@ -27,6 +29,8 @@ Message formats:
         "header": <list of str: column names>,
         "rows": <list of list of str: cells>,
     }
+    
+    Error { "error": true }
 
     Done { "done": true }
 """
