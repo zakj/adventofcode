@@ -117,11 +117,15 @@ export function solve(...fns: SolverFn[]): Solver {
 export async function main(
   ...fns: ((input: string, args: Record<string, unknown>) => unknown)[]
 ) {
-  // TODO support for multiple inputs
   if (process.argv.length > 2) {
     const ws = new WebSocket(process.argv[2]);
-    ws.on('message', async (msg) => {
-      const { input, args, part } = JSON.parse(msg);
+    ws.on('message', async (data) => {
+      const msg = JSON.parse(data.toString());
+      if (msg['done']) {
+        ws.close();
+        return;
+      }
+      const { input, args, part } = msg;
       let i = 1;
       for (const fn of fns) {
         if (part && i !== part) continue;
@@ -130,18 +134,15 @@ export async function main(
         const duration = (performance.now() - start) / 1000;
         // Doing work in another solver on the main thread can delay ws.send.
         await new Promise((resolve) =>
-          ws.send(JSON.stringify({ type: 'result', answer, duration }), resolve)
+          ws.send(JSON.stringify({ answer, duration }), resolve)
         );
         i++;
       }
-      ws.close();
+      ws.send(JSON.stringify({ done: true }));
     });
   } else {
     process.stdin.on('data', (data) => {
-      // TODO drop this args support
-      const [input, ...extra] = data.toString().split(String.fromCharCode(30));
-      const args = JSON.parse(extra[0] ?? '{}');
-      for (const fn of fns) console.log(fn(input, args));
+      for (const fn of fns) console.log(fn(data.toString(), {}));
     });
   }
 }

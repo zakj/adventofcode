@@ -95,6 +95,7 @@ class Runner:
                                 ui.start_day(path.stem.removeprefix("day"))
                                 input = load_data(path)[-1]
                                 self.process_input(input, ui, send, messages)
+                                send(json.dumps({"done": True}))
         except (ConnectionClosedError, KeyboardInterrupt):
             pass
         except HTTPError as err:
