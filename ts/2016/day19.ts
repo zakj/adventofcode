@@ -47,11 +47,7 @@ function whiteElephantAcross(elfCount: number): number {
   }
 }
 
-// example.equal(whiteElephantLeft(5), 3);
-// example.equal(whiteElephantAcross(5), 2);
-
-// const input = load().numbers[0];
 main(
   (s) => whiteElephantLeft(allNumbers(s)[0]),
   (s) => whiteElephantAcross(allNumbers(s)[0])
-); // .expect(1834471, 1420064);
+);

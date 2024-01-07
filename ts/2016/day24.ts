@@ -59,4 +59,4 @@ function clean(map: Map, returnToStart = false): number {
 main(
   (s) => clean(parse(s)),
   (s) => clean(parse(s), true)
-); // .expect(500, 748);
+);
