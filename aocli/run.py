@@ -121,7 +121,7 @@ class Runner:
         finally:
             if proc.wait() != 0:
                 ui.error()
-            stdout.quit()
+                stdout.quit()
             stdout.join()
 
     def process_input(
