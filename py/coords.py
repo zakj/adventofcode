@@ -26,6 +26,22 @@ class Dir(metaclass=IterableClass[Vector]):
         return cls._parse_map[s]
 
 
+class Dir8(metaclass=IterableClass[Vector]):
+    N: Vector = (0, -1)
+    NE: Vector = (1, -1)
+    E: Vector = (1, 0)
+    SE: Vector = (1, 1)
+    S: Vector = (0, 1)
+    SW: Vector = (-1, 1)
+    W: Vector = (-1, 0)
+    NW: Vector = (-1, -1)
+
+    @classmethod
+    # TODO this is slow
+    def classiter(cls) -> Iterator[Vector]:
+        return iter([cls.N, cls.NE, cls.E, cls.SE, cls.S, cls.SW, cls.W, cls.NW])
+
+
 class Grid[T]:
     height: int
     width: int
