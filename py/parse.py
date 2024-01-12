@@ -1,8 +1,18 @@
+import functools
 import re
 from typing import Callable, TypeVar, overload
 
 num_re = re.compile(r"[-+]?\d+")
 T = TypeVar("T")
+
+
+def line_parser[T](fn: Callable[[str], T]) -> Callable[[str], list[T]]:
+    @functools.wraps(fn)
+    def wrapper(s: str, *args, **kwargs) -> list[T]:
+        return [fn(line, *args, **kwargs) for line in s.splitlines()]
+
+    return wrapper
+
 
 
 def all_numbers(s: str) -> list[int]:

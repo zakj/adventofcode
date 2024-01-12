@@ -22,8 +22,8 @@ class Dir(metaclass=IterableClass[Vector]):
         return iter([cls.N, cls.E, cls.S, cls.W])
 
     @classmethod
-    def parse(cls, s: str) -> Vector:
-        return cls._parse_map[s]
+    def parse(cls, s: str) -> Vector | None:
+        return cls._parse_map.get(s)
 
 
 class Dir8(metaclass=IterableClass[Vector]):
