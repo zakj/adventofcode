@@ -1,0 +1,6 @@
+[main]
+answers = [573, 294]
+input = '''
+Generator A starts with 634
+Generator B starts with 301
+'''

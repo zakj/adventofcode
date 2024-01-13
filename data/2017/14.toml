@@ -1,0 +1,9 @@
+[[examples]]
+answers = [8108, 1242]
+input = 'flqrgnkx'
+
+[main]
+answers = [8304, 1018]
+input = '''
+hwlqcszp
+'''
