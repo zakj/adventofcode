@@ -1,0 +1,15 @@
+[[examples]]
+answers = ['5158916779']
+part = 1
+input = '9'
+
+[[examples]]
+answers = [9]
+part = 2
+input = '51589'
+
+[main]
+answers = ['6289129761', 20207075]
+input = '''
+825401
+'''
