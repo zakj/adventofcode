@@ -126,8 +126,9 @@ export async function main(
         return;
       }
       const { input, args, part } = msg;
-      let i = 1;
+      let i = 0;
       for (const fn of fns) {
+        i++;
         if (part && i !== part) continue;
         const start = performance.now();
         const answer = fn(input, args);
@@ -136,7 +137,6 @@ export async function main(
         await new Promise((resolve) =>
           ws.send(JSON.stringify({ answer, duration }), resolve)
         );
-        i++;
       }
       ws.send(JSON.stringify({ done: true }));
     });
