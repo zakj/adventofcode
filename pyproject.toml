@@ -10,11 +10,10 @@ version = ""
 description = ""
 authors = [{ name = "Zak Johnson", email = "me@zakj.net" }]
 dependencies = [
-    "black>=23.11.0",
-    "isort>=5.12.0",
     "mypy>=1.7.0",
     "numpy>=1.26.1",
     "rich>=13.6.0",
+    "ruff>=0.1.13",
     "watchdog>=3.0.0",
     "websockets>=12.0",
 ]
