@@ -1,5 +1,4 @@
 import argparse
-import os
 import sys
 from pathlib import Path
 
@@ -9,9 +8,6 @@ from . import BASE_DIR, RUNNERS
 from .event_handler import Handler
 from .run import Runner
 from .websocket import WebsocketThread
-
-# TODO: is there a better way?
-os.environ["PYTHONPATH"] = str(BASE_DIR / "py")
 
 parser = argparse.ArgumentParser(prog="aocli", description="CLI for AOC solutions.")
 group = parser.add_mutually_exclusive_group()
@@ -43,6 +39,7 @@ websocket_thread.ready.wait()
 runner = Runner(websocket_thread)
 
 if args.watch:
+    print(f"Listening on {websocket_thread.url}...\n")
     patterns = [f"*{ext}" for ext in RUNNERS.keys()]
     handler = Handler(runner=runner, patterns=patterns)
     observer = Observer()
