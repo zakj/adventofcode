@@ -1,0 +1,9 @@
+[[examples]]
+answers = [436, 175594]
+input = '0,3,6'
+
+[main]
+answers = [253, 13710]
+input = '''
+18,8,0,5,4,1,20
+'''
