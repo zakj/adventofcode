@@ -6,6 +6,7 @@ import sys
 import time
 import traceback
 from collections.abc import Callable
+from itertools import count
 from pathlib import Path
 from typing import Any
 
@@ -71,7 +72,7 @@ def run_solver(fn, input, **kwargs):
     return response
 
 
-def main(*fns: Callable[..., Any], profile: int = -1):
+def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None):
     try:
         if len(sys.argv) == 1:
             input = sys.stdin.read()
@@ -79,13 +80,18 @@ def main(*fns: Callable[..., Any], profile: int = -1):
                 print(fn(input))
         else:
             with connect(sys.argv[1]) as websocket:
-                while True:
+                for msg_index in count():
                     msg = json.loads(websocket.recv())
                     if msg.get("done"):
                         break
                     input, args, part = msg["input"], msg["args"], msg.get("part")
                     for i, fn in enumerate(fns):
                         if part and i + 1 != part:
+                            continue
+                        if isolate is not None and isolate != msg_index:
+                            websocket.send(
+                                json.dumps({"answer": "skipped", "duration": 0})
+                            )
                             continue
                         sig = inspect.signature(fn)
                         kwargs: dict[str, Any] = {
