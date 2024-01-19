@@ -5,7 +5,9 @@ expect to receive one or more Input messages, followed by a Done message. For
 each Input message, it should run its solvers on the input. For each solver, it
 should emit a Results message. If a solver encounters an error, it should
 instead emit an Error message and ideally print some debugging information to
-stdout.
+stdout. Optionally, a solver can periodically send Status messages, the most
+recent of which will be displayed (this is often faster than filling up the
+stdout pipe).
 
 When it has run all solvers on a given input, it should send a Done message to
 indicate it is ready for another input, if any. When the server has exhausted
@@ -33,6 +35,8 @@ Message formats:
     Error { "error": true }
 
     Done { "done": true }
+    
+    Status { "status": <string: the message to display>}
 """
 
 # TODO: Pull this out of the adventofcode repo into its own, and install it

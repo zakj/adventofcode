@@ -72,7 +72,9 @@ def run_solver(fn, input, **kwargs):
     return response
 
 
+_websocket = None
 def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None):
+    global _websocket
     try:
         if len(sys.argv) == 1:
             input = sys.stdin.read()
@@ -80,6 +82,7 @@ def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None
                 print(fn(input))
         else:
             with connect(sys.argv[1]) as websocket:
+                _websocket = websocket
                 for msg_index in count():
                     msg = json.loads(websocket.recv())
                     if msg.get("done"):
@@ -109,5 +112,12 @@ def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None
                             response = run_solver(fn, input, **kwargs)
                         websocket.send(json.dumps(response, cls=ResultsEncoder))
                     websocket.send(json.dumps({"done": True}, cls=ResultsEncoder))
+                _websocket = None
     except KeyboardInterrupt:
         pass
+    
+
+def status(msg: str) -> None:
+    if _websocket is not None:
+        _websocket.send(json.dumps({'status': msg}))
+    

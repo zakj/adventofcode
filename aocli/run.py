@@ -140,10 +140,12 @@ class Runner:
             except Empty:
                 continue
 
-            if msg.get("done"):
+            if 'done' in msg:
                 break
-            elif msg.get("error"):
+            elif 'error' in msg:
                 ui.error()
+            elif 'status' in msg:
+                ui.status(msg['status'])
             elif "answer" in msg and "duration" in msg:
                 expected = next(answers, None)
                 ui.complete(msg["answer"], expected, msg["duration"])

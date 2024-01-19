@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -67,6 +66,9 @@ class BaseUI:
     def error(self) -> None:
         raise NotImplementedError
 
+    def status(self, message: str) -> None:
+        return  # default to ignore
+
     def aside(self, aside: Aside) -> None:
         return  # default to ignore
 
@@ -116,6 +118,7 @@ class Year(BaseUI):
 
 class Day(BaseUI):
     asides: Group
+    last_status: str = ''
     main_start: int | None
     runs: list[DayRun]
     title: str
@@ -154,9 +157,9 @@ class Day(BaseUI):
         # Loading spinner, showing the part number when appropriate.
         if not self.done:
             if self.main_start is None:
-                table.add_row(Spinner("line"))
+                table.add_row(Spinner("line"), self.last_status)
             else:
-                table.add_row(f"{len(main_runs) + 1}:", Spinner("line"))
+                table.add_row(f"{len(main_runs) + 1}:", Spinner("line"), self.last_status)
 
         panel = Panel.fit(table, title=self.title, title_align="left")
         return Columns([panel, self.asides])
@@ -165,6 +168,7 @@ class Day(BaseUI):
         self.main_start = len(self.runs)
 
     def complete(self, result, expected, duration):
+        self.last_status = ''
         self.runs.append(
             DayRun(
                 format_result(result, expected),
@@ -174,7 +178,11 @@ class Day(BaseUI):
         )
 
     def error(self):
+        self.last_status = ''
         self.runs.append(DayRun("[red]Error", "[red]×", False))
+
+    def status(self, message: str) -> None:
+        self.last_status = message
 
     def aside(self, aside: Aside):
         if self.main_start is None:
