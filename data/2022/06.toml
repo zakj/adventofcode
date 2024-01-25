@@ -1,3 +1,7 @@
+[[examples]]
+answers = [7, 19]
+input = 'mjqjpqmgbljsphdztnvjfqwrcgsmlb'
+
 [main]
 answers = [1275, 3605]
 input = '''

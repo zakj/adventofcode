@@ -1,6 +1,6 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { Iter, iter } from 'lib/iter';
-import { ValuesOf } from 'lib/util';
+import { ValuesOf, lines } from 'lib/util';
 
 type Value = 1 | 2 | 3;
 function parse(lines: string[]): Iter<Value[]> {
@@ -17,10 +17,6 @@ const Strategy = {
 } as const;
 type Strategy = ValuesOf<typeof Strategy>;
 
-const exampleData = parse([`A Y`, `B X`, `C Z`]);
-example.equal(15, exampleData.map(score).sum());
-example.equal(12, exampleData.map(strategizedScore).sum());
-
 function score([a, b]: Value[]): number {
   let score = b;
   if (a === b) score += 3;
@@ -35,8 +31,7 @@ function strategizedScore([a, b]: Value[]): number {
   return score([a, b]);
 }
 
-const games = parse(load().lines);
-export default solve(
-  () => games.map(score).sum(),
-  () => games.map(strategizedScore).sum()
-).expect(11386, 13600);
+main(
+  (s) => parse(lines(s)).map(score).sum(),
+  (s) => parse(lines(s)).map(strategizedScore).sum()
+);

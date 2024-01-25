@@ -1,5 +1,6 @@
-import { load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { iter } from 'lib/iter';
+import { lines } from 'lib/util';
 
 function parse(lines: string[]) {
   return iter(lines.map((line) => line.split('')));
@@ -17,18 +18,17 @@ const upperCaseOffset = 'A'.charCodeAt(0) - 27;
 const priority = (s: string): number =>
   s.charCodeAt(0) - (s.toLowerCase() === s ? lowerCaseOffset : upperCaseOffset);
 
-const data = parse(load().lines);
-export default solve(
-  () =>
-    data
+main(
+  (s) =>
+    parse(lines(s))
       .map((line) => {
         const len = line.length / 2;
         return priority(intersect(line.slice(0, len), line.slice(len)));
       })
       .sum(),
-  () =>
-    data
+  (s) =>
+    parse(lines(s))
       .splitEvery(3)
       .map((lines) => priority(intersect(...lines)))
       .sum()
-).expect(7875, 2479);
+);

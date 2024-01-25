@@ -1,6 +1,7 @@
-import { example, load, ocr, solve } from 'lib/advent';
+import { main, ocr } from 'lib/advent';
 import { Point, PointSet, toAscii } from 'lib/coords';
 import { Iter, iter } from 'lib/iter';
+import { lines } from 'lib/util';
 
 function parse(lines: string[]) {
   return lines.map((line) => {
@@ -44,12 +45,7 @@ function drawCrt(instructions: Instruction[]): CRT {
   }, new PointSet());
 }
 
-const exampleData = parse(load('ex').lines);
-example.equal(13140, signalStrengths(exampleData));
-// console.log(toAscii(drawCrt(exampleData)));
-
-const data = parse(load().lines);
-export default solve(
-  () => signalStrengths(data),
-  () => ocr(toAscii(drawCrt(data)), '4x6')
-).expect(13740, 'ZUPRFECL');
+main(
+  (s) => signalStrengths(parse(lines(s))),
+  (s) => ocr(toAscii(drawCrt(parse(lines(s)))), '4x6')
+);

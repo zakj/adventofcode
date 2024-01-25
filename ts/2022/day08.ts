@@ -1,6 +1,7 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { Dir, move, parseGrid, Point, PointGrid } from 'lib/coords';
-import { iter } from 'lib/iter';
+import { Iter, iter } from 'lib/iter';
+import { lines } from 'lib/util';
 
 // TODO: optimize
 function heightsEachDir(p: Point, grid: PointGrid<number>): number[][] {
@@ -27,15 +28,11 @@ function scenicScore([p, height, grid]: GridIterator): number {
     .reduce((a, b) => a * b);
 }
 
-const exampleGrid = parseGrid(
-  ['30373', '25512', '65332', '33549', '35390'],
-  Number
-);
-example.equal(21, iter(exampleGrid).map(isVisible).filter(Boolean).size);
-example.equal(8, iter(exampleGrid).map(scenicScore).max());
+function parse(s: string): Iter<[Point, number, PointGrid<number>]> {
+  return iter(parseGrid(lines(s), Number));
+}
 
-const grid = parseGrid(load().lines, Number);
-export default solve(
-  () => iter(grid).map(isVisible).filter(Boolean).size,
-  () => iter(grid).map(scenicScore).max()
-).expect(1763, 671160);
+main(
+  (s) => parse(s).map(isVisible).filter(Boolean).size,
+  (s) => parse(s).map(scenicScore).max()
+);

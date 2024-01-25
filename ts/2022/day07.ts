@@ -1,4 +1,4 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { iter } from 'lib/iter';
 
 type Cmd = { cmd: string[]; output: string[][] };
@@ -67,12 +67,7 @@ function toDelete(root: Dir): number {
     .min();
 }
 
-const exampleData = parse(load('ex').raw);
-example.equal(95437, sumOfSmallDirs(tree(exampleData)));
-example.equal(24933642, toDelete(tree(exampleData)));
-
-const data = parse(load().raw);
-export default solve(
-  () => sumOfSmallDirs(tree(data)),
-  () => toDelete(tree(data))
-).expect(1989474, 1111607);
+main(
+  (s) => sumOfSmallDirs(tree(parse(s))),
+  (s) => toDelete(tree(parse(s)))
+);

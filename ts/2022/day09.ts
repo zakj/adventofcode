@@ -1,6 +1,7 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { Dir, move, Point, pointHash } from 'lib/coords';
 import { iter, range } from 'lib/iter';
+import { lines } from 'lib/util';
 
 const dirMap = {
   U: Dir.Up,
@@ -31,12 +32,7 @@ function tailVisits(moves: Dir[], n: number): number {
     .uniqBy(pointHash).size;
 }
 
-const exampleData = parse(load('ex').lines);
-example.equal(13, tailVisits(exampleData, 2));
-example.equal(1, tailVisits(exampleData, 10));
-
-const data = parse(load().lines);
-export default solve(
-  () => tailVisits(data, 2),
-  () => tailVisits(data, 10)
-).expect(6271, 2458);
+main(
+  (s) => tailVisits(parse(lines(s)), 2),
+  (s) => tailVisits(parse(lines(s)), 10)
+);

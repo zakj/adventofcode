@@ -1,6 +1,6 @@
-import { load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { Iter, iter } from 'lib/iter';
-import { range } from 'lib/util';
+import { lines, range } from 'lib/util';
 
 type Range = Set<number>;
 
@@ -21,8 +21,7 @@ function overlaps<T>(a: Set<T>, b: Set<T>): boolean {
   return [...a].some((x) => b.has(x));
 }
 
-const data = parse(load().lines);
-export default solve(
-  () => data.filter(([a, b]) => contains(a, b)).size,
-  () => data.filter(([a, b]) => overlaps(a, b)).size
-).expect(511, 821);
+main(
+  (s) => parse(lines(s)).filter(([a, b]) => contains(a, b)).size,
+  (s) => parse(lines(s)).filter(([a, b]) => overlaps(a, b)).size
+);

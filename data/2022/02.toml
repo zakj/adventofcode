@@ -1,3 +1,10 @@
+[[examples]]
+answers = [15, 12]
+input = '''
+A Y
+B X
+C Z'''
+
 [main]
 answers = [11386, 13600]
 input = '''
