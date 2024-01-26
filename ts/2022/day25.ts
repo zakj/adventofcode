@@ -1,5 +1,5 @@
-import { example, load, solve } from 'lib/advent';
-import { sum } from 'lib/util';
+import { main } from 'lib/advent';
+import { lines, sum } from 'lib/util';
 
 const snafu = {
   '2': 2,
@@ -28,20 +28,4 @@ function intToSnafu(n: number): string {
   return itos(n).reverse().join('') || '0';
 }
 
-example.equal(snafuToInt('1'), 1);
-example.equal(snafuToInt('1='), 3);
-example.equal(snafuToInt('1=11-2'), 2022);
-example.equal(snafuToInt('1-0---0'), 12345);
-example.equal(snafuToInt('1121-1110-1=0'), 314159265);
-
-example.equal(intToSnafu(0), '0');
-example.equal(intToSnafu(1), '1');
-example.equal(intToSnafu(3), '1=');
-example.equal(intToSnafu(2022), '1=11-2');
-example.equal(intToSnafu(12345), '1-0---0');
-example.equal(intToSnafu(314159265), '1121-1110-1=0');
-
-const data = load().lines;
-export default solve(() => intToSnafu(sum(data.map(snafuToInt)))).expect(
-  '2-2=21=0021=-02-1=-0'
-);
+main((s) => intToSnafu(sum(lines(s).map(snafuToInt))));

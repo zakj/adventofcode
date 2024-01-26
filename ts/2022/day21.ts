@@ -1,4 +1,5 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
+import { lines } from 'lib/util';
 
 function parse(lines: string[]) {
   return new Map<string, string | number>(
@@ -75,28 +76,7 @@ function part2(monkeys: Map<string, string | number>, start = 'root'): number {
   return 0;
 }
 
-const exampleData = parse([
-  'root: pppw + sjmn',
-  'dbpl: 5',
-  'cczh: sllz + lgvd',
-  'zczc: 2',
-  'ptdq: humn - dvpt',
-  'dvpt: 3',
-  'lfqf: 4',
-  'humn: 5',
-  'ljgn: 2',
-  'sjmn: drzm * dbpl',
-  'sllz: 4',
-  'pppw: cczh / lfqf',
-  'lgvd: ljgn * ptdq',
-  'drzm: hmdt - zczc',
-  'hmdt: 32',
-]);
-example.equal(resolveMonkey(exampleData), 152);
-example.equal(part2(exampleData), 301);
-
-const data = parse(load().lines);
-export default solve(
-  () => resolveMonkey(data),
-  () => part2(data)
-).expect(104272990112064, 3220993874133);
+main(
+  (s) => resolveMonkey(parse(lines(s))),
+  (s) => part2(parse(lines(s)))
+);

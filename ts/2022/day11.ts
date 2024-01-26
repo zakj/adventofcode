@@ -1,5 +1,5 @@
-import { example, load, solve } from 'lib/advent';
-import { product } from 'lib/util';
+import { main } from 'lib/advent';
+import { paragraphs, product } from 'lib/util';
 
 type Monkey = {
   items: number[];
@@ -52,12 +52,7 @@ function monkeyBusiness(monkeys: Monkey[], part: 1 | 2) {
   );
 }
 
-const exampleData = parse(load('ex').paragraphs);
-example.equal(monkeyBusiness(exampleData, 1), 10605);
-example.equal(monkeyBusiness(exampleData, 2), 2713310158);
-
-const data = parse(load().paragraphs);
-export default solve(
-  () => monkeyBusiness(data, 1),
-  () => monkeyBusiness(data, 2)
-).expect(108240, 25712998901);
+main(
+  (s) => monkeyBusiness(parse(paragraphs(s)), 1),
+  (s) => monkeyBusiness(parse(paragraphs(s)), 2)
+);

@@ -1,6 +1,6 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { iter } from 'lib/iter';
-import { range } from 'lib/util';
+import { allNumbers, range } from 'lib/util';
 
 const KEY = 811589153;
 
@@ -21,12 +21,7 @@ function decryptCoordinates(xs: number[], key = 1, iterations = 1): number {
     .sum();
 }
 
-const exampleData = [1, 2, -3, 3, -2, 0, 4];
-example.equal(decryptCoordinates(exampleData), 3);
-example.equal(decryptCoordinates(exampleData, KEY, 10), 1623178306);
-
-const data = load().numbers;
-export default solve(
-  () => decryptCoordinates(data),
-  () => decryptCoordinates(data, KEY, 10)
-).expect(8721, 831878881825);
+main(
+  (s) => decryptCoordinates(allNumbers(s)),
+  (s) => decryptCoordinates(allNumbers(s), KEY, 10)
+);

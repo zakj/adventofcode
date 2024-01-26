@@ -1,6 +1,7 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { PointMap, PointSet, distance } from 'lib/coords';
 import { iter } from 'lib/iter';
+import { lines } from 'lib/util';
 
 type Input = { sensors: PointMap<number>; beacons: PointSet };
 type Range = [number, number];
@@ -87,12 +88,7 @@ function tuningFrequency({ sensors, beacons }: Input, space: number) {
   }
 }
 
-const exampleData = parse(load('ex').lines);
-example.equal(noBeaconCount(exampleData, 10), 26);
-example.equal(tuningFrequency(exampleData, 20), 56000011);
-
-const data = parse(load().lines);
-export default solve(
-  () => noBeaconCount(data, 2000000),
-  () => tuningFrequency(data, 4000000)
-).expect(5461729, 10621647166538);
+main(
+  (s, { target_y }) => noBeaconCount(parse(lines(s)), target_y as number),
+  (s, { space }) => tuningFrequency(parse(lines(s)), space as number)
+);

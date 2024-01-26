@@ -1,5 +1,6 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { Iter, iter } from 'lib/iter';
+import { paragraphs } from 'lib/util';
 
 type Packet = number | (Packet | number)[];
 type Pair = [Packet, Packet];
@@ -42,12 +43,7 @@ function decoderKey(pairs: Pair[], a: Packet, b: Packet): number {
   );
 }
 
-const exampleData = parse(load('ex').paragraphs);
-example.equal(13, orderedIndexes(exampleData).sum());
-example.equal(140, decoderKey(exampleData, [[2]], [[6]]));
-
-const data = parse(load().paragraphs);
-export default solve(
-  () => orderedIndexes(data).sum(),
-  () => decoderKey(data, [[2]], [[6]])
-).expect(5503, 20952);
+main(
+  (s) => orderedIndexes(parse(paragraphs(s))).sum(),
+  (s) => decoderKey(parse(paragraphs(s)), [[2]], [[6]])
+);

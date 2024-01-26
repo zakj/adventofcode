@@ -1,7 +1,7 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { Dir, move, Point, PointMap } from 'lib/coords';
 import { iter } from 'lib/iter';
-import { ValuesOf } from 'lib/util';
+import { lines, ValuesOf } from 'lib/util';
 
 const EMITTER = { x: 500, y: 0 };
 const Cell = {
@@ -88,15 +88,7 @@ function countSand(cave: Cave): number {
   return cave.values().filter((v) => v === Cell.SAND).length;
 }
 
-const exampleData = parse([
-  '498,4 -> 498,6 -> 496,6',
-  '503,4 -> 502,4 -> 502,9 -> 494,9',
-]);
-example.equal(24, countSand(overflowCave(makeCave(exampleData))));
-example.equal(93, countSand(fillCave(makeCave(exampleData))));
-
-const data = parse(load().lines);
-export default solve(
-  () => countSand(overflowCave(makeCave(data))),
-  () => countSand(fillCave(makeCave(data)))
-).expect(979, 29044);
+main(
+  (s) => countSand(overflowCave(makeCave(parse(lines(s))))),
+  (s) => countSand(fillCave(makeCave(parse(lines(s)))))
+);

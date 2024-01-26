@@ -1,7 +1,7 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { Queue } from 'lib/collections';
 import { iter } from 'lib/iter';
-import { ValuesOf, XMap, XSet } from 'lib/util';
+import { ValuesOf, XMap, XSet, lines } from 'lib/util';
 
 type Point3d = {
   x: number;
@@ -128,12 +128,7 @@ function exteriorSurfaceArea(droplets: Point3d[]): number {
   return exposedSides;
 }
 
-const exampleData = parse(load('ex').lines);
-example.equal(surfaceArea(exampleData), 64);
-example.equal(exteriorSurfaceArea(exampleData), 58);
-
-const data = parse(load().lines);
-export default solve(
-  () => surfaceArea(data),
-  () => exteriorSurfaceArea(data)
-).expect(4504, 2556);
+main(
+  (s) => surfaceArea(parse(lines(s))),
+  (s) => exteriorSurfaceArea(parse(lines(s)))
+);

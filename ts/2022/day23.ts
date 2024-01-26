@@ -1,4 +1,4 @@
-import { example, load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import {
   Dir,
   findBounds,
@@ -9,6 +9,7 @@ import {
   PointSet,
 } from 'lib/coords';
 import { iter } from 'lib/iter';
+import { lines } from 'lib/util';
 
 function parse(lines: string[]) {
   return new PointSet(
@@ -82,23 +83,9 @@ function part1(elves: PointSet, rounds = 10): number {
   return (max.x - min.x + 1) * (max.y - min.y + 1) - elves.size;
 }
 
-const exampleData = parse([
-  '....#..',
-  '..###.#',
-  '#...#.#',
-  '.#...##',
-  '#.###..',
-  '##.#.##',
-  '.#..#..',
-]);
-example.equal(110, part1(new PointSet(exampleData), 10));
-example.equal(20, part1(exampleData, Infinity));
-
 // TODO: cleanup
-// TODO: mutable data again
 // TODO: optimize p2: 48s
-const data = parse(load().lines);
-export default solve(
-  () => part1(new PointSet(data)),
-  () => part1(data, Infinity)
-).expect(3925, 903);
+main(
+  (s) => part1(new PointSet(parse(lines(s)))),
+  (s) => part1(parse(lines(s)), Infinity)
+);
