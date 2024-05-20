@@ -25,11 +25,12 @@ class ResultMessage(TypedDict):
 class DoneMessage(TypedDict):
     done: Literal[True]
 
+
 class StatusMessage(TypedDict):
     status: str
 
-Message = ResultMessage | DoneMessage | StatusMessage
 
+Message = ResultMessage | DoneMessage | StatusMessage
 Connection = tuple[Callable[[str], None], SimpleQueue[Message]]
 
 
