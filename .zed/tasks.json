@@ -1,0 +1,6 @@
+[
+  {
+    "label": "watch",
+    "command": "pdm run watch"
+  }
+]
