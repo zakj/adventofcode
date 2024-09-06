@@ -15,10 +15,10 @@ from websockets.sync.client import connect
 
 
 class ResultsEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        return super().default(obj)
+    def default(self, o):
+        if isinstance(o, np.integer):
+            return int(o)
+        return super().default(o)
 
 
 def _find_day_file():
@@ -73,6 +73,8 @@ def run_solver(fn, input, **kwargs):
 
 
 _websocket = None
+
+
 def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None):
     global _websocket
     try:
@@ -115,9 +117,8 @@ def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None
                 _websocket = None
     except KeyboardInterrupt:
         pass
-    
+
 
 def status(msg: str) -> None:
     if _websocket is not None:
-        _websocket.send(json.dumps({'status': msg}))
-    
+        _websocket.send(json.dumps({"status": msg}))

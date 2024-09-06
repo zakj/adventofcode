@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Callable, Iterable, Iterator
+from typing import Callable, Iterator
 
 from util import IterableClass
 
