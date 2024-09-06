@@ -1,7 +1,8 @@
-import { load, solve } from 'lib/advent';
+import { main } from 'lib/advent';
 import { neighbors4, parseGrid, Point, PointGrid, pointHash } from 'lib/coords';
 import { minDistance } from 'lib/graph';
 import { iter } from 'lib/iter';
+import { lines } from 'lib/util';
 
 type HeightMap = {
   grid: PointGrid<number>;
@@ -37,9 +38,14 @@ function shortestPath(
   starts: Point[],
   end: Point
 ): number {
+  const edgeCache = new Map<number, Point[]>();
   const edges = (cur: Point) => {
+    const h = pointHash(cur);
+    if (edgeCache.has(h)) return edgeCache.get(h);
     const height = grid.get(cur);
-    return neighbors4(cur).filter((p) => grid.get(p) <= height + 1);
+    const ns = neighbors4(cur).filter((p) => grid.get(p) <= height + 1);
+    edgeCache.set(h, ns);
+    return ns;
   };
   return iter(starts)
     .map((start) => minDistance(start, pointHash, { goal: end, edges }))
@@ -47,16 +53,20 @@ function shortestPath(
     .min();
 }
 
-const { grid, start, end } = parse(load().lines);
-export default solve(
-  () => shortestPath(grid, [start], end),
-  () =>
-    shortestPath(
+main(
+  (s) => {
+    const { grid, start, end } = parse(lines(s));
+    return shortestPath(grid, [start], end);
+  },
+  (s) => {
+    const { grid, end } = parse(lines(s));
+    return shortestPath(
       grid,
       iter(grid)
         .filter(([, c]) => c === 0)
         .map(([p]) => p)
         .toArray(),
       end
-    )
-).expect(481, 480);
+    );
+  }
+);
