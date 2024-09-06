@@ -12,9 +12,6 @@ def chunks[T](xs: list[T], n: int) -> list[list[T]]:
     return [xs[i : i + n] for i in range(0, len(xs), n)]
 
 
-chunk = lambda x, n: zip(*[iter(x)] * n)
-
-
 # From itertools recipes
 def sliding_window[T](iterable: Iterable[T], n: int) -> Iterable[Iterable[T]]:
     # sliding_window('ABCDEFG', 4) --> ABCD BCDE CDEF DEFG
