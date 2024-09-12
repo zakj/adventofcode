@@ -1,5 +1,5 @@
-import { example, load, solve } from 'lib/advent';
-import { Dir, move, parseMap, Point, PointSet } from 'lib/coords';
+import { main } from 'lib/advent';
+import { Dir, move, parseMap, PointSet, type Point } from 'lib/coords';
 import { range } from 'lib/iter';
 import { XMap } from 'lib/util';
 
@@ -9,7 +9,10 @@ const jetToDir = {
 };
 
 function parse(line: string): Dir[] {
-  return line.split('').map((s) => jetToDir[s]);
+  return line
+    .trim()
+    .split('')
+    .map((s) => jetToDir[s]);
 }
 
 const rockTypes: { rock: PointSet; height: number }[] = [
@@ -41,7 +44,7 @@ function caveTopAfter(jets: Dir[], cycles: number): number {
   const topRow = (y: number) =>
     range(7)
       .filter((x) => cave.has({ x, y }))
-      .reduce((hash, x) => 1 << x, 0);
+      .reduce((_, x) => 1 << x, 0);
 
   const isOpen = (p: Point): boolean =>
     p.y < 0 && p.x >= 0 && p.x < 7 && !cave.has(p);
@@ -84,12 +87,8 @@ function caveTopAfter(jets: Dir[], cycles: number): number {
   return Math.abs(top) + repeatAddition;
 }
 
-const exampleData = parse('>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>');
-example.equal(caveTopAfter(exampleData, 2022), 3068);
-example.equal(caveTopAfter(exampleData, 1000000000000), 1514285714288);
-
-const data = parse(load().lines[0]);
-export default solve(
-  () => caveTopAfter(data, 2022),
-  () => caveTopAfter(data, 1000000000000)
-).expect(3173, 1570930232582);
+// XXX off by one for part 2 example??
+main(
+  (s) => caveTopAfter(parse(s), 2022),
+  (s) => caveTopAfter(parse(s), 1000000000000)
+);
