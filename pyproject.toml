@@ -15,7 +15,6 @@ description = ""
 authors = [{ name = "Zak Johnson", email = "me@zakj.net" }]
 dependencies = [
     "mypy>=1.7.0",
-    "numpy>=1.26.1",
     "rich>=13.6.0",
     "ruff>=0.1.13",
     "watchdog>=3.0.0",

@@ -10,14 +10,14 @@ from itertools import count
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 from websockets.sync.client import connect
 
 
 class ResultsEncoder(json.JSONEncoder):
     def default(self, o):
-        if isinstance(o, np.integer):
-            return int(o)
+        # Currently does nothing different from superclass, but here just in case.
+        # if isinstance(o, np.integer):
+        #     return int(o)
         return super().default(o)
 
 
