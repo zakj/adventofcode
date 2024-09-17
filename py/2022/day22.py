@@ -1,30 +1,58 @@
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from itertools import repeat
 from math import gcd
-from typing import NamedTuple, cast
+from operator import add, mul, sub
+from typing import cast
 
-import numpy as np
-from aoc import solve
-from coords import (
-    Dir,
-    Point,
-    Point3,
-    Vector,
-    mdist,
-    turn_left_around,
-    turn_right_around,
-)
+from aoc import main
+from coords import Dir, Point, Point3, mdist
 
 DIR_VALUES = {
-    Dir.E.value: 0,
-    Dir.S.value: 1,
-    Dir.W.value: 2,
-    Dir.N.value: 3,
+    Dir.E: 0,
+    Dir.S: 1,
+    Dir.W: 2,
+    Dir.N: 3,
 }
 
 
-def vec(*xs: int) -> Vector:
-    return np.array(xs)
+# TODO: move these helpers into coords?
+
+
+def cross3(a: Point3, b: Point3) -> Point3:
+    return (
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    )
+
+
+def dot3(a: Point3, b: Point3) -> int:
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+
+def vadd[T: tuple[int, ...]](a: T, b: T) -> T:
+    return cast(T, tuple(map(add, a, b)))
+
+
+def vmul[T: tuple[int, ...]](a: T, b: T) -> T:
+    return cast(T, tuple(map(mul, a, b)))
+
+
+def vsub[T: tuple[int, ...]](a: T, b: T) -> T:
+    return cast(T, tuple(map(sub, a, b)))
+
+
+def vinvert[T: tuple[int, ...]](a: T) -> T:
+    return cast(T, tuple(map(mul, a, repeat(-1))))
+
+
+def turn_right_around(dir: Point3, axis: Point3) -> Point3:
+    return cross3(dir, axis)
+
+
+def turn_left_around(dir: Point3, axis: Point3) -> Point3:
+    return cross3(axis, dir)
 
 
 def parse(s: str):
@@ -33,21 +61,22 @@ def parse(s: str):
     return grid, path
 
 
-class CubeData(NamedTuple):
+@dataclass
+class CubeData:
     xy: Point
     walkable: bool
-    u_dir: Vector
-    v_dir: Vector
-    normal: Vector
+    u_dir: Point3
+    v_dir: Point3
+    normal: Point3
 
 
-@dataclass()
+@dataclass
 class Face:
     origin: Point
     grid: list[str]
-    u_dir: Vector = field(default_factory=lambda: vec(0, 0, 0))
-    v_dir: Vector = field(default_factory=lambda: vec(0, 0, 0))
-    normal: Vector = field(default_factory=lambda: vec(0, 0, 0))
+    u_dir: Point3 = (0, 0, 0)
+    v_dir: Point3 = (0, 0, 0)
+    normal: Point3 = (0, 0, 0)
 
     def __hash__(self):
         return hash(self.origin)
@@ -56,7 +85,6 @@ class Face:
     def size(self):
         return len(self.grid)  # assumes square faces
 
-    # TODO: maybe unused
     @property
     def x(self):
         return self.origin[0] // self.size
@@ -70,38 +98,39 @@ class Face:
             raise NotImplementedError
         return mdist(self.origin, other.origin) // self.size
 
-    def delta_to(self, other: "Face") -> Vector:
+    def delta_to(self, other: "Face") -> Point:
         if not isinstance(other, Face):
             raise NotImplementedError
-        return vec(other.x, other.y) - vec(self.x, self.y)
+        return vsub((other.x, other.y), (self.x, self.y))
 
     def uv_xyz(self, u: int, v: int) -> Point3:
-        n = {-1: 1, 1: self.size}[self.normal.sum()]
-        projected = self.u_dir.dot(u) + self.v_dir.dot(v) + self.normal.dot(n)
-        np.add(
-            projected,
-            self.size - 1,
-            where=(self.u_dir < 0) | (self.v_dir < 0),
-            out=projected,
+        # TODO this can probably be cleaner
+        n = {-1: 1, 1: self.size}[sum(self.normal)]
+        u_dir = vmul(self.u_dir, (u, u, u))
+        v_dir = vmul(self.v_dir, (v, v, v))
+        normal = vmul(self.normal, (n, n, n))
+        projected = vadd(vadd(u_dir, v_dir), normal)
+        offset = tuple(
+            self.size - 1 if self.u_dir[i] < 0 or self.v_dir[i] < 0 else 0
+            for i in range(3)
         )
-        return tuple(projected)
+        return vadd(projected, cast(Point3, offset))
 
     def xyz_uv(self, x: int, y: int, z: int) -> Point:
-        xyz = np.array([x, y, z])
-        mapping = (self.u_dir < 0) | (self.v_dir < 0)
-        np.subtract(xyz, self.size - 1, out=xyz, where=mapping)
-        return tuple([self.u_dir.dot(xyz), self.v_dir.dot(xyz)])
-
-    def normalize(self, point: Point3) -> Point:
-        point2 = self.xyz_uv(*point)
-        return tuple(np.array(self.origin) + point2)
+        xyz = (x, y, z)
+        offset = tuple(
+            self.size - 1 if self.u_dir[i] < 0 or self.v_dir[i] < 0 else 0
+            for i in range(3)
+        )
+        xyz = vsub(xyz, cast(Point3, offset))
+        return (dot3(self.u_dir, xyz), dot3(self.v_dir, xyz))
 
     def points_3d(self) -> dict[Point3, CubeData]:
         points: dict[Point3, CubeData] = {}
         for y, line in enumerate(self.grid):
             for x, c in enumerate(line):
                 points[self.uv_xyz(x, y)] = CubeData(
-                    xy=tuple(np.array(self.origin) + (x, y)),
+                    xy=vadd(self.origin, (x, y)),
                     walkable=c == ".",
                     u_dir=self.u_dir,
                     v_dir=self.v_dir,
@@ -130,9 +159,9 @@ def find_faces(grid: list[str]):
         adj[f] = [g for g in faces if f.distance(g) == 1]
 
     front = faces[0]
-    front.u_dir = vec(1, 0, 0)
-    front.v_dir = vec(0, 1, 0)
-    front.normal = vec(0, 0, -1)
+    front.u_dir = (1, 0, 0)
+    front.v_dir = (0, 1, 0)
+    front.normal = (0, 0, -1)
 
     # walk neighbors to find vectors
     q = [front]
@@ -141,25 +170,25 @@ def find_faces(grid: list[str]):
 
         # https://en.wikipedia.org/wiki/Cube_mapping
         for neighbor in adj[face]:
-            if any(neighbor.normal.nonzero()):
+            if any(neighbor.normal):
                 continue
             match tuple(face.delta_to(neighbor)):
                 case (0, -1):  # up
                     neighbor.u_dir = face.u_dir
                     neighbor.v_dir = face.normal
-                    neighbor.normal = -face.v_dir
+                    neighbor.normal = vinvert(face.v_dir)
                 case (1, 0):  # right
-                    neighbor.u_dir = -face.normal
+                    neighbor.u_dir = vinvert(face.normal)
                     neighbor.v_dir = face.v_dir
                     neighbor.normal = face.u_dir
                 case (0, 1):  # down
                     neighbor.u_dir = face.u_dir
-                    neighbor.v_dir = -face.normal
+                    neighbor.v_dir = vinvert(face.normal)
                     neighbor.normal = face.v_dir
                 case (-1, 0):  # left
                     neighbor.u_dir = face.normal
                     neighbor.v_dir = face.v_dir
-                    neighbor.normal = -face.u_dir
+                    neighbor.normal = vinvert(face.u_dir)
             q.append(neighbor)
 
     return faces
@@ -172,17 +201,17 @@ def cube_walk(grid: list[str], path: list[str]) -> int:
         cube.update(face.points_3d())
 
     pos: Point3 = (0, 0, -1)
-    dir: Vector = vec(1, 0, 0)
+    dir: Point3 = (1, 0, 0)
     for step in path:
         if step.isnumeric():
             for _ in range(int(step)):
-                next_pos = cast(Point3, tuple(pos + dir))
+                next_pos = vadd(pos, dir)
 
                 if next_pos not in cube:
-                    next_pos = cast(Point3, tuple(next_pos - cube[pos].normal))
+                    next_pos = vsub(next_pos, cube[pos].normal)
                     if not cube[next_pos].walkable:
                         break
-                    dir = cube[pos].normal * -1
+                    dir = vinvert(cube[pos].normal)
                     pos = next_pos
                 elif cube[next_pos].walkable:
                     pos = next_pos
@@ -195,18 +224,13 @@ def cube_walk(grid: list[str], path: list[str]) -> int:
 
     data = cube[pos]
     x, y = data.xy
-    dir_value = DIR_VALUES[dir.dot(data.u_dir), dir.dot(data.v_dir)]
+    dir_value = DIR_VALUES[dot3(dir, data.u_dir), dot3(dir, data.v_dir)]
 
     return 1000 * (y + 1) + 4 * (x + 1) + dir_value
 
 
-examples = solve(
-    lambda s: cube_walk(*parse(s)),
-    expect=(5031,),
-    suffix="ex",
-)
-
-parts = solve(
-    lambda s: cube_walk(*parse(s)),
-    expect=(95291,),
-)
+if __name__ == "__main__":
+    main(
+        lambda s: "skipped",  # XXX solved in ts, need to get back to it here
+        lambda s: cube_walk(*parse(s)),
+    )
