@@ -4,6 +4,10 @@ prompt = "aoc"
 [tool.pdm.scripts]
 watch = "python -m aocli -w"
 
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
 [project]
 name = ""
 version = ""
