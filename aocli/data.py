@@ -1,4 +1,5 @@
 import os
+import re
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,7 +23,7 @@ class Input:
 
 def load_data(path: Path) -> list[Input]:
     year = path.parent.name
-    day = path.stem.removeprefix("day")
+    day = re.findall(r"\d+", path.stem.removeprefix("day"))[0]
     data_file = BASE_DIR / "data" / year / f"{day}.toml"
     if not data_file.exists():
         write_data_skeleton(data_file, fetch_input(year, day))
