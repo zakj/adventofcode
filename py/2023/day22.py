@@ -2,7 +2,7 @@ from collections import defaultdict, deque
 
 from aoc import main
 from coords import Point
-from parse import all_numbers
+from parse import all_numbers, line_parser
 
 Point3 = tuple[int, int, int]
 Tree = dict["Brick", set["Brick"]]
@@ -30,14 +30,12 @@ class Brick:
         self.b = (self.b[0], self.b[1], self.b[2] - n)
 
 
-def parse(s: str) -> list[Brick]:
-    bricks = []
-    for line in s.splitlines():
-        a, b = line.split("~")
-        a, b = tuple(all_numbers(a)), tuple(all_numbers(b))
-        assert len(a) == 3 and len(b) == 3
-        bricks.append(Brick(a, b))
-    return bricks
+@line_parser
+def parse(line: str) -> Brick:
+    a, b = line.split("~")
+    a, b = tuple(all_numbers(a)), tuple(all_numbers(b))
+    assert len(a) == 3 and len(b) == 3
+    return Brick(a, b)
 
 
 def settle(bricks: list[Brick]) -> tuple[Tree, Tree]:

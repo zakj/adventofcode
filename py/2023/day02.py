@@ -1,10 +1,11 @@
 import math
 import re
 from dataclasses import dataclass
-from functools import reduce
 
 from aoc import main
-from parse import all_numbers
+from parse import all_numbers, line_parser
+
+color_re = re.compile(r"red|green|blue")
 
 
 @dataclass
@@ -13,18 +14,15 @@ class Game:
     most: dict[str, int]
 
 
-def parse(s: str) -> list[Game]:
-    games = []
-    color_re = re.compile(r"red|green|blue")
-    for line in s.splitlines():
-        nums = all_numbers(line)
-        colors = color_re.findall(line)
-        id = int(nums.pop(0))
-        most = {"red": 0, "green": 0, "blue": 0}
-        for num, color in zip(nums, colors):
-            most[color] = max(most[color], num)
-        games.append(Game(id, most))
-    return games
+@line_parser
+def parse(line: str) -> Game:
+    nums = all_numbers(line)
+    colors = color_re.findall(line)
+    id = int(nums.pop(0))
+    most = {"red": 0, "green": 0, "blue": 0}
+    for num, color in zip(nums, colors):
+        most[color] = max(most[color], num)
+    return Game(id, most)
 
 
 def is_valid_game(game: Game) -> bool:

@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 from aoc import main
-from parse import all_numbers
+from parse import all_numbers, line_parser
 
 
 @dataclass
@@ -12,12 +12,10 @@ class Card:
     copies: int = 1
 
 
-def parse(s: str) -> list[Card]:
-    cards = []
-    for line in s.splitlines():
-        [_, winning, held] = re.split(r"[:|]", line)
-        cards.append(Card(set(all_numbers(winning)), set(all_numbers(held))))
-    return cards
+@line_parser
+def parse(line: str) -> Card:
+    [_, winning, held] = re.split(r"[:|]", line)
+    return Card(set(all_numbers(winning)), set(all_numbers(held)))
 
 
 def points(card: Card) -> int:
