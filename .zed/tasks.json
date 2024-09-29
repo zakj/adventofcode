@@ -1,6 +1,6 @@
 [
   {
     "label": "watch",
-    "command": "pdm run watch"
+    "command": "uv run python -m aocli -w"
   }
 ]

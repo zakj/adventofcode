@@ -1,17 +1,6 @@
-[tool.pdm.venv]
-prompt = "aoc"
-
-[tool.pdm.scripts]
-watch = "python -m aocli -w"
-
-[tool.pyright]
-venvPath = "."
-venv = ".venv"
-
 [project]
-name = ""
-version = ""
-description = ""
+name = "adventofcode"
+version = "1.0.0"
 authors = [{ name = "Zak Johnson", email = "me@zakj.net" }]
 dependencies = [
     "mypy>=1.7.0",
@@ -22,3 +11,7 @@ dependencies = [
 ]
 requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
