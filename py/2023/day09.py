@@ -12,8 +12,8 @@ def histories(s: str) -> Generator[History, None, None]:
         history = [all_numbers(line)]
         while any(n != 0 for n in history[-1]):
             diffs = []
-            prev = history[-1][0]
-            for n in history[-1][1:]:
+            prev, *rest = history[-1]
+            for n in rest:
                 diffs.append(n - prev)
                 prev = n
             history.append(diffs)
