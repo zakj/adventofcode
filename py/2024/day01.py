@@ -2,35 +2,29 @@ from aoc import main
 from parse import all_numbers
 from collections import Counter
 
-def part1(s: str):
-    left, right = [], []
+
+def parse(s: str) -> tuple[list[int], list[int]]:
+    left: list[int] = []
+    right: list[int] = []
     for line in s.splitlines():
         a, b = all_numbers(line)
         left.append(a)
         right.append(b)
-    distance = 0
+    return left, right
+
+
+def total_distance(s: str) -> int:
+    left, right = parse(s)
     left.sort()
     right.sort()
-    for a, b in zip(left, right):
-        distance += abs(a - b)
-    return distance
+    return sum(abs(a - b) for a, b in zip(left, right))
 
-def part2(s: str):
-    left, right = [], []
-    for line in s.splitlines():
-        a, b = all_numbers(line)
-        left.append(a)
-        right.append(b)
 
+def similarity_score(s: str) -> int:
+    left, right = parse(s)
     right_count = Counter(right)
-    total = 0
-    for a in left:
-        total += a * right_count[a]
+    return sum(a * right_count[a] for a in left)
 
-    return total
 
 if __name__ == "__main__":
-    main(
-        part1,
-        part2,
-    )
+    main(total_distance, similarity_score)
