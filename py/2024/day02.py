@@ -32,9 +32,7 @@ def is_safe_dampened(record: list[int]) -> bool:
 def remove_element(record: list[int]) -> Generator[list[int]]:
     yield record
     for i in range(len(record)):
-        copy = record[:]
-        del copy[i]
-        yield copy
+        yield record[:i] + record[i + 1 :]
 
 
 if __name__ == "__main__":
