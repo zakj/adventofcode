@@ -1,78 +1,44 @@
+from collections.abc import Generator
+from functools import partial
+from itertools import pairwise
+from math import copysign
+
 from aoc import main
-from parse import all_numbers
+from parse import all_numbers, line_parser
 
 
-def parse(s: str):
-    pass
+@line_parser
+def parse(line: str) -> list[int]:
+    return all_numbers(line)
 
 
-def is_safe(nums):
-    last, nums = nums[0], nums[1:]
-    direction = None
-    for cur in nums:
-        diff = abs(cur - last)
-        if diff < 1 or diff > 3:
-            # print("  bad diff", diff, cur, last)
+sign = partial(copysign, 1)
+
+
+def is_safe(record: list[int]) -> bool:
+    direction = sign(record[1] - record[0])
+    for a, b in pairwise(record):
+        if not 1 <= abs(b - a) <= 3:
             return False
-        if direction is None:
-            direction = "increase" if cur > last else "decrease"
-        if direction == "increase" and cur <= last:
-            # print("  bad increase")
+        if sign(b - a) != direction:
             return False
-        if direction == "decrease" and cur >= last:
-            # print("  bad decrease")
-            return False
-        last = cur
-
     return True
 
 
-def is_safe2(nums):
-    last, nums = nums[0], nums[1:]
-    direction = "increase" if nums[1] > nums[0] else "decrease"
-    for cur in nums:
-        diff = abs(cur - last)
-        if diff < 1 or diff > 3:
-            fails += 1
-        elif direction == "increase" and cur <= last:
-            fails += 1
-        elif direction == "decrease" and cur >= last:
-            fails += 1
-        last = cur
-
-    return fails <= 1
+def is_safe_dampened(record: list[int]) -> bool:
+    return any(is_safe(r) for r in remove_element(record))
 
 
-def part1(s: str) -> int:
-    safe = 0
-    for line in s.splitlines():
-        record = all_numbers(line)
-        if is_safe(record):
-            safe += 1
-    return safe
-
-
-def part2(s: str) -> int:
-    safe = 0
-    for line in s.splitlines():
-        record = all_numbers(line)
-        if is_safe(record):
-            safe += 1
-        else:
-            found_safe = False
-            for i in range(len(record)):
-                cp = record[:]
-                del cp[i]
-                if is_safe(cp):
-                    found_safe = True
-            if found_safe:
-                safe += 1
-
-    return safe
+def remove_element(record: list[int]) -> Generator[list[int]]:
+    yield record
+    for i in range(len(record)):
+        copy = record[:]
+        del copy[i]
+        yield copy
 
 
 if __name__ == "__main__":
     main(
-        part1,
-        part2,
+        lambda s: len([1 for record in parse(s) if is_safe(record)]),
+        lambda s: len([1 for record in parse(s) if is_safe_dampened(record)]),
     )
