@@ -22,12 +22,13 @@ def count_xmas(s: str) -> int:
 
 def count_cross_mas(s: str) -> int:
     grid = StringGrid(s)
-    goals = ["MAS", "SAM"]
+    goal = set("MAS")
     count = 0
     for x, y in grid.findall("A"):
         if (
-            grid.substr((x - 1, y - 1), Dir8.SE, 3) in goals
-            and grid.substr((x - 1, y + 1), Dir8.NE, 3) in goals
+            set(grid.substr((x - 1, y - 1), Dir8.SE, 3))
+            == set(grid.substr((x - 1, y + 1), Dir8.NE, 3))
+            == goal
         ):
             count += 1
     return count
