@@ -68,7 +68,7 @@ class Grid[T]:
         self.data[item] = value
 
     def get(self, item: Point, default: T | None = None) -> T | None:
-        return self.data.get(item)
+        return self.data.get(item, default)
 
 
 def neighbors(p: Point) -> Iterable[Point]:

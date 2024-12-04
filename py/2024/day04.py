@@ -1,96 +1,43 @@
 from aoc import main
-from coords import Grid
+from coords import Dir8, Grid, Point, Vector, addp
 
 
-def parse(s: str):
-    pass
+class StringGrid(Grid[str]):
+    def substr(self, start: Point, dir: Vector, length: int) -> str:
+        rv = []
+        cur = start
+        while len(rv) < length:
+            rv.append(self.get(cur, ""))
+            cur = addp(cur, dir)
+        return "".join(rv)
 
 
-def part1(s: str) -> int:
-    grid = Grid(s)
-    # find every x, then go each direction
+def count_xmas(s: str) -> int:
+    grid = StringGrid(s)
     count = 0
     for x in range(grid.width):
         for y in range(grid.height):
             if grid[x, y] == "X":
-                if (
-                    grid[x + 1, y] == "M"
-                    and grid[x + 2, y] == "A"
-                    and grid[x + 3, y] == "S"
-                ):
-                    count += 1
-                if (
-                    grid[x - 1, y] == "M"
-                    and grid[x - 2, y] == "A"
-                    and grid[x - 3, y] == "S"
-                ):
-                    count += 1
-                if (
-                    grid[x, y + 1] == "M"
-                    and grid[x, y + 2] == "A"
-                    and grid[x, y + 3] == "S"
-                ):
-                    count += 1
-                if (
-                    grid[x, y - 1] == "M"
-                    and grid[x, y - 2] == "A"
-                    and grid[x, y - 3] == "S"
-                ):
-                    count += 1
-
-                if (
-                    grid[x + 1, y + 1] == "M"
-                    and grid[x + 2, y + 2] == "A"
-                    and grid[x + 3, y + 3] == "S"
-                ):
-                    count += 1
-                if (
-                    grid[x - 1, y - 1] == "M"
-                    and grid[x - 2, y - 2] == "A"
-                    and grid[x - 3, y - 3] == "S"
-                ):
-                    count += 1
-                if (
-                    grid[x + 1, y - 1] == "M"
-                    and grid[x + 2, y - 2] == "A"
-                    and grid[x + 3, y - 3] == "S"
-                ):
-                    count += 1
-                if (
-                    grid[x - 1, y + 1] == "M"
-                    and grid[x - 2, y + 2] == "A"
-                    and grid[x - 3, y + 3] == "S"
-                ):
-                    count += 1
+                count += len(
+                    [1 for dir in Dir8 if grid.substr((x, y), dir, 4) == "XMAS"]
+                )
     return count
 
 
-def part2(s: str) -> int:
-    grid = Grid(s)
-    # find every x, then go each direction
+def count_cross_mas(s: str) -> int:
+    grid = StringGrid(s)
+    goals = ["MAS", "SAM"]
     count = 0
     for x in range(grid.width):
         for y in range(grid.height):
             if grid[x, y] == "A":
-                corners = [
-                    grid[x - 1, y - 1],
-                    grid[x - 1, y + 1],
-                    grid[x + 1, y + 1],
-                    grid[x + 1, y - 1],
-                ]
-                if not all(c and c in "MS" for c in corners):
-                    continue
-                if corners[0] == corners[2]:
-                    continue
-                corners.sort()
-                if "".join(corners) == "MMSS":
+                if (
+                    grid.substr((x - 1, y - 1), Dir8.SE, 3) in goals
+                    and grid.substr((x - 1, y + 1), Dir8.NE, 3) in goals
+                ):
                     count += 1
-
     return count
 
 
 if __name__ == "__main__":
-    main(
-        part1,
-        part2,
-    )
+    main(count_xmas, count_cross_mas)
