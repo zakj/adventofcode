@@ -15,12 +15,8 @@ class StringGrid(Grid[str]):
 def count_xmas(s: str) -> int:
     grid = StringGrid(s)
     count = 0
-    for x in range(grid.width):
-        for y in range(grid.height):
-            if grid[x, y] == "X":
-                count += len(
-                    [1 for dir in Dir8 if grid.substr((x, y), dir, 4) == "XMAS"]
-                )
+    for p in grid.findall("X"):
+        count += len([1 for dir in Dir8 if grid.substr(p, dir, 4) == "XMAS"])
     return count
 
 
@@ -28,14 +24,12 @@ def count_cross_mas(s: str) -> int:
     grid = StringGrid(s)
     goals = ["MAS", "SAM"]
     count = 0
-    for x in range(grid.width):
-        for y in range(grid.height):
-            if grid[x, y] == "A":
-                if (
-                    grid.substr((x - 1, y - 1), Dir8.SE, 3) in goals
-                    and grid.substr((x - 1, y + 1), Dir8.NE, 3) in goals
-                ):
-                    count += 1
+    for x, y in grid.findall("A"):
+        if (
+            grid.substr((x - 1, y - 1), Dir8.SE, 3) in goals
+            and grid.substr((x - 1, y + 1), Dir8.NE, 3) in goals
+        ):
+            count += 1
     return count
 
 

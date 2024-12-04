@@ -67,6 +67,9 @@ class Grid[T]:
     def __setitem__(self, item: Point, value: T) -> None:
         self.data[item] = value
 
+    def findall(self, value: T) -> list[Point]:
+        return [k for k, v in self.data.items() if v == value]
+
     def get(self, item: Point, default: T | None = None) -> T | None:
         return self.data.get(item, default)
 
