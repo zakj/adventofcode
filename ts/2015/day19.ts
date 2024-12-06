@@ -28,12 +28,11 @@ function molecules(rules: Rule[], start: string): Set<string> {
 }
 
 function fabricate(start: string, target: string): number {
-  const throwaway = ['Rn', 'Ar', 'Y.', '[a-z]'].map((x) => new RegExp(x, 'g'));
-  const atoms = throwaway.reduce((s, re) => s.replaceAll(re, ''), target);
+  const atoms = target.replaceAll(/Rn|Ar|Y.|[a-z]/g, '');
   return atoms.length - start.length;
 }
 
 main(
   (s) => molecules(...parse(s)).size,
-  (s) => fabricate('e', parse(s)[1])
+  (s) => fabricate('e', parse(s)[1]),
 );
