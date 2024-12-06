@@ -36,6 +36,9 @@ def visited_positions(s: str) -> int:
     return len(visits)
 
 
+# TODO: this is still slow. Could we cache the straight walks from the
+# unmodified grid, and use that instead of walking cell by cell? We'd have to
+# account for when a new obstacle appears.
 def count_looping_obstacles(s: str) -> int:
     grid, start = parse(s)
     visits = walk(grid, start)
