@@ -1,5 +1,6 @@
 [[examples]]
 answers = [7]
+part = 1
 input = '''
 e => H
 e => O
