@@ -1,79 +1,46 @@
 from aoc import main
-from coords import Dir, Grid, addp, subp, turn_right
+from coords import Dir, Grid, Point, Vector, addp, subp, turn_right
+
+State = tuple[Point, Vector]
 
 
-def parse(s: str):
-    pass
-
-
-def part1(s: str) -> int:
+def parse(s: str) -> tuple[Grid, State]:
     grid = Grid(s)
-    start = grid.findall("^")[0]
-    seen = {start}
-    dir = Dir.N
-    cur = start
-    while True:
-        next = addp(cur, dir)
-        if next not in grid:
-            break
-        if grid[next] == "#":
-            dir = turn_right(dir)
-            next = addp(cur, dir)
-        if next not in grid:
-            break
-        seen.add(next)
-        cur = next
-    return len(seen)
+    return grid, (grid.findall("^")[0], Dir.N)
 
 
-def path(grid, cur):
-    dir = Dir.N
-    seen = {(cur, dir)}
-    while True:
-        next = addp(cur, dir)
-        if next not in grid:
-            break
-        if grid[next] == "#":
-            dir = turn_right(dir)
-            next = addp(cur, dir)
-        if next not in grid:
-            break
-        seen.add((next, dir))
-        cur = next
-    return {a for a, b in seen}
-
-
-def walk(grid, cur):
-    dir = Dir.N
+def walk(grid: Grid, start: State) -> tuple[bool, set[tuple[Point, Vector]]]:
     seen = set()
+    cur, dir = start
     while cur in grid:
-        if grid[cur] == "#":
-            cur = subp(cur, dir)
-            dir = turn_right(dir)
-            continue
         if (cur, dir) in seen:
-            return True
+            return True, seen
         seen.add((cur, dir))
         cur = addp(cur, dir)
-    return False
+        while grid.get(cur) == "#":
+            cur = subp(cur, dir)
+            dir = turn_right(dir)
+    return False, seen
 
 
-def part2(s: str) -> int:
-    grid = Grid(s)
-    start = grid.findall("^")[0]
-    options = path(grid, start)
-    total = set()
-    grid = Grid(s)
-    for option in options - {start}:
-        grid[option] = "#"
-        if walk(grid, start):
-            total.add(option)
-        grid[option] = "."
-    return len(total)
+def visited_positions(s: str) -> int:
+    grid, start = parse(s)
+    _, seen = walk(grid, start)
+    return len({p for p, d in seen})
+
+
+def count_looping_obstacles(s: str) -> int:
+    grid, start = parse(s)
+    _, seen = walk(grid, start)
+    obstacle_options = {p for p, d in seen} - {start[0]}
+    count = 0
+    for point in obstacle_options:
+        grid[point] = "#"
+        if walk(grid, start)[0]:
+            count += 1
+        grid[point] = "."
+    return count
 
 
 if __name__ == "__main__":
-    main(
-        part1,
-        part2,
-    )
+    main(visited_positions, count_looping_obstacles)
