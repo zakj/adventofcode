@@ -14,7 +14,12 @@ def parse(line: str) -> tuple[int, list[int]]:
 
 
 def concat(a: int, b: int) -> int:
-    return int(f"{a}{b}")
+    # int(f"{a}{b}") is simpler but markedly slower.
+    tmp = b
+    while tmp > 0:
+        a *= 10
+        tmp //= 10
+    return a + b
 
 
 def sum_valid_targets(s: str, ops: list[Callable]) -> int:
