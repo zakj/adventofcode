@@ -1,61 +1,29 @@
+from collections.abc import Callable
 from functools import reduce
 from itertools import product
 from operator import add, mul
 
 from aoc import main
-from parse import all_numbers
+from parse import all_numbers, line_parser
 
 
-def all_combs(gaps: int):
-    rv = []
-    for i in range(2**gaps):
-        cur = [mul] * gaps
-        # print(f"{i=}")
-        for j in range(gaps):
-            # print(f"{j=}")
-            if i & 2**j:
-                # print(f"{i & 2**j=}")
-                cur[j] = add
-        rv.append(cur)
-    return rv
-
-
-def part1(s: str) -> int:
-    ops = [add, mul]
-    sum = 0
-    for line in s.splitlines():
-        target, *values = all_numbers(line)
-        gaps = len(values) - 1
-        combs = all_combs(gaps)
-        for ops in combs:
-            ops = list(ops)
-            total = reduce(lambda acc, x: ops.pop()(acc, x), values)
-            if total == target:
-                sum += target
-                break
-
-    return sum
+@line_parser
+def parse(line: str) -> tuple[int, list[int]]:
+    target, *values = all_numbers(line)
+    return target, values
 
 
 def concat(a: int, b: int) -> int:
     return int(f"{a}{b}")
 
 
-def all_combs2(gaps: int):
-    return product([add, mul, concat], repeat=gaps)
-
-
-def part2(s: str) -> int:
-    ops = [add, mul]
+def sum_valid_targets(s: str, ops: list[Callable]) -> int:
     sum = 0
-    for line in s.splitlines():
-        target, *values = all_numbers(line)
+    for target, values in parse(s):
         gaps = len(values) - 1
-        combs = all_combs2(gaps)
-        for ops in combs:
-            ops = list(ops)
-            total = reduce(lambda acc, x: ops.pop()(acc, x), values)
-            if total == target:
+        for fns in product(ops, repeat=gaps):
+            fn = iter(fns)
+            if reduce(lambda acc, x: next(fn)(acc, x), values) == target:
                 sum += target
                 break
     return sum
@@ -63,6 +31,6 @@ def part2(s: str) -> int:
 
 if __name__ == "__main__":
     main(
-        part1,
-        part2,
+        lambda s: sum_valid_targets(s, [add, mul]),
+        lambda s: sum_valid_targets(s, [add, mul, concat]),
     )
