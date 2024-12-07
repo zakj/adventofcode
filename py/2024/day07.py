@@ -1,8 +1,3 @@
-from collections.abc import Callable
-from functools import reduce
-from itertools import product
-from operator import add, mul
-
 from aoc import main
 from parse import all_numbers, line_parser
 
@@ -13,29 +8,36 @@ def parse(line: str) -> tuple[int, list[int]]:
     return target, values
 
 
-def concat(a: int, b: int) -> int:
-    # int(f"{a}{b}") is simpler but markedly slower.
-    tmp = b
-    while tmp > 0:
-        a *= 10
-        tmp //= 10
-    return a + b
+def is_valid(target: int, values: list[int], with_concat=False) -> bool:
+    *values, last = values
+    if not values:
+        return last == target
+
+    # Could we add?
+    if is_valid(target - last, values, with_concat):
+        return True
+
+    # Could we multiply?
+    if target % last == 0 and is_valid(target // last, values, with_concat):
+        return True
+
+    # Could we concatenate?
+    shift = 10 ** len(str(last))
+    return (
+        with_concat
+        and (target - last) % shift == 0
+        and is_valid((target - last) // shift, values, with_concat)
+    )
 
 
-def sum_valid_targets(s: str, ops: list[Callable]) -> int:
-    sum = 0
-    for target, values in parse(s):
-        gaps = len(values) - 1
-        for fns in product(ops, repeat=gaps):
-            fn = iter(fns)
-            if reduce(lambda acc, x: next(fn)(acc, x), values) == target:
-                sum += target
-                break
-    return sum
+def sum_valid_targets(s: str, with_concat=False) -> int:
+    return sum(
+        target for target, values in parse(s) if is_valid(target, values, with_concat)
+    )
 
 
 if __name__ == "__main__":
     main(
-        lambda s: sum_valid_targets(s, [add, mul]),
-        lambda s: sum_valid_targets(s, [add, mul, concat]),
+        lambda s: sum_valid_targets(s),
+        lambda s: sum_valid_targets(s, with_concat=True),
     )
