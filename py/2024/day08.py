@@ -1,17 +1,17 @@
-from itertools import combinations
+from itertools import combinations, permutations
 
 from aoc import main
-from coords import Grid, addp, subp
+from coords import Grid, Point, addp, subp
 
 
-def parse(s: str):
-    pass
-
-
-# count antinodes within the map. in line with two matching chars, equidistant
-def part1(s: str) -> int:
+def parse(s: str) -> tuple[Grid, set[str]]:
     grid = Grid(s)
-    antennas = {c for c in grid.data.values() if c != "."}
+    antennas = set(grid.data.values()) - {"."}
+    return grid, antennas
+
+
+def count_antinodes(s: str) -> int:
+    grid, antennas = parse(s)
     antinodes = set()
     for c in antennas:
         points = grid.findall(c)
@@ -22,29 +22,21 @@ def part1(s: str) -> int:
     return len(antinodes)
 
 
-def part2(s: str) -> int:
-    grid = Grid(s)
-    antennas = {c for c in grid.data.values() if c != "."}
+def count_any_antinodes(s: str) -> int:
+    grid, antennas = parse(s)
     antinodes = set()
     for c in antennas:
         points = grid.findall(c)
-        for a, b in combinations(points, 2):
+        for a, b in permutations(points, 2):
             delta = subp(a, b)
-            candidates = [a, b]
-            cur = addp(a, delta)
+            candidates = set()
+            cur = a
             while cur in grid:
-                candidates.append(cur)
+                candidates.add(cur)
                 cur = addp(cur, delta)
-            cur = subp(a, delta)
-            while cur in grid:
-                candidates.append(cur)
-                cur = subp(cur, delta)
-            antinodes |= {p for p in candidates if p in grid}
+            antinodes |= candidates
     return len(antinodes)
 
 
 if __name__ == "__main__":
-    main(
-        part1,
-        part2,
-    )
+    main(count_antinodes, count_any_antinodes)
