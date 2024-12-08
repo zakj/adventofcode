@@ -73,6 +73,10 @@ class Grid[T]:
     def get(self, item: Point, default: T | None = None) -> T | None:
         return self.data.get(item, default)
 
+    def display(self) -> None:
+        for y in range(self.height):
+            print("".join(str(self[x, y]) for x in range(self.width)))
+
 
 def neighbors(p: Point) -> Iterable[Point]:
     x, y = p
