@@ -44,7 +44,11 @@ const rings: Item[] = [
 ].map(storeMap);
 
 class Character {
-  constructor(public hp: number, public damage: number, public armor: number) {}
+  constructor(
+    public hp: number,
+    public damage: number,
+    public armor: number,
+  ) {}
 
   attack(other: Character) {
     other.hp -= Math.max(this.damage - other.armor, 1);
@@ -77,25 +81,21 @@ function allOptions(weapons: Item[], armors: Item[], rings: Item[]) {
   return options;
 }
 
+function costOfBestPurchases(s: string, shouldWin = true): number {
+  const [bossHp, bossDamage, bossArmor] = allNumbers(s);
+  const makeBoss = () => new Character(bossHp, bossDamage, bossArmor);
+  const options = allOptions(weapons, armors, rings);
+  options.sort((a, b) => a.cost - b.cost);
+  if (!shouldWin) options.reverse();
+  return options.find(
+    (opt) =>
+      playerWins(new Character(playerHp, opt.damage, opt.armor), makeBoss()) ==
+      shouldWin,
+  ).cost;
+}
+
 const playerHp = 100;
 main(
-  (s) => {
-    const [bossHp, bossDamage, bossArmor] = allNumbers(s);
-    const makeBoss = () => new Character(bossHp, bossDamage, bossArmor);
-    const options = allOptions(weapons, armors, rings);
-    options.sort((a, b) => a.cost - b.cost);
-    return options.find((opt) =>
-      playerWins(new Character(playerHp, opt.damage, opt.armor), makeBoss())
-    ).cost;
-  },
-  (s) => {
-    const [bossHp, bossDamage, bossArmor] = allNumbers(s);
-    const makeBoss = () => new Character(bossHp, bossDamage, bossArmor);
-    const options = allOptions(weapons, armors, rings);
-    options.sort((a, b) => b.cost - a.cost);
-    return options.find(
-      (opt) =>
-        !playerWins(new Character(playerHp, opt.damage, opt.armor), makeBoss())
-    ).cost;
-  }
+  (s) => costOfBestPurchases(s),
+  (s) => costOfBestPurchases(s, false),
 );
