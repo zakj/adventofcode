@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from aoc import main, status
+from aoc import main
 
 
 def parse(s: str):
@@ -21,7 +21,6 @@ def part1(s: str) -> int:
         block = not block
     last_free_idx = 0
     for i in range(len(fs) - 1, 0, -1):
-        status(str(i))
         c = fs[i]
         first_free_idx = fs.index(".", last_free_idx)
         last_free_idx = first_free_idx
@@ -41,7 +40,6 @@ def part1(s: str) -> int:
 class Block:
     id: int | None
     size: int
-    tried: bool = False
 
     def __str__(self) -> str:
         return "".join(["." if self.id is None else str(self.id)] * self.size)
@@ -50,7 +48,7 @@ class Block:
 def part2(s: str) -> int:
     id = 0
     block = True
-    fs = []
+    fs: list[Block] = []
     for c in s.strip():
         size = int(c)
         if block:
@@ -60,36 +58,33 @@ def part2(s: str) -> int:
             fs.append(Block(None, size))
         block = not block
 
-    while True:
-        try:
-            block_idx = next(
-                i
-                for i in range(len(fs) - 1, 0, -1)
-                if fs[i].id is not None and not fs[i].tried
-            )
-        except StopIteration:
-            break
+    # Conceptually, this should not use a range: we are adding to the array
+    # during iteration. I previously was backtracking each iteration to find the
+    # next-untried file. But this is a lot faster, and because the input
+    # alternates between files and free space, we are inserting only one item
+    # into the array, and we only care about files here, it's safe in this case:
+    # we only ever skip processing a free block.
+    for block_idx in range(len(fs) - 1, 0, -1):
         block = fs[block_idx]
-        block.tried = True
-        try:
-            first_free_idx = next(
+        if block.id is None:
+            continue
+        first_free_idx = next(
+            (
                 j
                 for j in range(block_idx)
                 if fs[j].id is None and fs[j].size >= block.size
-            )
-            free_block = fs[first_free_idx]
-            fs[first_free_idx] = block
-            fs[block_idx] = Block(None, block.size)
-
-            extra_space = free_block.size - block.size
-            if extra_space > 0:
-                fs = (
-                    fs[: first_free_idx + 1]
-                    + [Block(None, extra_space)]
-                    + fs[first_free_idx + 1 :]
-                )
-        except StopIteration:
+            ),
+            None,
+        )
+        if first_free_idx is None:
             continue
+        free_block = fs[first_free_idx]
+        fs[first_free_idx] = block
+        fs[block_idx] = Block(None, block.size)
+
+        extra_space = free_block.size - block.size
+        if extra_space > 0:
+            fs.insert(first_free_idx + 1, Block(None, extra_space))
 
     checksum = 0
     i = 0
