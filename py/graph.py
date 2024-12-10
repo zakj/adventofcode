@@ -1,6 +1,6 @@
 import sys
 from collections import defaultdict, deque
-from collections.abc import Callable, Hashable, Iterator
+from collections.abc import Callable, Generator, Hashable, Iterator
 from itertools import pairwise, product
 
 from coords import Point
@@ -148,9 +148,9 @@ def shortest_path_length[Node](G: DiGraph[Node], start: Node, end: Node) -> int:
     return -1
 
 
-def shortest_path_lengths_from[
-    Node
-](G: DiGraph[Node], start: Node) -> Iterator[tuple[Node, int]]:
+def shortest_path_lengths_from[Node](
+    G: DiGraph[Node], start: Node
+) -> Iterator[tuple[Node, int]]:
     distance = 0
     visited = {start}
     yield start, distance
@@ -164,3 +164,20 @@ def shortest_path_lengths_from[
                 visited.add(neighbor)
                 queue.append(neighbor)
                 yield neighbor, distance
+
+
+def all_paths(G, start: Point, end: Point) -> Generator[list[Point]]:
+    yield from _all_paths(G, start, end, set(), [])
+
+
+def _all_paths(
+    G, start: Point, end: Point, visited: set[Point], path: list[Point]
+) -> Generator[list[Point]]:
+    visited.add(start)
+    path.append(start)
+    if start == end:
+        yield path
+    else:
+        for neighbor in G[start] - visited:
+            yield from _all_paths(G, neighbor, end, visited, path)
+    visited.remove(start)
