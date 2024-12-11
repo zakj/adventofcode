@@ -5,39 +5,29 @@ from parse import all_numbers
 
 
 @cache
-def rec(stone: int, remain: int) -> int:
-    if remain == 0:
+def final_stones(stone: int, blinks: int) -> int:
+    if blinks == 0:
         return 1
-    remain -= 1
+    blinks -= 1
+
     if stone == 0:
-        return rec(1, remain)
+        return final_stones(1, blinks)
     elif len(str(stone)) % 2 == 0:
-        ss = str(stone)
-        return rec(int(ss[: len(ss) // 2]), remain) + rec(
-            int(ss[len(ss) // 2 :]), remain
-        )
+        string = str(stone)
+        mid = len(string) // 2
+        left, right = int(string[:mid]), int(string[mid:])
+        return final_stones(left, blinks) + final_stones(right, blinks)
     else:
-        return rec(stone * 2024, remain)
+        return final_stones(stone * 2024, blinks)
 
 
-def part1(s: str) -> int:
+def count_stones(s: str, blinks: int) -> int:
     stones = all_numbers(s)
-    count = 0
-    for stone in stones:
-        count += rec(stone, 25)
-    return count
-
-
-def part2(s: str) -> int:
-    stones = all_numbers(s)
-    count = 0
-    for stone in stones:
-        count += rec(stone, 75)
-    return count
+    return sum(final_stones(stone, blinks) for stone in stones)
 
 
 if __name__ == "__main__":
     main(
-        part1,
-        part2,
+        lambda s: count_stones(s, 25),
+        lambda s: count_stones(s, 75),
     )
