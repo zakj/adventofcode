@@ -1,8 +1,6 @@
-from itertools import product
-
 from aoc import main
 from coords import Point
-from graph import GridGraph, all_paths, shortest_path_lengths_from
+from graph import GridGraph, all_paths_by, shortest_path_lengths_from
 
 
 def parse(s: str) -> tuple[GridGraph, list[Point]]:
@@ -15,19 +13,19 @@ def parse(s: str) -> tuple[GridGraph, list[Point]]:
 
 def trail_score(s: str) -> int:
     G, trailheads = parse(s)
-    score = 0
-    for start in trailheads:
-        score += len([1 for _, d in shortest_path_lengths_from(G, start) if d == 9])
-    return score
+    return sum(
+        len([1 for _, d in shortest_path_lengths_from(G, start) if d == 9])
+        for start in trailheads
+    )
 
 
 def trail_rating(s: str) -> int:
     G, trailheads = parse(s)
-    trailends = [p for p, c in G.type.items() if c == "9"]
-    rating = 0
-    for start, end in product(trailheads, trailends):
-        rating += len(list(all_paths(G, start, end)))
-    return rating
+    trailends = {p for p, c in G.type.items() if c == "9"}
+    return sum(
+        len(list(all_paths_by(G, start, lambda p: p in trailends)))
+        for start in trailheads
+    )
 
 
 if __name__ == "__main__":

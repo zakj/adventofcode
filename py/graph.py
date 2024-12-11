@@ -166,18 +166,25 @@ def shortest_path_lengths_from[Node](
                 yield neighbor, distance
 
 
-def all_paths(G, start: Point, end: Point) -> Generator[list[Point]]:
-    yield from _all_paths(G, start, end, set(), [])
+def all_paths[Node](G: DiGraph[Node], start: Node, end: Node) -> Generator[list[Node]]:
+    queue = [(start, [start])]
+    while queue:
+        cur, path = queue.pop()
+        if cur == end:
+            yield path
+        for neighbor in G[cur]:
+            if neighbor not in path:
+                queue.append((neighbor, path + [neighbor]))
 
 
-def _all_paths(
-    G, start: Point, end: Point, visited: set[Point], path: list[Point]
-) -> Generator[list[Point]]:
-    visited.add(start)
-    path.append(start)
-    if start == end:
-        yield path
-    else:
-        for neighbor in G[start] - visited:
-            yield from _all_paths(G, neighbor, end, visited, path)
-    visited.remove(start)
+def all_paths_by[Node](
+    G: DiGraph[Node], start: Node, predicate: Callable[[Node], bool]
+) -> Generator[list[Node]]:
+    queue = [(start, [start])]
+    while queue:
+        cur, path = queue.pop()
+        if predicate(cur):
+            yield path
+        for neighbor in G[cur]:
+            if neighbor not in path:
+                queue.append((neighbor, path + [neighbor]))
