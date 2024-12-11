@@ -1,79 +1,79 @@
+from collections.abc import Generator
 from dataclasses import dataclass
+from heapq import heappop, heappush
 from itertools import count
 
 from aoc import main
 
 
 @dataclass
-class Block:
-    id: int | None
+class File:
+    block: int
     size: int
+    id: int
 
-    def __str__(self) -> str:
-        return "".join(["." if self.id is None else str(self.id)] * self.size)
-
-    def expand(self) -> list[int | None]:
-        return [self.id] * self.size
+    def checksum(self):
+        return sum(i * self.id for i in range(self.block, self.block + self.size))
 
 
-def parse(s: str) -> list[Block]:
+# -> (block, size, id | None)
+def parse(s: str) -> Generator[tuple[int, int, int | None]]:
     id = count()
-    return [
-        Block(next(id) if i % 2 == 0 else None, int(c)) for i, c in enumerate(s.strip())
-    ]
-
-
-def checksum(expanded: list[int | None]) -> int:
-    return sum(i * c if c is not None else 0 for i, c in enumerate(expanded))
+    block = 0
+    for i, c in enumerate(s.strip()):
+        size = int(c)
+        yield block, size, next(id) if i % 2 == 0 else None
+        block += size
 
 
 def compress_disk(s: str) -> int:
     # Since we're splitting up files, it's simpler to just work on expanded data.
-    fs = [c for block in parse(s) for c in block.expand()]
-    first_free_idx = 0
-    for i in range(len(fs) - 1, 0, -1):
-        if fs[i] is None:
+    fs = [c for _, size, id in parse(s) for c in [id] * size]
+    free_idx = 0
+    for block_idx in range(len(fs) - 1, 0, -1):
+        if fs[block_idx] is None:
             continue
         try:
-            first_free_idx = fs.index(None, first_free_idx, i)
+            free_idx = fs.index(None, free_idx, block_idx)
         except ValueError:
             break
-        fs[i], fs[first_free_idx] = fs[first_free_idx], fs[i]
-    return checksum(fs)
+        fs[block_idx], fs[free_idx] = fs[free_idx], fs[block_idx]
+    return sum(i * c if c is not None else 0 for i, c in enumerate(fs))
+
+
+def first_space_for(spaces: list[list[int]], file: File) -> tuple[int, int]:
+    candidates = []
+    for size in range(file.size, 10):
+        heap = spaces[size]
+        if heap and heap[0] < file.block:
+            candidates.append((heap[0], size))
+    if not candidates:
+        raise ValueError
+    block, size = min(candidates)
+    heappop(spaces[size])
+    return block, size
 
 
 def defrag_disk(s: str) -> int:
-    # Conceptually, this should not use a range: we are adding to the array
-    # during iteration. I previously was backtracking each iteration to find the
-    # next-untried file. But this is a lot faster, and because the input
-    # alternates between files and free space, we are inserting only one item
-    # into the array, and we only care about files here, it's safe in this case:
-    # we only ever skip processing a free block.
-    fs = parse(s)
-    for block_idx in range(len(fs) - 1, 0, -1):
-        block = fs[block_idx]
-        if block.id is None:
-            continue
-        first_free_idx = next(
-            (
-                j
-                for j in range(block_idx)
-                if fs[j].id is None and fs[j].size >= block.size
-            ),
-            None,
-        )
-        if first_free_idx is None:
-            continue
-        free_block = fs[first_free_idx]
-        fs[first_free_idx] = block
-        fs[block_idx] = Block(None, block.size)
+    files: list[File] = []
+    spaces = [[] for _ in range(10)]  # one heap per size, storing block ids
+    for block, size, id in parse(s):
+        if id is None:
+            heappush(spaces[size], block)
+        else:
+            files.append(File(block, size, id))
 
-        extra_space = free_block.size - block.size
+    for file in reversed(files):
+        try:
+            block, size = first_space_for(spaces, file)
+        except ValueError:
+            continue
+        file.block = block
+        extra_space = size - file.size
         if extra_space > 0:
-            fs.insert(first_free_idx + 1, Block(None, extra_space))
+            heappush(spaces[size - file.size], block + file.size)
 
-    expanded = [c for block in fs for c in block.expand()]
-    return checksum(expanded)
+    return sum(file.checksum() for file in files)
 
 
 if __name__ == "__main__":
