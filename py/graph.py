@@ -188,3 +188,15 @@ def all_paths_by[Node](
         for neighbor in G[cur]:
             if neighbor not in path:
                 queue.append((neighbor, path + [neighbor]))
+
+
+def all_reachable_points_from[Node](G: DiGraph[Node], start: Node) -> set[Node]:
+    visited = set()
+    queue = [start]
+    while queue:
+        cur = queue.pop()
+        if cur in visited:
+            continue
+        visited.add(cur)
+        queue.extend(G[cur])
+    return visited
