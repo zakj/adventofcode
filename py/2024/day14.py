@@ -1,116 +1,81 @@
-from aoc import main, status
-from coords import Point, Vector, addp, subp
+from collections import defaultdict
+from dataclasses import dataclass
+from itertools import count, pairwise
+from math import prod
+
+from aoc import main
+from coords import Dir, Point, Vector, addp
 from parse import all_numbers, line_parser
 
 
+@dataclass
+class Robot:
+    point: Point
+    vector: Vector
+
+    def move(self, width: int, height: int, times=1) -> None:
+        d = self.vector[0] * times, self.vector[1] * times
+        p = addp(self.point, d)
+        self.point = p[0] % width, p[1] % height
+
+    @property
+    def x(self) -> int:
+        return self.point[0]
+
+    @property
+    def y(self) -> int:
+        return self.point[1]
+
+
 @line_parser
-def parse(line: str) -> tuple[Point, Vector]:
+def parse(line: str) -> Robot:
     px, py, vx, vy = all_numbers(line)
-    return (px, py), (vx, vy)
-    pass
+    return Robot((px, py), (vx, vy))
 
 
-def part1(s: str, width=101, height=103) -> int:
+def safety_factor(s: str, width=101, height=103) -> int:
     robots = parse(s)
-    for _ in range(100):
-        for i, (p, d) in enumerate(robots):
-            p = addp(p, d)
-            robots[i] = (p[0] % width, p[1] % height), d
+    for robot in robots:
+        robot.move(width, height, times=100)
 
-    nw = 0
-    ne = 0
-    se = 0
-    sw = 0
-    for (x, y), _ in robots:
-        if x < width // 2 and y < height // 2:
-            nw += 1
-        elif x > width // 2 and y < height // 2:
-            ne += 1
-        elif x > width // 2 and y > height // 2:
-            se += 1
-        elif x < width // 2 and y > height // 2:
-            sw += 1
-
-    return nw * ne * se * sw
-
-
-def print_tree(ps: set[Point], width: int, height: int):
-    for y in range(height):
-        row = []
-        for x in range(width):
-            row.append("@" if (x, y) in ps else ".")
-        print("".join(row))
-
-
-def part2(s: str, width=101, height=103) -> int:
-    robots = parse(s)
-    for _ in range(10000):
-        status(str(_))
-        for i, (p, d) in enumerate(robots):
-            p = addp(p, d)
-            robots[i] = (p[0] % width, p[1] % height), d
-
-        symm = True
-        midx = width // 2
-        midy = height // 2
-        locs = {p for p, _ in robots}
-        if len(locs) != len(robots):
+    quadrants = defaultdict(int)
+    midx = width // 2
+    midy = height // 2
+    for robot in robots:
+        if robot.x == midx or robot.y == midy:
             continue
+        quadrant = addp((0, 0), Dir.W if robot.x < midx else Dir.E)
+        quadrant = addp(quadrant, Dir.N if robot.y < midy else Dir.S)
+        quadrants[quadrant] += 1
+    return prod(quadrants.values())
 
-        print(_)
-        print_tree(locs, width, height)
-        print()
 
-        # for x, y in locs:
-        #     if x < midx:
-        #         delta = midx - x
-        #         if addp((midx, y), (delta, 0)) not in locs:
-        #             symm = False
-        #             break
-        #     elif x > midx:
-        #         delta = x - midx
-        #         if subp((midx, y), (delta, 0)) not in locs:
-        #             symm = False
-        #             break
-        # if symm:
-        #     print_tree(locs, width, height)
+def longest_run(xs: list[int]) -> int:
+    runs = {0}
+    run = 0
+    for a, b in pairwise(xs):
+        if a + 1 == b:
+            run += 1
+        else:
+            runs.add(run)
+            run = 0
+    return max(runs)
 
-    # nw = 0
-    #     ne = 0
-    #     se = 0
-    #     sw = 0
-    #     symm = True
-    #     for (x, y), _ in robots:
-    #         if x < width // 2 and y < height // 2:
-    #             nw += 1
-    #         elif x > width // 2 and y < height // 2:
-    #             ne += 1
-    #         elif x > width // 2 and y > height // 2:
-    #             se += 1
-    #         elif x < width // 2 and y > height // 2:
-    #             sw += 1
 
-    #     if nw == ne and sw == se and nw > sw:
-    #         locs = {p for p, _ in robots}
-    #         print_tree(locs, width, height)
-    #         print()
-    #         print()
-
-    # #     locs = {p for p, _ in robots}
-    #     top = min(y for x, y in locs)
-    #     if (
-    #         len([1 for x, y in locs if y == top]) == 1
-    #         and len([1 for x, y in locs if y == top + 1]) == 3
-    #         and len([1 for x, y in locs if y == top + 2]) == 5
-    #     ):
-    #         # if len([1 for y in range(height) if (width // 2, y) in locs]) > 5:
-    #         print_tree(locs, width, height)
-    # return 0
+def easter_egg(s: str, width=101, height=103) -> int:
+    robots = parse(s)
+    for t in count(1):
+        for robot in robots:
+            robot.move(width, height)
+        locs = {r.point for r in robots}
+        if len(locs) < len(robots):
+            continue
+        xs = sorted({x for x, y in locs})
+        ys = sorted({y for x, y in locs})
+        if longest_run(xs) >= 10 and longest_run(ys) >= 10:
+            return t
     return 0
 
 
 if __name__ == "__main__":
-    main(
-        part1,
-        part2,
-    )
+    main(safety_factor, easter_egg)
