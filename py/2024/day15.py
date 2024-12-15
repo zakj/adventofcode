@@ -46,22 +46,19 @@ wide_map = {
 }
 
 
+class Blocked(Exception):
+    pass
+
+
 def boxes_pushed_by(grid: Grid, box: Point, dir: Vector) -> set[Point]:
-    pushing = {box}
-    if grid[box] == "[":
-        pushing.add(addp(box, Dir.E))
-    elif grid[box] == "]":
-        pushing.add(addp(box, Dir.W))
+    pushing = {box, addp(box, Dir.E if grid[box] == "[" else Dir.W)}
     destination = {addp(p, dir) for p in pushing} - pushing
-    if any(grid[p] == "#" for p in destination):
-        return set()
     for p in destination:
+        if grid[p] == "#":
+            raise Blocked
         if grid[p] == ".":
             continue
-        new_moves = boxes_pushed_by(grid, p, dir)
-        if not new_moves:
-            return set()
-        pushing |= new_moves
+        pushing |= boxes_pushed_by(grid, p, dir)
     return pushing
 
 
@@ -70,13 +67,14 @@ def wide_gps_coordinates(s: str) -> int:
     grid[robot] = "."
     for dir in boxes:
         to = addp(robot, dir)
-        if grid[to] == "#":
-            continue
-        if grid[to] not in "[]":
+        if grid[to] == ".":
             robot = to
             continue
-        boxes = boxes_pushed_by(grid, to, dir)
-        if not boxes:
+        if grid[to] == "#":
+            continue
+        try:
+            boxes = boxes_pushed_by(grid, to, dir)
+        except Blocked:
             continue
 
         robot = to
