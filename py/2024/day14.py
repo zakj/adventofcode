@@ -1,6 +1,7 @@
 from collections import defaultdict
 from itertools import count, pairwise
 from math import prod
+from statistics import variance
 
 from aoc import main
 from coords import Point, Vector, addp
@@ -45,7 +46,8 @@ def longest_run(xs: list[int]) -> int:
     return best
 
 
-def easter_egg(s: str, width=101, height=103) -> int:
+# Unused now; this works but takes 800+ms.
+def easter_egg_orig(s: str, width=101, height=103) -> int:
     robots = parse(s)
     for t in count(1):
         locs = {*positions_at(robots, width, height, t)}
@@ -56,6 +58,16 @@ def easter_egg(s: str, width=101, height=103) -> int:
         if longest_run(xs) >= 10 and longest_run(ys) >= 10:
             return t
     return 0
+
+
+# Clever/fast solution using a simplified Chinese Remainder Theorem, found here:
+# <https://www.reddit.com/r/adventofcode/comments/1hdvhvu/comment/m1zws1g/>
+def easter_egg(s: str, width=101, height=103) -> int:
+    robots = parse(s)
+    states = [positions_at(robots, width, height, i) for i in range(max(width, height))]
+    bx = min(range(width), key=lambda t: variance(x for x, y in states[t]))
+    by = min(range(height), key=lambda t: variance(y for x, y in states[t]))
+    return bx + ((pow(width, -1, height) * (by - bx)) % height) * width
 
 
 if __name__ == "__main__":
