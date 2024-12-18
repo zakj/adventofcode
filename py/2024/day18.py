@@ -63,9 +63,10 @@ def part2(s: str, size: int, first: int) -> str:
     def edges(a: Point, ac: str, b: Point, bc: str) -> bool:
         return bc != "#"
 
+    G = GridGraph(grid.display2(), edges)
+
     for t in bytes[first:]:
-        grid[t] = "#"
-        G = GridGraph(grid.display2(), edges)
+        G.remove_node(t)
         if shortest_path_length(G, start, goal) == -1:
             return f"{t[0]},{t[1]}"
 
