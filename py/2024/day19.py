@@ -22,9 +22,8 @@ def is_valid(design: str) -> bool:
     if not design:
         return True
     for pattern in patterns[design[0]]:
-        if len(pattern) <= len(design) and design.startswith(pattern):
-            if is_valid(design[len(pattern) :]):
-                return True
+        if design.startswith(pattern) and is_valid(design[len(pattern) :]):
+            return True
     return False
 
 
@@ -40,7 +39,7 @@ def arrangements(design: str) -> int:
         return 1
     count = 0
     for pattern in patterns[design[0]]:
-        if len(pattern) <= len(design) and design.startswith(pattern):
+        if design.startswith(pattern):
             count += arrangements(design[len(pattern) :])
     return count
 
