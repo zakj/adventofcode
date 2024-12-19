@@ -1,8 +1,9 @@
 from bisect import bisect_left
+from collections.abc import Iterable
 
 from aoc import main
-from coords import Point
-from graph import DiGraph, GridGraph, shortest_path_length
+from coords import Point, neighbors
+from graph_dyn import DiGraph, shortest_path_length
 from parse import all_numbers, line_parser
 
 
@@ -12,22 +13,23 @@ def parse(line: str) -> Point:
     return x, y
 
 
-def make_graph(size: int, bytes: list[Point]) -> DiGraph[Point]:
-    row = "." * size
-    rows = "\n".join([row] * size)
-    bytes_set = set(bytes)
+class Memory(DiGraph):
+    def __init__(self, size, boxes: Iterable[Point]):
+        self.size = size
+        self.boxes = set(boxes)
 
-    def edges(a: Point, ac: str, b: Point, bc: str) -> bool:
-        return b not in bytes_set
+    def __contains__(self, node: Point) -> bool:
+        x, y = node
+        return 0 <= x < self.size and 0 <= y < self.size
 
-    return GridGraph(rows, edges)
+    def __getitem__(self, node: Point) -> set[Point]:
+        return {n for n in neighbors(node) if n in self and n not in self.boxes}
 
 
 def minimum_steps(s: str, size: int, first: int) -> int:
     bytes = parse(s)
     start, goal = (0, 0), (size - 1, size - 1)
-    G = make_graph(size, bytes[:first])
-    return shortest_path_length(G, start, goal)
+    return shortest_path_length(Memory(size, bytes[:first]), start, goal)
 
 
 def first_cutoff_byte(s: str, size: int, first: int) -> str:
@@ -35,10 +37,9 @@ def first_cutoff_byte(s: str, size: int, first: int) -> str:
     start, goal = (0, 0), (size - 1, size - 1)
 
     def bisect_key(i: int) -> bool:
-        G = make_graph(size, bytes[: i + 1])
-        return shortest_path_length(G, start, goal) == -1
+        return shortest_path_length(Memory(size, bytes[: i + 1]), start, goal) == -1
 
-    i = bisect_left(list(range(len(bytes))), True, lo=first, key=bisect_key)
+    i = bisect_left(range(len(bytes)), True, lo=first, key=bisect_key)
     return f"{bytes[i][0]},{bytes[i][1]}"
 
 
