@@ -5,51 +5,51 @@ from aoc import main
 from parse import paras
 
 # global because we don't want it in the caches
-towels = {}
+patterns = {}
 
 
 def parse(s: str):
-    towels_str, patterns = paras(s)
-    global towels
-    towels = defaultdict(list)
-    for towel in towels_str[0].split(", "):
-        towels[towel[0]].append(towel)
-    return patterns
+    patterns_str, designs = paras(s)
+    global patterns
+    patterns = defaultdict(list)
+    for pattern in patterns_str[0].split(", "):
+        patterns[pattern[0]].append(pattern)
+    return designs
 
 
 @cache
-def is_valid(pattern) -> bool:
-    if not pattern:
+def is_valid(design: str) -> bool:
+    if not design:
         return True
-    for towel in towels[pattern[0]]:
-        if len(towel) <= len(pattern) and pattern.startswith(towel):
-            if is_valid(pattern[len(towel) :]):
+    for pattern in patterns[design[0]]:
+        if len(pattern) <= len(design) and design.startswith(pattern):
+            if is_valid(design[len(pattern) :]):
                 return True
     return False
 
 
-def count_valid_patterns(s: str) -> int:
-    patterns = parse(s)
+def count_valid_designs(s: str) -> int:
+    designs = parse(s)
     is_valid.cache_clear()
-    return len([1 for p in patterns if is_valid(p)])
+    return len([1 for p in designs if is_valid(p)])
 
 
 @cache
-def towel_options(pattern) -> int:
-    if not pattern:
+def arrangements(design: str) -> int:
+    if not design:
         return 1
     count = 0
-    for towel in towels[pattern[0]]:
-        if len(towel) <= len(pattern) and pattern.startswith(towel):
-            count += towel_options(pattern[len(towel) :])
+    for pattern in patterns[design[0]]:
+        if len(pattern) <= len(design) and design.startswith(pattern):
+            count += arrangements(design[len(pattern) :])
     return count
 
 
-def count_configurations(s: str) -> int:
-    patterns = parse(s)
-    towel_options.cache_clear()
-    return sum(towel_options(p) for p in patterns)
+def count_all_arrangements(s: str) -> int:
+    designs = parse(s)
+    arrangements.cache_clear()
+    return sum(arrangements(p) for p in designs)
 
 
 if __name__ == "__main__":
-    main(count_valid_patterns, count_configurations)
+    main(count_valid_designs, count_all_arrangements)
