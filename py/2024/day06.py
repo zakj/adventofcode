@@ -15,7 +15,7 @@ class FoundLoop(Exception):
 
 def parse(s: str) -> tuple[Grid[str], State]:
     grid = Grid(s)
-    return grid, (grid.findall("^")[0], Dir.N)
+    return grid, (grid.find("^"), Dir.N)
 
 
 def walk(grid: Grid, start: State) -> Visits:

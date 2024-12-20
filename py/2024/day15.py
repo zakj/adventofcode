@@ -9,7 +9,7 @@ def parse(
     if cmap is not None:
         map = "".join([cmap.get(c, c) for c in map])
     grid = Grid(map)
-    return grid, [Dir.parse(c) for c in moves.replace("\n", "")], grid.findall("@")[0]
+    return grid, [Dir.parse(c) for c in moves.replace("\n", "")], grid.find("@")
 
 
 def gps_coordinates(s: str) -> int:

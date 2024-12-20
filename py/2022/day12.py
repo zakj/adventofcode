@@ -8,7 +8,7 @@ from graph_dyn import DiGraph, Goal, shortest_path_length
 class ReversedHeightMap(DiGraph):
     def __init__(self, s: str):
         self.grid = Grid(s)
-        self.start = self.grid.findall("E")[0]
+        self.start = self.grid.find("E")
 
     def __getitem__(self, node: Point) -> set[Point]:
         h = self.height(node)
@@ -23,7 +23,7 @@ class ReversedHeightMap(DiGraph):
 
 def to_start(s: str) -> int:
     G = ReversedHeightMap(s)
-    end = G.grid.findall("S")[0]
+    end = G.grid.find("S")
     return shortest_path_length(G, G.start, end)
 
 

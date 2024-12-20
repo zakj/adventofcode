@@ -8,8 +8,8 @@ type Node = tuple[Point, Vector]
 class Maze(graph_dyn.DiGraph):
     def __init__(self, s: str):
         grid = Grid(s)
-        self.start = grid.findall("S")[0]
-        self.end = grid.findall("E")[0]
+        self.start = grid.find("S")
+        self.end = grid.find("E")
         self.walkable = set(grid.findall("."))
         self.walkable |= {self.start, self.end}
 
