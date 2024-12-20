@@ -1,28 +1,36 @@
 from aoc import main
-from coords import Point
-from graph import GridGraph, shortest_path_length, shortest_path_lengths_from
+from coords import Grid, Point, neighbors
+from graph_dyn import DiGraph, Goal, shortest_path_length
 
 
-def build_inverse_graph(s: str) -> GridGraph:
-    height = lambda c: ord({"S": "a", "E": "z"}.get(c, c))
+# TODO consider supporting multiple starts in _dijkstra so I don't have to do
+# this inverted hack.
+class ReversedHeightMap(DiGraph):
+    def __init__(self, s: str):
+        self.grid = Grid(s)
+        self.start = self.grid.findall("E")[0]
 
-    def edgeweight(src: Point, stype: str, dst: Point, dtype: str) -> bool:
-        return height(stype) - 1 <= height(dtype)
+    def __getitem__(self, node: Point) -> set[Point]:
+        h = self.height(node)
+        return {
+            n for n in neighbors(node) if n in self.grid and h - 1 <= self.height(n)
+        }
 
-    return GridGraph(s, edgeweight)
+    def height(self, point: Point) -> int:
+        c = self.grid[point]
+        return ord({"S": "a", "E": "z"}.get(c, c))
 
 
 def to_start(s: str) -> int:
-    G = build_inverse_graph(s)
-    start = next(n for n, c in G.type.items() if c == "S")
-    end = next(n for n, c in G.type.items() if c == "E")
-    return shortest_path_length(G, end, start)
+    G = ReversedHeightMap(s)
+    end = G.grid.findall("S")[0]
+    return shortest_path_length(G, G.start, end)
 
 
 def to_any_a(s: str) -> int:
-    G = build_inverse_graph(s)
-    end = next(n for n, c in G.type.items() if c == "E")
-    return min(d for n, d in shortest_path_lengths_from(G, end) if G.type[n] in "Sa")
+    G = ReversedHeightMap(s)
+    goal = Goal[Point](lambda n: G.grid[n] in "Sa")
+    return shortest_path_length(G, G.start, goal)
 
 
 if __name__ == "__main__":

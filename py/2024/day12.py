@@ -1,29 +1,33 @@
 from aoc import main
-from coords import Dir, Dir8, Point, addp
-from graph import GridGraph, all_reachable_points_from
+from coords import Dir, Dir8, Grid, Point, addp, neighbors
+from graph_dyn import DiGraph, shortest_path_length
 
 
-def parse(s: str) -> GridGraph:
-    def edges(a: Point, ac: str, b: Point, bc: str) -> bool:
-        return ac == bc
+class Farm(DiGraph):
+    def __init__(self, s: str):
+        self.grid = Grid(s)
 
-    return GridGraph(s, edges)
+    def __iter__(self):
+        return iter(self.grid.data)
+
+    def __getitem__(self, point: Point) -> set[Point]:
+        return {n for n in neighbors(point) if self.grid[point] == self.grid.get(n)}
 
 
-def find_regions(G: GridGraph) -> list[set[Point]]:
+def find_regions(G: DiGraph[Point]) -> list[set[Point]]:
     seen = set()
     regions = []
     for point in G:
         if point in seen:
             continue
-        region = all_reachable_points_from(G, point)
+        region = set(shortest_path_length(G, point))
         seen |= region
         regions.append(region)
     return regions
 
 
 def price_by_perimeter(s: str) -> int:
-    G = parse(s)
+    G = Farm(s)
     regions = find_regions(G)
 
     total = 0
@@ -35,7 +39,7 @@ def price_by_perimeter(s: str) -> int:
 
 
 def price_by_sides(s: str) -> int:
-    G = parse(s)
+    G = Farm(s)
     regions = find_regions(G)
 
     total = 0

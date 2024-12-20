@@ -3,28 +3,32 @@ from collections import defaultdict
 from itertools import combinations
 
 from aoc import main
-from graph import DiGraph, all_shortest_path_lengths
+from graph_dyn import DiGraph, all_shortest_path_lengths
+from parse import all_numbers
 
 
-def parse(s: str) -> tuple[DiGraph, dict[str, int]]:
-    G = DiGraph()
-    flow = {}
-    name_pat = re.compile(r"[A-Z]{2}")
-    rate_pat = re.compile(r"\d+")
-    for line in s.splitlines():
-        name, *tunnels = name_pat.findall(line)
-        rate = rate_pat.search(line)
-        for dst in tunnels:
-            G.add_edge(name, dst)
-        assert rate
-        flow[name] = int(rate[0])
-    return G, flow
+class Tunnels(DiGraph):
+    def __init__(self, s: str):
+        name_pat = re.compile(r"[A-Z]{2}")
+        self.flow = {}
+        self.adj = {}
+        for line in s.splitlines():
+            name, *tunnels = name_pat.findall(line)
+            rate = all_numbers(line)[0]
+            self.flow[name] = rate
+            self.adj[name] = set(tunnels)
+
+    def __getitem__(self, name: str) -> set[str]:
+        return self.adj[name]
+
+    def __iter__(self):
+        return iter(self.adj)
 
 
 def max_pressure(s: str, minutes: int, elephant=False):
-    G, flow = parse(s)
+    G = Tunnels(s)
+    openable = frozenset(name for name, rate in G.flow.items() if rate)
     distance = all_shortest_path_lengths(G)
-    openable = frozenset(name for name, rate in flow.items() if rate)
 
     queue: list[tuple[str, int, frozenset[str], int]] = [("AA", 0, frozenset(), 0)]
     best: dict[frozenset[str], int] = defaultdict(int)
@@ -36,7 +40,7 @@ def max_pressure(s: str, minutes: int, elephant=False):
             if nt >= minutes:
                 continue
             queue.append(
-                (next, nt, opened | {next}, pressure + flow[next] * (minutes - nt))
+                (next, nt, opened | {next}, pressure + G.flow[next] * (minutes - nt))
             )
 
     if not elephant:
