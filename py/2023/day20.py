@@ -5,7 +5,7 @@ from itertools import count
 from math import lcm
 
 from aoc import main
-from graph import DiGraph, shortest_path
+from graph_dyn import DiGraph, shortest_path
 
 Pulse = int
 HIGH: Pulse = 1
@@ -127,14 +127,17 @@ def find_cycles_in(modules: dict[str, Module], search: list[str]) -> dict[str, i
     raise ValueError
 
 
+class Modules(DiGraph):
+    def __init__(self, modules: dict[str, Module]):
+        self.modules = modules
+
+    def __getitem__(self, name: str) -> set[str]:
+        return set(self.modules[name].outputs)
+
+
 def presses_to_low_rx(s: str) -> int:
     modules = parse(s)
-
-    G = DiGraph()
-    for name, mod in modules.items():
-        for target in mod.outputs:
-            G.add_edge(name, target)
-
+    G = Modules(modules)
     paths = (reversed(shortest_path(G, start, "rx")) for start in G["broadcaster"])
     search = next(items for items in zip(*paths) if len(set(items)) > 1)
 

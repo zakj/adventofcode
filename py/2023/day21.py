@@ -2,24 +2,25 @@ from collections import defaultdict
 from itertools import count
 
 from aoc import main
-from coords import Point
-from graph import GridGraph
+from coords import Grid, Point, neighbors
+from graph_dyn import DiGraph
 
 
-def parse(s: str) -> tuple[GridGraph, Point]:
-    def edgeweights(src: Point, stype: str, dst: Point, dtype: str) -> bool:
-        return stype in "S." and dtype in "S."
+class Farm(DiGraph):
+    def __init__(self, s: str):
+        self.grid = Grid(s)
+        self.start = self.grid.find("S")
+        self.walkable = set(self.grid.findall(".")) | {self.start}
 
-    G = GridGraph(s, edgeweights)
-    start = next(n for n, c in G.type.items() if c == "S")
-    return G, start
+    def __getitem__(self, node: Point) -> set[Point]:
+        return {n for n in neighbors(node) if n in self.walkable}
 
 
 def reachable(s: str, steps: int) -> int:
-    G, start = parse(s)
+    G = Farm(s)
 
     seen = defaultdict(set)
-    queue = [start]
+    queue = [G.start]
     for step in range(1, steps + 1):
         current = set(queue)
         queue = []
@@ -31,7 +32,8 @@ def reachable(s: str, steps: int) -> int:
 
 
 def infinite_reachable(s: str, steps: int) -> int:
-    G, start = parse(s)
+    G = Farm(s)
+    start = G.start
 
     evens = set()
     odds = set()

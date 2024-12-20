@@ -1,31 +1,41 @@
 from aoc import main
-from coords import Point
-from graph import GridGraph, all_paths_by, shortest_path_lengths_from
+from coords import Grid, Point, neighbors
+from graph_dyn import DiGraph, shortest_path_length
 
 
-def parse(s: str) -> tuple[GridGraph, list[Point]]:
-    def edges(pa: Point, ca: str, pb: Point, cb: str) -> bool:
-        return int(ca) + 1 == int(cb)
+class Map(DiGraph):
+    def __init__(self, s: str):
+        self.grid = Grid(s, int)
+        self.trailheads = set(self.grid.findall(0))
+        self.trailends = set(self.grid.findall(9))
 
-    G = GridGraph(s, edges)
-    return G, [p for p, c in G.type.items() if c == "0"]
+    def __getitem__(self, p: Point) -> set[Point]:
+        return {n for n in neighbors(p) if self.grid[p] + 1 == self.grid.get(n)}
 
 
 def trail_score(s: str) -> int:
-    G, trailheads = parse(s)
+    G = Map(s)
     return sum(
-        len([1 for _, d in shortest_path_lengths_from(G, start) if d == 9])
-        for start in trailheads
+        len({p for p in shortest_path_length(G, start) if p in G.trailends})
+        for start in G.trailheads
     )
+
+
+# TODO: factor into graph lib?
+def all_paths(G: DiGraph, starts, ends):
+    queue = [(start, [start]) for start in starts]
+    while queue:
+        cur, path = queue.pop()
+        if cur in ends:
+            yield path
+        for neighbor in G[cur]:
+            if neighbor not in path:
+                queue.append((neighbor, path + [neighbor]))
 
 
 def trail_rating(s: str) -> int:
-    G, trailheads = parse(s)
-    trailends = {p for p, c in G.type.items() if c == "9"}
-    return sum(
-        len(list(all_paths_by(G, start, lambda p: p in trailends)))
-        for start in trailheads
-    )
+    G = Map(s)
+    return len(list(all_paths(G, G.trailheads, G.trailends)))
 
 
 if __name__ == "__main__":

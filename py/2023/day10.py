@@ -1,49 +1,41 @@
 from collections.abc import Iterable
 
 from aoc import main
-from coords import Dir, Point, subp
-from graph import GridGraph, shortest_path_lengths_from
+from coords import Dir, Grid, Point, Vector, addp, opposite
+from graph_dyn import DiGraph, shortest_path_length
 
-PIPES = {
+PIPES: dict[str, set[Vector]] = {
     "|": set([Dir.N, Dir.S]),
     "-": set([Dir.W, Dir.E]),
     "L": set([Dir.N, Dir.E]),
     "J": set([Dir.N, Dir.W]),
     "7": set([Dir.S, Dir.W]),
     "F": set([Dir.S, Dir.E]),
-    ".": {},
+    "S": set(Dir),
+    ".": set(),
 }
 
 
-def build_graph(s: str) -> tuple[GridGraph, Point]:
-    def edgeweight(src, stype, dst, dtype) -> bool:
-        if "S" in [stype, dtype]:
-            return "." not in [stype, dtype]
-        src_delta = subp(dst, src)
-        dst_delta = subp(src, dst)
-        return src_delta in PIPES[stype] and dst_delta in PIPES[dtype]
+class Pipes(DiGraph):
+    def __init__(self, s: str):
+        self.grid = Grid(s)
+        self.start = self.grid.find("S")
 
-    G = GridGraph(s, edgeweight)
+    def __iter__(self):
+        return iter(self.grid.data)
 
-    start = next(n for n, c in G.type.items() if c == "S")
-    start_edges = set()
-    for node in G[start].copy():
-        node_to_start_dir = subp(start, node)
-        if node_to_start_dir not in PIPES[G.type[node]]:
-            G.remove_edge(node, start)
-            G.remove_edge(start, node)
-        else:
-            start_edges.add(subp(node, start))
-    for k, v in PIPES.items():
-        if v == start_edges:
-            G.type[start] = k
-            break
-
-    return G, start
+    def __getitem__(self, point: Point) -> set[Point]:
+        candidates = {(dir, addp(point, dir)) for dir in PIPES[self.grid[point]]}
+        return {
+            n
+            for d, n in candidates
+            if n in self.grid and opposite(d) in PIPES[self.grid[n]]
+        }
 
 
-def farthest_from_start(G: GridGraph, start: Point) -> int:
-    return max(d for _, d in shortest_path_lengths_from(G, start))
+def farthest_from_start(s: str) -> int:
+    G = Pipes(s)
+    return max(d for p, d in shortest_path_length(G, G.start).items())
 
 
 def ray_northwest(x: int, y: int) -> Iterable[Point]:
@@ -53,19 +45,17 @@ def ray_northwest(x: int, y: int) -> Iterable[Point]:
         yield (x, y)
 
 
-def enclosed(G: GridGraph, start: Point) -> int:
-    loop = set(n for n, _ in shortest_path_lengths_from(G, start))
-    valid_crossings = set(n for n in loop if G.type[n] not in "7L")
+def enclosed(s: str) -> int:
+    G = Pipes(s)
+    loop = {n for n, _ in shortest_path_length(G, G.start).items()}
+    valid_crossings = {n for n in loop if G.grid[n] not in "7L"}
     enclosed = 0
     for x, y in set(G) - loop:
-        crossings = sum(1 for n in ray_northwest(x, y) if n in valid_crossings)
+        crossings = len([n for n in ray_northwest(x, y) if n in valid_crossings])
         if crossings % 2 == 1:
             enclosed += 1
     return enclosed
 
 
 if __name__ == "__main__":
-    main(
-        lambda s: farthest_from_start(*build_graph(s)),
-        lambda s: enclosed(*build_graph(s)),
-    )
+    main(farthest_from_start, enclosed)

@@ -91,7 +91,7 @@ def shortest_path[T](
         weight = lambda a, b: 1
     # TODO: bfs may be faster if we don't need to track weight
     end, distance, paths, _ = _dijkstra(G, source, target, weight, with_path=True)
-    return paths[end]
+    return paths[end] if end is not None else []
 
 
 def all_shortest_paths[T](
