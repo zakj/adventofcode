@@ -21,7 +21,7 @@ class DiGraph[T: Hashable](ABC):
         return set()
 
     def __iter__(self) -> Iterator[T]:
-        return iter([])
+        raise NotImplementedError
 
     def weight(self, a: T, b: T) -> int:
         """Weight of the edge from a to b."""
@@ -166,7 +166,7 @@ def _dijkstra[T](
 ) -> tuple[T | None, dict[T, int], dict[T, list[T]], dict[T, list[T]]]:
     distance: dict[T, int] = {}
     seen: dict[T, int] = {}
-    paths: dict[T, list[T]] = {}
+    paths: dict[T, list[T]] = {source: [source]}
     previous: dict[T, list[T]] = {}
 
     end = None
