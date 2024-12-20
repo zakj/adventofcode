@@ -5,7 +5,7 @@ import pstats
 import sys
 import time
 import traceback
-from collections.abc import Callable
+from collections.abc import Callable, Collection, Generator
 from itertools import count
 from pathlib import Path
 from typing import Any
@@ -122,3 +122,14 @@ def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None
 def status(msg: str) -> None:
     if _websocket is not None:
         _websocket.send(json.dumps({"status": msg}))
+
+
+def progress[T](xs: Collection[T]) -> Generator[T]:
+    size = len(xs)
+    prev = None
+    for i, x in enumerate(xs):
+        pct = int(i / size * 100)
+        if pct != prev:
+            status(f"{pct}%")
+        yield x
+        prev = pct
