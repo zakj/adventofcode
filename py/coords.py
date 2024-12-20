@@ -80,8 +80,12 @@ class Grid[T]:
 
 def neighbors(p: Point) -> Iterable[Point]:
     x, y = p
-    for dx, dy in Dir:
-        yield (x + dx, y + dy)
+    return [
+        (x, y - 1),
+        (x + 1, y),
+        (x, y + 1),
+        (x - 1, y),
+    ]
 
 
 def mdist(a: Point, b: Point):
