@@ -92,7 +92,7 @@ def neighbors(p: Point) -> Iterable[Point]:
 
 
 def mdist(a: Point, b: Point):
-    ax, ay, bx, by = *a, *b
+    (ax, ay), (bx, by) = a, b
     return abs(ax - bx) + abs(ay - by)
 
 
