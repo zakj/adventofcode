@@ -5,8 +5,6 @@ from aoc import main
 from coords import Grid, Point, neighbors, subp
 from graph_dyn import DiGraph, all_shortest_paths
 
-# TODO with no progress/status, running duration is in the wrong column
-
 NUMERIC = Grid("""
 789
 456
@@ -47,13 +45,13 @@ def path_to_key(path: list[Point]) -> str:
 
 
 @cache
-def rr(nbots: int, keys: str) -> int:
-    bot = Keypad(DIRECTIONAL)
+def rr(nbots: int, keys: str, is_first=False) -> int:
+    bot = Keypad(NUMERIC if is_first else DIRECTIONAL)
     total = 0
     for c in keys:
         end = bot.grid.find(c)
         paths = [path_to_key(p) for p in all_shortest_paths(bot, bot.cur, end)]
-        if nbots == 1:
+        if nbots == 0:
             total += len(paths[0])
         else:
             total += min(rr(nbots - 1, nkeys) for nkeys in paths)
@@ -62,22 +60,8 @@ def rr(nbots: int, keys: str) -> int:
 
 
 def keypad_complexity(s: str, bot_count: int) -> int:
-    num_bot = Keypad(NUMERIC)
-
-    total = 0
     codes = s.splitlines()
-    for code in codes:
-        numeric = int(code[:-1])
-        best = 0
-        for c in code:
-            end = num_bot.grid.find(c)
-            options = [
-                path_to_key(p) for p in all_shortest_paths(num_bot, num_bot.cur, end)
-            ]
-            num_bot.cur = end
-            best += min([rr(bot_count, option) for option in options])
-        total += numeric * best
-    return total
+    return sum(int(code[:-1]) * rr(bot_count, code, True) for code in codes)
 
 
 if __name__ == "__main__":
