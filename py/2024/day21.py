@@ -1,55 +1,34 @@
 from functools import cache
 from itertools import pairwise
-from math import inf
 
 from aoc import main
-from coords import Point, neighbors, subp
+from coords import Grid, Point, neighbors, subp
 from graph_dyn import DiGraph, all_shortest_paths
 
 # TODO with no progress/status, running duration is in the wrong column
 
+NUMERIC = Grid("""
+789
+456
+123
+ 0A
+""")
+
+DIRECTIONAL = Grid("""
+ ^A
+<v>
+""")
+
 
 class Keypad(DiGraph):
-    start: Point
     cur: Point
-    keys: dict[str, Point]
 
-    def __init__(self):
-        self.cur = self.start
-        self.grid = {v: k for k, v in self.keys.items()}
+    def __init__(self, grid: Grid):
+        self.grid = grid
+        self.cur = grid.find("A")
 
     def __getitem__(self, p: Point) -> set[Point]:
-        return {n for n in neighbors(p) if n in self.grid}
-
-
-class NumericKeypad(Keypad):
-    start = (2, 3)
-
-    keys = {
-        "7": (0, 0),
-        "8": (1, 0),
-        "9": (2, 0),
-        "4": (0, 1),
-        "5": (1, 1),
-        "6": (2, 1),
-        "1": (0, 2),
-        "2": (1, 2),
-        "3": (2, 2),
-        "0": (1, 3),
-        "A": (2, 3),
-    }
-
-
-class DirectionalKeypad(Keypad):
-    start = (2, 0)
-
-    keys = {
-        "^": (1, 0),
-        "A": (2, 0),
-        "<": (0, 1),
-        "v": (1, 1),
-        ">": (2, 1),
-    }
+        return {n for n in neighbors(p) if self.grid.get(n, " ") != " "}
 
 
 dir_to_key = {
@@ -69,20 +48,21 @@ def path_to_key(path: list[Point]) -> str:
 
 @cache
 def rr(nbots: int, keys: str) -> int:
-    bot = DirectionalKeypad()
+    bot = Keypad(DIRECTIONAL)
     total = 0
     for c in keys:
-        paths = [path_to_key(p) for p in all_shortest_paths(bot, bot.cur, bot.keys[c])]
+        end = bot.grid.find(c)
+        paths = [path_to_key(p) for p in all_shortest_paths(bot, bot.cur, end)]
         if nbots == 1:
             total += len(paths[0])
         else:
             total += min(rr(nbots - 1, nkeys) for nkeys in paths)
-        bot.cur = bot.keys[c]
+        bot.cur = end
     return total
 
 
 def keypad_complexity(s: str, bot_count: int) -> int:
-    num_bot = NumericKeypad()
+    num_bot = Keypad(NUMERIC)
 
     total = 0
     codes = s.splitlines()
@@ -90,11 +70,11 @@ def keypad_complexity(s: str, bot_count: int) -> int:
         numeric = int(code[:-1])
         best = 0
         for c in code:
+            end = num_bot.grid.find(c)
             options = [
-                path_to_key(p)
-                for p in all_shortest_paths(num_bot, num_bot.cur, num_bot.keys[c])
+                path_to_key(p) for p in all_shortest_paths(num_bot, num_bot.cur, end)
             ]
-            num_bot.cur = num_bot.keys[c]
+            num_bot.cur = end
             best += min([rr(bot_count, option) for option in options])
         total += numeric * best
     return total
