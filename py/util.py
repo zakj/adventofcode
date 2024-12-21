@@ -59,7 +59,8 @@ class IterableClass[T](type):
 
 
 def ocr(lines: list[str], font: Literal["4x6"] | Literal["6x10"]) -> str:
-    path = Path(__file__).parent.parent / "lib" / f"figlet-{font}.txt"
+    # TODO: relocate these
+    path = Path(__file__).parent.parent / "ts" / "lib" / f"figlet-{font}.txt"
     with open(path) as f:
         values, *keys = paras(f.read())
     values = values[0]

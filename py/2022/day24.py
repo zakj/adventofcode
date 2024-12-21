@@ -16,8 +16,11 @@ def parse(s: str) -> tuple[frozenset[Point], frozenset[Blizzard]]:
             if c == "#":
                 continue
             walkable.add((x, y))
-            if dir := Dir.parse(c):
-                blizzards.add(((x, y), dir))
+            try:
+                dir = Dir.parse(c)
+            except KeyError:
+                continue
+            blizzards.add(((x, y), dir))
     return frozenset(walkable), frozenset(blizzards)
 
 

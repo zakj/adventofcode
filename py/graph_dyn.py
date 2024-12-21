@@ -51,8 +51,6 @@ class Goal[T]:
         return self.check(other)  # type: ignore
 
 
-# TODO: maybe weightfn -> True/False, and always use G.weight
-# or pull weight out of DiGraph and instead just let it be whatever
 @overload
 def shortest_path_length[T](
     G: DiGraph[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
@@ -81,12 +79,24 @@ def shortest_path_length[T](
         return distance
 
 
+@overload
+def shortest_path[T](
+    G: DiGraph[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
+) -> list[T]: ...
+
+
+@overload
+def shortest_path[T](
+    G: DiGraph[T], source: T, target: None = None, weight: WeightFn[T] | None = None
+) -> dict[T, list[T]]: ...
+
+
 def shortest_path[T](
     G: DiGraph[T],
     source: T,
-    target: Comparable,
+    target: Comparable | None = None,
     weight: Callable[[T, T], int] | None = None,
-) -> list[T]:
+) -> list[T] | dict[T, list[T]]:
     if weight is None:
         weight = lambda a, b: 1
     # TODO: bfs may be faster if we don't need to track weight
