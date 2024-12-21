@@ -136,7 +136,6 @@ class Day(BaseUI):
         self.runs = []
         self.title = "/".join(path.parts[-2:])
 
-    # TODO: cache repeated runs?
     def __rich__(self):
         table = Table.grid(padding=(0, 1))
         table.add_column("Part")
@@ -167,7 +166,7 @@ class Day(BaseUI):
                 format_duration(time.time() - self.run_started_at),
             ]
             if self.main_start is None:
-                table.add_row(*cols)
+                table.add_row(cols[0], "", cols[1])
             else:
                 table.add_row(f"{len(main_runs) + 1}:", *cols)
 
