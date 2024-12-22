@@ -7,10 +7,6 @@ from util import sliding_window
 PRUNE = 16777216
 
 
-def parse(s: str):
-    pass
-
-
 def next_secret(n: int) -> int:
     n ^= n * 64
     n %= PRUNE
@@ -34,9 +30,7 @@ def part1(s: str) -> int:
 def part2(s: str) -> int:
     initial_secrets = all_numbers(s)
 
-    sequence_maps = []
-    all_sequences = set()
-    print(f"{len(initial_secrets)=}")
+    running_total = defaultdict(int)
     for n in progress(initial_secrets):
         values = [n % 10]
         changes: list[int] = []
@@ -46,29 +40,18 @@ def part2(s: str) -> int:
             changes.append(d - values[-1])
             values.append(n % 10)
 
-        sequence_map = defaultdict(int)
+        seen = set()
         for i, sequence in enumerate(sliding_window(changes, 4)):
-            all_sequences.add(sequence)
-            # WHOOPS
-            # sequence_map[sequence] = max(sequence_map[sequence], (values[i + 4]))
-            if sequence not in sequence_map:
-                sequence_map[sequence] = values[i + 4]
-        sequence_maps.append(sequence_map)
+            if sequence not in seen:
+                running_total[sequence] += values[i + 4]
+                seen.add(sequence)
 
-    best = 0
-    print(f"{len(all_sequences)}")
-    print(f"{len(sequence_maps)}")
-    for sequence in progress(all_sequences):
-        val = sum(sm[sequence] for sm in sequence_maps)
-        if val > best:
-            print(sequence, val)
-            best = val
-    return best
+    return max(running_total.values())
 
 
+# TODO: cleanup
 if __name__ == "__main__":
     main(
         part1,
         part2,
-        # isolate=1,
     )
