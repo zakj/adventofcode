@@ -5,12 +5,11 @@ import pstats
 import sys
 import time
 import traceback
-from collections.abc import Callable, Collection, Generator
+from collections.abc import Callable, Generator, Iterable
 from itertools import count
 from pathlib import Path
 from typing import Any
 
-from typing_extensions import Iterable
 from websockets.sync.client import connect
 
 
