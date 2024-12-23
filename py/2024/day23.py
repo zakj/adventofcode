@@ -1,11 +1,8 @@
 from collections import defaultdict
 from itertools import combinations
 
-from typing_extensions import Mapping
-
 from aoc import main
-
-type Edges = Mapping[str, set[str]]
+from graph_dyn import Edges
 
 
 def parse(s: str) -> Edges:
@@ -17,7 +14,7 @@ def parse(s: str) -> Edges:
     return edges
 
 
-def part1(s: str) -> int:
+def sets_of_three(s: str) -> int:
     edges = parse(s)
     regions = set()
     for node, neighbors in edges.items():
@@ -38,7 +35,7 @@ def best_region(edges: Edges, nodes: set[str]):
     return best if len(best) == x + 1 else set()
 
 
-def part2(s: str) -> str:
+def password_to_lan_party(s: str) -> str:
     edges = parse(s)
     regions = []
     for node, neighbors in edges.items():
@@ -48,7 +45,4 @@ def part2(s: str) -> str:
 
 
 if __name__ == "__main__":
-    main(
-        part1,
-        part2,
-    )
+    main(sets_of_three, password_to_lan_party)
