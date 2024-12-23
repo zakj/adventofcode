@@ -1,7 +1,7 @@
 import sys
 from abc import ABC, abstractmethod
-from collections import defaultdict
-from collections.abc import Callable, Hashable, Iterator
+from collections import defaultdict, deque
+from collections.abc import Callable, Hashable, Iterator, Mapping
 from heapq import heappop, heappush
 from itertools import product
 from typing import Protocol, overload
@@ -10,17 +10,22 @@ from typing import Protocol, overload
 class NoPath(Exception): ...
 
 
+type Edges[T: Hashable] = Mapping[T, set[T]]
 type WeightFn[T] = Callable[[T, T], int]
 
 
-# This should maybe be a protocol, but how to supply a weight default?
-class DiGraph[T: Hashable](ABC):
+class DiGraph[T: Hashable](Mapping[T, set[T]]):
     @abstractmethod
-    def __getitem__(self, node: T) -> set[T]:
-        """Set of neighbors for the given node."""
-        return set()
+    def __getitem__(self, key: T, /) -> set[T]:
+        """Set of edges for the given node."""
+        raise NotImplementedError
 
     def __iter__(self) -> Iterator[T]:
+        """Iterate through all nodes."""
+        raise NotImplementedError
+
+    def __len__(self) -> int:
+        """Count of nodes."""
         raise NotImplementedError
 
     def weight(self, a: T, b: T) -> int:
@@ -53,18 +58,18 @@ class Goal[T]:
 
 @overload
 def shortest_path_length[T](
-    G: DiGraph[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
+    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
 ) -> int: ...
 
 
 @overload
 def shortest_path_length[T](
-    G: DiGraph[T], source: T, target: None = None, weight: WeightFn[T] | None = None
+    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] | None = None
 ) -> dict[T, int]: ...
 
 
 def shortest_path_length[T](
-    G: DiGraph[T],
+    G: Edges[T],
     source: T,
     target: Comparable | None = None,
     weight: WeightFn[T] | None = None,
@@ -81,18 +86,18 @@ def shortest_path_length[T](
 
 @overload
 def shortest_path[T](
-    G: DiGraph[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
+    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
 ) -> list[T]: ...
 
 
 @overload
 def shortest_path[T](
-    G: DiGraph[T], source: T, target: None = None, weight: WeightFn[T] | None = None
+    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] | None = None
 ) -> dict[T, list[T]]: ...
 
 
 def shortest_path[T](
-    G: DiGraph[T],
+    G: Edges[T],
     source: T,
     target: Comparable | None = None,
     weight: Callable[[T, T], int] | None = None,
@@ -105,7 +110,7 @@ def shortest_path[T](
 
 
 def all_shortest_paths[T](
-    G: DiGraph[T],
+    G: Edges[T],
     source: T,
     target: Comparable,
     weight: Callable[[T, T], int] | None = None,
@@ -129,9 +134,7 @@ def all_shortest_paths[T](
 
 
 # https://en.wikipedia.org/wiki/Floyd–Warshall_algorithm
-def all_shortest_path_lengths[T](
-    G: DiGraph[T],
-) -> dict[tuple[T, T], int]:
+def all_shortest_path_lengths[T](G: Edges[T]) -> dict[tuple[T, T], int]:
     distance = defaultdict[tuple[T, T], int](lambda: sys.maxsize)
     for src in G:
         for dst in G[src]:
@@ -143,7 +146,7 @@ def all_shortest_path_lengths[T](
 
 @overload
 def _dijkstra[T](
-    G: DiGraph[T],
+    G: Edges[T],
     source: T,
     target: Comparable,
     weight: Callable[[T, T], int],
@@ -155,7 +158,7 @@ def _dijkstra[T](
 
 @overload
 def _dijkstra[T](
-    G: DiGraph[T],
+    G: Edges[T],
     source: T,
     target: None,
     weight: Callable[[T, T], int],
@@ -166,7 +169,7 @@ def _dijkstra[T](
 
 
 def _dijkstra[T](
-    G: DiGraph[T],
+    G: Edges[T],
     source: T,
     target: Comparable | None,
     weight: Callable[[T, T], int],
