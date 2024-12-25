@@ -10,6 +10,7 @@ from itertools import count
 from pathlib import Path
 from typing import Any
 
+from typing_extensions import Iterable
 from websockets.sync.client import connect
 
 
@@ -124,7 +125,8 @@ def status(msg: str) -> None:
         _websocket.send(json.dumps({"status": msg}))
 
 
-def progress[T](xs: Collection[T]) -> Generator[T]:
+def progress[T](xs: Iterable[T]) -> Generator[T]:
+    xs = list(xs)
     size = len(xs)
     prev = None
     for i, x in enumerate(xs):
