@@ -1,5 +1,5 @@
 from aoc import main
-from coords import Dir8, Grid, Point, Vector, addp
+from aoc.coords import Dir8, Grid, Point, Vector, addp
 
 
 class StringGrid(Grid[str]):

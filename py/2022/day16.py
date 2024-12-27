@@ -3,8 +3,8 @@ from collections import defaultdict
 from itertools import combinations
 
 from aoc import main
-from graph_dyn import DiGraph, all_shortest_path_lengths
-from parse import all_numbers
+from aoc.graph_dyn import DiGraph, all_shortest_path_lengths
+from aoc.parse import all_numbers
 
 
 class Tunnels(DiGraph):

@@ -3,7 +3,7 @@ import itertools as it
 import json
 
 from aoc import main
-from parse import paras
+from aoc.parse import paras
 
 
 def parse(s: str):

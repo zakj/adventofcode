@@ -2,7 +2,7 @@ import operator
 import sys
 
 from aoc import main
-from parse import line_parser
+from aoc.parse import line_parser
 
 OPS = {
     "+": operator.add,

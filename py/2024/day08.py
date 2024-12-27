@@ -1,7 +1,7 @@
 from itertools import combinations, permutations
 
 from aoc import main
-from coords import Grid, Point, addp, subp
+from aoc.coords import Grid, addp, subp
 
 
 def parse(s: str) -> tuple[Grid, set[str]]:

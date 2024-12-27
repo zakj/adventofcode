@@ -2,7 +2,7 @@ from collections.abc import Callable
 from functools import cmp_to_key
 
 from aoc import main
-from parse import all_numbers, paras
+from aoc.parse import all_numbers, paras
 
 
 def parse(s: str) -> tuple[Callable, list[list[int]]]:

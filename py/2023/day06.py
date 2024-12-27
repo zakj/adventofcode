@@ -2,7 +2,7 @@ from collections.abc import Callable
 from math import prod
 
 from aoc import main
-from parse import all_numbers
+from aoc.parse import all_numbers
 
 
 def search(low: int, high: int, pred: Callable[[int], bool]) -> int:

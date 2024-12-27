@@ -2,8 +2,8 @@ from collections import defaultdict
 from itertools import pairwise
 
 from aoc import main, progress
-from parse import all_numbers
-from util import sliding_window
+from aoc.parse import all_numbers
+from aoc.util import sliding_window
 
 
 def next_secret(n: int) -> int:

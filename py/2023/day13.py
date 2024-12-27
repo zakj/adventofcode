@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
 from aoc import main
-from parse import paras
-from util import flip_rows_cols
+from aoc.parse import paras
+from aoc.util import flip_rows_cols
 
 
 def find_mirror(lines: Sequence[str], smudges: int) -> int:

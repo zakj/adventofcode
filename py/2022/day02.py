@@ -1,5 +1,5 @@
 from aoc import main
-from util import mod
+from aoc.util import mod
 
 Game = tuple[int, int]
 

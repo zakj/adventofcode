@@ -3,8 +3,8 @@ from itertools import product
 from typing import Final
 
 from aoc import main
-from coords import Point, mdist
-from parse import all_numbers
+from aoc.coords import Point, mdist
+from aoc.parse import all_numbers
 
 FREQUENCY_MULTIPLIER: Final[int] = 4000000
 

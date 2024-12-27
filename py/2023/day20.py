@@ -5,7 +5,7 @@ from itertools import count
 from math import lcm
 
 from aoc import main
-from graph_dyn import DiGraph, shortest_path
+from aoc.graph_dyn import DiGraph, shortest_path
 
 Pulse = int
 HIGH: Pulse = 1

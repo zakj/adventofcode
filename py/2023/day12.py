@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 from aoc import main
-from parse import all_numbers
+from aoc.parse import all_numbers
 
 
 @lru_cache(maxsize=512)

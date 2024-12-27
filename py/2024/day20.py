@@ -1,6 +1,6 @@
 from aoc import main, progress
-from coords import Grid, Point, mdist, neighbors
-from graph_dyn import DiGraph, shortest_path_length
+from aoc.coords import Grid, Point, mdist, neighbors
+from aoc.graph_dyn import DiGraph, shortest_path_length
 
 
 class Racetrack(DiGraph):

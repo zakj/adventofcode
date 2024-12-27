@@ -4,8 +4,8 @@ from functools import reduce
 from typing import Callable, NamedTuple
 
 from aoc import main
-from parse import all_numbers, paras
-from util import chunks
+from aoc.parse import all_numbers, paras
+from aoc.util import chunks
 
 
 class Map(NamedTuple):

@@ -1,8 +1,8 @@
 from collections import defaultdict, deque
 
 from aoc import main
-from coords import Point
-from parse import all_numbers, line_parser
+from aoc.coords import Point
+from aoc.parse import all_numbers, line_parser
 
 Point3 = tuple[int, int, int]
 Tree = dict["Brick", set["Brick"]]

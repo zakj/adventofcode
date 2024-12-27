@@ -2,8 +2,8 @@ from functools import cache
 from itertools import pairwise
 
 from aoc import main
-from coords import Grid, Point, neighbors, subp
-from graph_dyn import DiGraph, all_shortest_paths
+from aoc.coords import Grid, Point, neighbors, subp
+from aoc.graph_dyn import DiGraph, all_shortest_paths
 
 NUMERIC = Grid("""
 789

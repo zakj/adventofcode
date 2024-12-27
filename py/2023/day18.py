@@ -1,7 +1,7 @@
 from itertools import pairwise
 
 from aoc import main
-from coords import Dir, Point
+from aoc.coords import Dir, Point
 
 
 def shoelace(vertices: list[Point]) -> int:

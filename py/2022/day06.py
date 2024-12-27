@@ -1,5 +1,5 @@
 from aoc import main
-from util import sliding_window
+from aoc.util import sliding_window
 
 
 def first_marker(buffer: str, size: int = 4) -> int:

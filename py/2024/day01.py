@@ -1,7 +1,7 @@
 from collections import Counter
 
 from aoc import main
-from parse import all_numbers
+from aoc.parse import all_numbers
 
 
 def parse(s: str) -> tuple[list[int], list[int]]:

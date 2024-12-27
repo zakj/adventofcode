@@ -2,8 +2,8 @@ from collections import defaultdict
 from itertools import count
 
 from aoc import main
-from coords import Grid, Point, neighbors
-from graph_dyn import DiGraph
+from aoc.coords import Grid, Point, neighbors
+from aoc.graph_dyn import DiGraph
 
 
 class Farm(DiGraph):

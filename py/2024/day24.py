@@ -5,7 +5,7 @@ from operator import and_, ne, or_
 from typing import Literal, TypeGuard
 
 from aoc import main
-from parse import paras
+from aoc.parse import paras
 
 type Op = Literal["AND", "OR", "XOR", "VALUE"]
 ops: dict[Op, Callable[[bool, bool], bool]] = {

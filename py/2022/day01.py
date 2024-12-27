@@ -1,5 +1,5 @@
 from aoc import main
-from parse import paras
+from aoc.parse import paras
 
 
 def total_calories(elves: list[list[int]]) -> list[int]:

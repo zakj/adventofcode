@@ -2,7 +2,7 @@ from collections import defaultdict
 from itertools import combinations
 
 from aoc import main
-from graph_dyn import Edges
+from aoc.graph_dyn import Edges
 
 
 def parse(s: str) -> Edges:

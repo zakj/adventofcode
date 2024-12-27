@@ -1,5 +1,5 @@
 from aoc import main
-from util import chunks
+from aoc.util import chunks
 
 
 def priority(c: str) -> int:

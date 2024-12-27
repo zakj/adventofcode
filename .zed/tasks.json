@@ -1,6 +1,6 @@
 [
   {
     "label": "watch",
-    "command": "uv run python -m aocli -w"
+    "command": "uv run aocli -w"
   }
 ]

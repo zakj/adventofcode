@@ -1,8 +1,8 @@
-from math import prod
 from dataclasses import dataclass
+from math import prod
 
 from aoc import main
-from parse import all_numbers, line_parser
+from aoc.parse import all_numbers, line_parser
 
 
 # Used for inventory of resources and robots.

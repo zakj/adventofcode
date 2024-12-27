@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 from aoc import main
-from parse import all_numbers, line_parser
+from aoc.parse import all_numbers, line_parser
 
 
 @dataclass

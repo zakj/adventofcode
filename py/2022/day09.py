@@ -1,7 +1,7 @@
 import itertools
 
 from aoc import main
-from coords import Dir, Point, Vector, addp, subp
+from aoc.coords import Dir, Point, Vector, addp, subp
 
 
 def parse(s: str) -> list[Vector]:

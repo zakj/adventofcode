@@ -1,7 +1,7 @@
 from itertools import product
 
 from aoc import main
-from coords import Grid
+from aoc.coords import Grid
 
 
 def unique_lock_key_pairs(s: str) -> int:

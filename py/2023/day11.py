@@ -1,7 +1,7 @@
 from itertools import combinations
 
 from aoc import main
-from coords import Point, mdist
+from aoc.coords import Point, mdist
 
 
 def space(s: str) -> tuple[list[Point], list[int], list[int]]:

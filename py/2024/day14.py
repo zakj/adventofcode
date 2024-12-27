@@ -4,8 +4,8 @@ from math import prod
 from statistics import variance
 
 from aoc import main
-from coords import Point, Vector, addp
-from parse import all_numbers, line_parser
+from aoc.coords import Point, Vector, addp
+from aoc.parse import all_numbers, line_parser
 
 Robot = tuple[Point, Vector]
 

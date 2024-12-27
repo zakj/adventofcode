@@ -1,8 +1,8 @@
 from collections.abc import Iterable
 
 from aoc import main
-from coords import Grid
-from util import takeuntil
+from aoc.coords import Grid
+from aoc.util import takeuntil
 
 
 def ranges(grid: Grid[int], x: int, y: int) -> tuple[Iterable[int], ...]:

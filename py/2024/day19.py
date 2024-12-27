@@ -2,7 +2,7 @@ from collections import defaultdict
 from functools import cache
 
 from aoc import main
-from parse import paras
+from aoc.parse import paras
 
 # global because we don't want it in the caches
 patterns = {}

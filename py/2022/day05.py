@@ -1,8 +1,8 @@
 import re
 
 from aoc import main
-from parse import paras
-from util import rotate_cw
+from aoc.parse import paras
+from aoc.util import rotate_cw
 
 Stacks = dict[int, list[str]]
 Instruction = tuple[int, ...]

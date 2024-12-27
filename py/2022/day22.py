@@ -6,7 +6,7 @@ from operator import add, mul, sub
 from typing import cast
 
 from aoc import main
-from coords import Dir, Point, Point3, mdist
+from aoc.coords import Dir, Point, Point3, mdist
 
 DIR_VALUES = {
     Dir.E: 0,

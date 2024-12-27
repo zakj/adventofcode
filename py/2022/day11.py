@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Iterable
 
 from aoc import main
-from parse import all_numbers, first_number, paras
+from aoc.parse import all_numbers, first_number, paras
 
 
 @dataclass

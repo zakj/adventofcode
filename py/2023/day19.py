@@ -4,7 +4,7 @@ from math import prod
 from operator import gt, lt
 
 from aoc import main
-from parse import paras
+from aoc.parse import paras
 
 
 @dataclass

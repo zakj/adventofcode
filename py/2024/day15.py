@@ -1,5 +1,5 @@
 from aoc import main
-from coords import Dir, Grid, Point, Vector, addp
+from aoc.coords import Dir, Grid, Point, Vector, addp
 
 
 def parse(

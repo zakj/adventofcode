@@ -3,7 +3,7 @@ from itertools import islice
 from typing import Iterator
 
 from aoc import main
-from util import chunks, ocr
+from aoc.util import chunks, ocr
 
 
 def parse(s: str) -> Iterator[int]:

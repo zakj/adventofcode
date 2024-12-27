@@ -1,7 +1,7 @@
 from heapq import heappop, heappush
 
 from aoc import main
-from coords import Dir, Grid, Point, Vector, addp, opposite
+from aoc.coords import Dir, Grid, Point, Vector, addp, opposite
 
 # heat, pos, last dir, count since turning
 State = tuple[int, Point, Vector, int]

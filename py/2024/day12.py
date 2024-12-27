@@ -1,6 +1,6 @@
 from aoc import main
-from coords import Dir, Dir8, Grid, Point, addp, neighbors
-from graph_dyn import DiGraph, shortest_path_length
+from aoc.coords import Dir, Dir8, Grid, Point, addp, neighbors
+from aoc.graph_dyn import DiGraph, shortest_path_length
 
 
 class Farm(DiGraph):

@@ -2,8 +2,8 @@ from collections import deque
 from itertools import count
 
 from aoc import main
-from coords import Dir8 as Dir
-from coords import Point, addp, find_bounds
+from aoc.coords import Dir8 as Dir
+from aoc.coords import Point, addp, find_bounds
 
 
 def parse(s: str) -> set[Point]:

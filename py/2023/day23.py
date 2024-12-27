@@ -1,6 +1,6 @@
 from aoc import main
-from coords import Dir, Point, Vector, addp
-from graph import DiGraph, GridGraph
+from aoc.coords import Dir, Point, Vector, addp
+from aoc.graph import DiGraph, GridGraph
 
 SLOPES = {
     "^": Dir.N,

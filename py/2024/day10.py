@@ -1,6 +1,6 @@
 from aoc import main
-from coords import Grid, Point, neighbors
-from graph_dyn import DiGraph, shortest_path_length
+from aoc.coords import Grid, Point, neighbors
+from aoc.graph_dyn import DiGraph, shortest_path_length
 
 
 class Map(DiGraph):

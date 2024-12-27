@@ -1,8 +1,8 @@
 from math import gcd
 
 from aoc import main
-from coords import Point, addp
-from parse import all_numbers, paras
+from aoc.coords import Point, addp
+from aoc.parse import all_numbers, paras
 
 
 def parse(s: str) -> list[tuple[Point, Point, Point]]:

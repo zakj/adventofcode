@@ -2,9 +2,9 @@ from bisect import bisect_left
 from collections.abc import Iterable
 
 from aoc import main
-from coords import Point, neighbors
-from graph_dyn import DiGraph, shortest_path_length
-from parse import all_numbers, line_parser
+from aoc.coords import Point, neighbors
+from aoc.graph_dyn import DiGraph, shortest_path_length
+from aoc.parse import all_numbers, line_parser
 
 
 @line_parser

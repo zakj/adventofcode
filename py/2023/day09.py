@@ -2,7 +2,7 @@ from collections.abc import Generator
 from functools import reduce
 
 from aoc import main
-from parse import all_numbers
+from aoc.parse import all_numbers
 
 History = list[list[int]]
 

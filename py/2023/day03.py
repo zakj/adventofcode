@@ -2,7 +2,7 @@ import math
 import re
 
 from aoc import main
-from coords import Point
+from aoc.coords import Point
 
 Symbols = dict[Point, str]
 Numbers = list[tuple[int, set[Point]]]

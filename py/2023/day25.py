@@ -4,7 +4,7 @@ from collections import Counter
 from itertools import pairwise
 
 from aoc import main
-from graph import DiGraph, shortest_path
+from aoc.graph import DiGraph, shortest_path
 
 
 def reachable_nodes_count(G: DiGraph, node) -> int:

@@ -2,7 +2,7 @@ from bisect import bisect, insort
 from collections import defaultdict
 
 from aoc import main
-from coords import Dir, Grid, Point, Vector, addp, subp, turn_right
+from aoc.coords import Dir, Grid, Point, Vector, addp, subp, turn_right
 
 State = tuple[Point, Vector]
 Visits = dict[Point, list[Vector]]

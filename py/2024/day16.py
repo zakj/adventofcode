@@ -1,6 +1,6 @@
-import graph_dyn
+import aoc.graph_dyn as graph_dyn
 from aoc import main
-from coords import Dir, Grid, Point, Vector, addp, turn_left, turn_right
+from aoc.coords import Dir, Grid, Point, Vector, addp, turn_left, turn_right
 
 type Node = tuple[Point, Vector]
 
