@@ -30,11 +30,10 @@ def count_cheats(s: str, target_savings: int, cheat_distance: int) -> int:
     G = Racetrack(s)
     distance = shortest_path_length(G, G.end)
     cheats = 0
-    for cur in progress(G.track):
-        for n in cheat_neighbors(cur, cheat_distance):
-            if n not in G.track:
-                continue
-            if distance[cur] - distance[n] - mdist(cur, n) >= target_savings:
+    for cur, dcur in progress(distance.items()):
+        for n in cheat_neighbors(cur, cheat_distance) & G.track:
+            dn = distance[n]
+            if dcur > dn and dcur - dn - mdist(cur, n) >= target_savings:
                 cheats += 1
     return cheats
 
