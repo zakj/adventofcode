@@ -14,7 +14,6 @@ def line_parser[T](fn: Callable[[str], T]) -> Callable[[str], list[T]]:
     return wrapper
 
 
-
 def all_numbers(s: str) -> list[int]:
     return [int(x) for x in num_re.findall(s)]
 
@@ -27,13 +26,11 @@ def first_number(s: str) -> int:
 
 
 @overload
-def paras(s: str, mapper: Callable[[str], T]) -> list[list[T]]:
-    ...
+def paras(s: str, mapper: Callable[[str], T]) -> list[list[T]]: ...
 
 
 @overload
-def paras(s: str) -> list[list[str]]:
-    ...
+def paras(s: str) -> list[list[str]]: ...
 
 
 # TODO: This feels like excessive fighting with the type system...

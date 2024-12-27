@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from typing import Callable, Iterator
 
-from util import IterableClass
+from aoc.util import IterableClass
 
 Point = tuple[int, int]
 Vector = tuple[int, int]  # distinct from Point just for bookkeeping

@@ -3,14 +3,20 @@ name = "adventofcode"
 version = "1.0.0"
 authors = [{ name = "Zak Johnson", email = "me@zakj.net" }]
 dependencies = [
+    "aoc",
+    "aocli",
     "mypy>=1.7.0",
-    "rich>=13.6.0",
     "ruff>=0.1.13",
-    "watchdog>=3.0.0",
-    "websockets>=12.0",
 ]
 requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }
+
+[tool.uv.config-settings]
+editable_mode = "compat"
+
+[tool.uv.sources]
+aocli = { path = "pkg/aocli", editable = true }
+aoc = { path = "pkg/aoc", editable = true }
 
 [tool.pyright]
 venvPath = "."

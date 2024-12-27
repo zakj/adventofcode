@@ -3,7 +3,7 @@ from collections import defaultdict, deque
 from collections.abc import Callable, Generator, Hashable, Iterator
 from itertools import pairwise, product
 
-from coords import Point
+from aoc.coords import Point
 
 
 class DiGraph[Node: Hashable]:

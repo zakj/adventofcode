@@ -4,7 +4,7 @@ from itertools import islice
 from pathlib import Path
 from typing import Iterable, Iterator, Literal
 
-from parse import paras
+from aoc.parse import paras
 
 
 def chunks[T](xs: list[T], n: int) -> list[list[T]]:

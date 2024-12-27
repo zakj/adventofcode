@@ -31,11 +31,11 @@ Message formats:
         "header": <list of str: column names>,
         "rows": <list of list of str: cells>,
     }
-    
+
     Error { "error": true }
 
     Done { "done": true }
-    
+
     Status { "status": <string: the message to display>}
 """
 
@@ -44,9 +44,10 @@ Message formats:
 
 from pathlib import Path
 
-BASE_DIR = Path(__file__).parent.parent.resolve()
+# TODO: there's got to be a better way
+BASE_DIR = next(d for d in Path(__file__).parents if (d / ".venv").exists())
 
 RUNNERS = {
-    ".py": "env PYTHONPATH=py python -u {}",
+    ".py": "python -u {}",
     ".ts": "pnpm ts-node --swc {}",
 }
