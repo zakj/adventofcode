@@ -1,7 +1,7 @@
 import math
 from collections import deque
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable
+from typing import Callable, Iterable
 
 from aoc import main
 from aoc.parse import all_numbers, first_number, paras
