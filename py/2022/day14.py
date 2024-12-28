@@ -1,49 +1,17 @@
-import math
-from collections.abc import Iterable
-from itertools import batched, pairwise
+from itertools import batched
 
 from aoc import main
-from aoc.coords import Dir, Dir8, Grid, Point, addp
+from aoc.coords import Dir, Dir8, Point, addp, line_between
 from aoc.parse import all_numbers, line_parser
 from aoc.util import sliding_window
 
 EMITTER = (500, 0)
 
 
-# TODO: coords.py
-def line_between(a: Point, b: Point) -> list[Point]:
-    xa, ya = a
-    xb, yb = b
-    dx = xb - xa
-    dy = yb - ya
-    gcd = math.gcd(dx, dy)
-    step_x = dx // gcd
-    step_y = dy // gcd
-    return [(xa + i * step_x, ya + i * step_y) for i in range(gcd + 1)]
-
-
 @line_parser
 def parse(line: str):
     points = [(a, b) for a, b in batched(all_numbers(line), 2)]
-    rocks = set()
-    for a, b in sliding_window(points, 2):
-        rocks |= set(line_between(a, b))
-    return rocks
-
-
-# TODO move to coords.py
-def print_sparse_grid(points: dict[Point, str]) -> None:
-    xs, ys = zip(*points)
-    min_x, max_x = min(xs), max(xs)
-    min_y, max_y = min(ys), max(ys)
-    width = max_x - min_x + 1
-    height = max_y - min_y + 1
-    grid = [["." for _ in range(width)] for _ in range(height)]
-
-    for (x, y), c in points.items():
-        grid[y - min_y][x - min_x] = c
-    for row in grid:
-        print("".join(row))
+    return {p for a, b in sliding_window(points, 2) for p in line_between(a, b)}
 
 
 def drop_sand(filled: set[Point], bottom: int, solid_bottom=False) -> Point:
@@ -63,7 +31,7 @@ def drop_sand(filled: set[Point], bottom: int, solid_bottom=False) -> Point:
     return cur
 
 
-def part1(s: str) -> int:
+def sand_at_rest(s: str) -> int:
     rocks: set[Point] = set.union(*parse(s))
     bottom = max(p[1] for p in rocks)
 
@@ -76,26 +44,19 @@ def part1(s: str) -> int:
     return len(sand)
 
 
-def part2(s: str) -> int:
+def sand_until_blocked(s: str) -> int:
     rocks: set[Point] = set.union(*parse(s))
     bottom = max(p[1] for p in rocks) + 2
 
     sand: set[Point] = set()
     while True:
-        grain = drop_sand(rocks | sand, bottom, solid_bottom=True)
+        grain = drop_sand(rocks, bottom, solid_bottom=True)
         sand.add(grain)
+        rocks.add(grain)
         if grain == EMITTER:
             break
-
-    d: dict[Point, str] = {EMITTER: "+"}
-    d.update({p: "#" for p in rocks})
-    d.update({p: "o" for p in sand})
     return len(sand)
 
 
 if __name__ == "__main__":
-    main(
-        part1,
-        part2,
-        profile=1,
-    )
+    main(sand_at_rest, sand_until_blocked, isolate=0)

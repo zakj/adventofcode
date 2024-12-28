@@ -1,5 +1,5 @@
-from collections.abc import Iterable
-from typing import Callable, Iterator
+import math
+from collections.abc import Callable, Iterable, Iterator
 
 from aoc.util import IterableClass
 
@@ -122,12 +122,30 @@ def turn_left(d: Vector) -> Point:
 def find_bounds(points: Iterable[Point]) -> Rect:
     if not points:
         raise ValueError
-    first = next(p for p in points)
-    minx, miny = first
-    maxx, maxy = first
-    for x, y in points:
-        minx = min(x, minx)
-        maxx = max(x, maxx)
-        miny = min(y, miny)
-        maxy = max(y, maxy)
+    xs, ys = zip(*points)
+    minx, maxx = min(xs), max(xs)
+    miny, maxy = min(ys), max(ys)
     return (minx, miny), (maxx, maxy)
+
+
+def line_between(a: Point, b: Point) -> list[Point]:
+    xa, ya = a
+    xb, yb = b
+    dx = xb - xa
+    dy = yb - ya
+    gcd = math.gcd(dx, dy)
+    step_x = dx // gcd
+    step_y = dy // gcd
+    return [(xa + i * step_x, ya + i * step_y) for i in range(gcd + 1)]
+
+
+def print_sparse_grid(points: dict[Point, str]) -> None:
+    (min_x, min_y), (max_x, max_y) = find_bounds(points)
+    width = max_x - min_x + 1
+    height = max_y - min_y + 1
+    grid = [["." for _ in range(width)] for _ in range(height)]
+
+    for (x, y), c in points.items():
+        grid[y - min_y][x - min_x] = c
+    for row in grid:
+        print("".join(row))
