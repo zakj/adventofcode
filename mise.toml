@@ -1,0 +1,14 @@
+[settings]
+# TODO: experimental
+# python.uv_venv_auto = true
+
+[env]
+_.python.venv = { path = ".venv" }
+
+[tasks.solve]
+description = "Run solutions for a given year or day."
+run = "uv run python -m aocli"
+
+[tasks.watch]
+description = "Watch for changes to solution files and re-run them."
+run = "uv run python -m aocli --watch"
