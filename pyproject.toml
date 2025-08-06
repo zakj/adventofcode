@@ -19,8 +19,7 @@ aocli = { path = "pkg/aocli", editable = true }
 aoc = { path = "pkg/aoc", editable = true }
 
 [tool.pyright]
-venvPath = "."
-venv = ".venv"
+typeCheckingMode = "standard"
 
 [tool.ruff.lint]
 extend-select = ["I"]
