@@ -1,6 +1,6 @@
 import sys
-from abc import ABC, abstractmethod
-from collections import defaultdict, deque
+from abc import abstractmethod
+from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterator, Mapping
 from heapq import heappop, heappush
 from itertools import product
@@ -28,7 +28,7 @@ class DiGraph[T: Hashable](Mapping[T, set[T]]):
         """Count of nodes."""
         raise NotImplementedError
 
-    def weight(self, a: T, b: T) -> int:
+    def weight(self, _a: T, _b: T) -> int:
         """Weight of the edge from a to b."""
         return 1
 
@@ -56,15 +56,19 @@ class Goal[T]:
         return self.check(other)  # type: ignore
 
 
+def _simple_weight_fn[T](_a: T, _b: T) -> int:
+    return 1
+
+
 @overload
 def shortest_path_length[T](
-    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
+    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] = _simple_weight_fn
 ) -> int: ...
 
 
 @overload
 def shortest_path_length[T](
-    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] | None = None
+    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] = _simple_weight_fn
 ) -> dict[T, int]: ...
 
 
@@ -72,10 +76,8 @@ def shortest_path_length[T](
     G: Edges[T],
     source: T,
     target: Comparable | None = None,
-    weight: WeightFn[T] | None = None,
+    weight: WeightFn[T] = _simple_weight_fn,
 ) -> int | dict[T, int]:
-    if weight is None:
-        weight = lambda a, b: 1
     # TODO: bfs may be faster if we don't need to track weight
     end, distance, *_ = _dijkstra(G, source, target, weight)
     if target is not None:
@@ -86,13 +88,13 @@ def shortest_path_length[T](
 
 @overload
 def shortest_path[T](
-    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
+    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] = _simple_weight_fn
 ) -> list[T]: ...
 
 
 @overload
 def shortest_path[T](
-    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] | None = None
+    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] = _simple_weight_fn
 ) -> dict[T, list[T]]: ...
 
 
@@ -100,12 +102,10 @@ def shortest_path[T](
     G: Edges[T],
     source: T,
     target: Comparable | None = None,
-    weight: Callable[[T, T], int] | None = None,
+    weight: Callable[[T, T], int] = _simple_weight_fn,
 ) -> list[T] | dict[T, list[T]]:
-    if weight is None:
-        weight = lambda a, b: 1
     # TODO: bfs may be faster if we don't need to track weight
-    end, distance, paths, _ = _dijkstra(G, source, target, weight, with_path=True)
+    end, _distance, paths, _ = _dijkstra(G, source, target, weight, with_path=True)
     return paths[end] if end is not None else []
 
 
@@ -113,12 +113,10 @@ def all_shortest_paths[T](
     G: Edges[T],
     source: T,
     target: Comparable,
-    weight: Callable[[T, T], int] | None = None,
+    weight: Callable[[T, T], int] = _simple_weight_fn,
 ) -> list[list[T]]:
-    if weight is None:
-        weight = lambda a, b: 1
     # TODO: bfs may be faster if we don't need to track weight
-    end, distance, _, previous = _dijkstra(
+    end, _distance, _, previous = _dijkstra(
         G, source, target, weight, with_all_paths=True
     )
 

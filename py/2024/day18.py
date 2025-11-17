@@ -18,9 +18,11 @@ class Memory(DiGraph):
         self.size = size
         self.boxes = set(boxes)
 
-    def __contains__(self, node: Point) -> bool:
-        x, y = node
-        return 0 <= x < self.size and 0 <= y < self.size
+    def __contains__(self, node: object) -> bool:
+        match node:
+            case (int(x), int(y)):
+                return 0 <= x < self.size and 0 <= y < self.size
+        return False
 
     def __getitem__(self, node: Point) -> set[Point]:
         return {n for n in neighbors(node) if n in self and n not in self.boxes}
