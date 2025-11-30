@@ -1,9 +1,0 @@
-[[examples]]
-answers = ['DRURDRUDDLLDLUURRDULRLDUUDDDRR', 830]
-input = 'ulqzkmiv'
-
-[main]
-answers = ['RLDUDRDDRR', 590]
-input = '''
-mmsxrhfx
-'''

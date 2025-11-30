@@ -1,9 +1,0 @@
-[[examples]]
-answers = [45, 112]
-input = 'target area: x=20..30, y=-10..-5'
-
-[main]
-answers = [10878, 4716]
-input = '''
-target area: x=139..187, y=-148..-89
-'''

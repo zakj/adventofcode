@@ -1,7 +1,0 @@
-[main]
-answers = [111, 188]
-input = '''
-Hit Points: 109
-Damage: 8
-Armor: 2
-'''
