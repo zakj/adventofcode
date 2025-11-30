@@ -5,12 +5,19 @@ from pathlib import Path
 from watchdog.observers import Observer
 
 from . import BASE_DIR, RUNNERS
+from .data import fetch_input
 from .event_handler import Handler
 from .run import Runner
 from .websocket import WebsocketThread
 
 parser = argparse.ArgumentParser(prog="aocli", description="CLI for AOC solutions.")
 group = parser.add_mutually_exclusive_group()
+group.add_argument(
+    "-c",
+    "--check",
+    action="store_true",
+    help="check the stored session cookie",
+)
 group.add_argument(
     "-w",
     "--watch",
@@ -27,6 +34,14 @@ group.add_argument(
 
 def main():
     args = parser.parse_args()
+
+    if args.check:
+        try:
+            fetch_input("2024", "1")
+            sys.exit(0)
+        except Exception:
+            print("invalid session cookie; update .session")
+            sys.exit(1)
 
     path = Path(args.path).resolve()
     if not path.exists():
