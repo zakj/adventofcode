@@ -5,6 +5,10 @@
 [env]
 _.python.venv = { path = ".venv" }
 
+[tasks.check]
+description = "Validate cookie from .session"
+run = "uv run python -m aocli --check"
+
 [tasks.solve]
 description = "Run solutions for a given year or day."
 run = "uv run python -m aocli"
