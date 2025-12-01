@@ -1,51 +1,42 @@
+from typing import Literal
+
 from aoc import main
 from aoc.parse import first_number, line_parser
 
-start = 50
+START = 50
+DIAL_SIZE = 100
+
+type Turn = tuple[Literal[1] | Literal[-1], int]
 
 
 @line_parser
-def parse(line: str):
-    return [line[0], first_number(line)]
+def parse(line: str) -> Turn:
+    return (-1 if line[0] == "L" else 1, first_number(line))
 
 
-def part1(input: str):
-    instr = parse(input)
-    cur = 50
-    zerocount = 0
-    for dir, num in instr:
-        if dir == "L":
-            cur -= num
-            if cur < 0:
-                cur += 100
-        elif dir == "R":
-            cur += num
-        else:
-            raise ValueError
-        cur = cur % 100
+def zero_counts(turns: list[Turn]) -> int:
+    cur = START
+    count = 0
+    for dir, length in turns:
+        cur = (cur + length * dir) % DIAL_SIZE
         if cur == 0:
-            zerocount += 1
-    return zerocount
+            count += 1
+    return count
 
 
-def part2(input: str):
-    instr = parse(input)
-    print(instr)
-    cur = 50
-    zerocount = 0
-    for dir, num in instr:
-        delta = 1
-        if dir == "L":
-            delta = -1
-        for i in range(num):
-            cur += delta
-            if cur < 0:
-                cur += 100
-            cur = cur % 100
+def zero_counts_with_pass(turns: list[Turn]):
+    cur = START
+    count = 0
+    for dir, length in turns:
+        for _ in range(length):
+            cur = (cur + dir) % DIAL_SIZE
             if cur == 0:
-                zerocount += 1
-    return zerocount
+                count += 1
+    return count
 
 
 if __name__ == "__main__":
-    main(part1, part2)
+    main(
+        lambda s: zero_counts(parse(s)),
+        lambda s: zero_counts_with_pass(parse(s)),
+    )
