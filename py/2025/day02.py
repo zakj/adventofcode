@@ -1,50 +1,23 @@
+import re
+from collections.abc import Iterable
+
 from aoc import main
+from aoc.parse import all_numbers
+from aoc.util import chunks
+
+repeated_twice_re = re.compile(r"^(\d+)\1$")
+repeated_re = re.compile(r"^(\d+)\1+$")
 
 
-def part1(input: str):
-    ranges_in = input.split(",")
-    ranges = []
-    for s in ranges_in:
-        lo, hi = s.split("-")
-        ranges.append((int(lo), int(hi)))
-    invalid = []
-    for lo, hi in ranges:
-        # ONLY of some sequence repeated twice
-        for value in range(lo, hi + 1):
-            s = str(value)
-            if len(s) % 2 != 0:
-                continue
-            left = s[: len(s) // 2]
-            right = s[len(s) // 2 :]
-            if left == right:
-                invalid.append(value)
-
-    return sum(invalid)
-
-
-def part2(input: str):
-    ranges_in = input.split(",")
-    ranges = []
-    for s in ranges_in:
-        lo, hi = s.split("-")
-        ranges.append((int(lo), int(hi)))
-    invalid = []
-    for lo, hi in ranges:
-        for value in range(lo, hi + 1):
-            s = str(value)
-            for cut in range(1, len(s)):
-                pat = s[:cut]
-                repeat = len(s) // len(pat)
-                if pat * repeat == s:
-                    invalid.append(value)
-                    break
-
-    return sum(invalid)
+def parse(input: str) -> Iterable[int]:
+    values = []
+    for start, end in chunks(all_numbers(input.replace("-", " ")), 2):
+        values.extend(range(start, end + 1))
+    return values
 
 
 if __name__ == "__main__":
     main(
-        part1,
-        part2,
-        # isolate=0,
+        lambda s: sum(x for x in parse(s) if repeated_twice_re.match(str(x))),
+        lambda s: sum(x for x in parse(s) if repeated_re.match(str(x))),
     )
