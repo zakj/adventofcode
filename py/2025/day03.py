@@ -1,57 +1,27 @@
 from aoc import main
 
 
-def part1(input: str):
+def max_and_next_index(xs: str, start: int, end: int) -> tuple[str, int]:
+    x = max(xs[start : end or None])
+    xi = xs[start:].index(x) + start
+    return x, xi + 1
+
+
+def joltage(input: str, digits: int) -> int:
     banks = input.splitlines()
     total = 0
-    for batteries in banks:
-        # find highest number that's not at the end
-        # find highest next number
-        highest = 0
-        highest_index = -1
-        for i, battery in enumerate(batteries[:-1]):
-            if int(battery) > highest:
-                highest = int(battery)
-                highest_index = i
-        second = 0
-        for i, battery in enumerate(batteries[highest_index + 1 :]):
-            if int(battery) > second:
-                second = int(battery)
-        total += int(str(highest) + str(second))
-    return total
-
-
-def find_highest(xs: str, start: int, end: int | None) -> tuple[int, int]:
-    highest = 0
-    index = -1
-    for i, x in enumerate(xs[:end]):
-        if i < start:
-            continue
-        if int(x) > highest:
-            highest = int(x)
-            index = i
-    return highest, index
-
-
-def part2(input: str):
-    banks = input.splitlines()
-    total = 0
-    digits = 12
     for batteries in banks:
         rv = []
-        last = -1
-        for dig in range(digits, 0, -1):
-            hi, last = find_highest(
-                batteries, last + 1, -(dig - 1) if dig > 1 else None
-            )
-            rv.append(str(hi))
+        start = 0
+        for end in range(-digits + 1, 1):
+            hi, start = max_and_next_index(batteries, start, end)
+            rv.append(hi)
         total += int("".join(rv))
     return total
 
 
 if __name__ == "__main__":
     main(
-        part1,
-        part2,
-        # isolate=0,
+        lambda s: joltage(s, digits=2),
+        lambda s: joltage(s, digits=12),
     )
