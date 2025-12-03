@@ -1,27 +1,22 @@
+from functools import partial
+
 from aoc import main
 
 
-def max_and_next_index(xs: str, start: int, end: int) -> tuple[str, int]:
-    x = max(xs[start : end or None])
-    xi = xs[start:].index(x) + start
-    return x, xi + 1
+def joltage(bank: str, digits: int) -> str:
+    if not digits:
+        return ""
+    end = -(digits - 1) or None
+    hi = max(bank[:end])
+    return hi + joltage(bank[bank.index(hi) + 1 :], digits - 1)
 
 
-def joltage(input: str, digits: int) -> int:
-    banks = input.splitlines()
-    total = 0
-    for batteries in banks:
-        rv = []
-        start = 0
-        for end in range(-digits + 1, 1):
-            hi, start = max_and_next_index(batteries, start, end)
-            rv.append(hi)
-        total += int("".join(rv))
-    return total
+def total_joltage(input: str, *, digits: int) -> int:
+    return sum(int(joltage(bank, digits)) for bank in input.splitlines())
 
 
 if __name__ == "__main__":
     main(
-        lambda s: joltage(s, digits=2),
-        lambda s: joltage(s, digits=12),
+        partial(total_joltage, digits=2),
+        partial(total_joltage, digits=12),
     )
