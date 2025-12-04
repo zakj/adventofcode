@@ -2,7 +2,7 @@ from bisect import bisect_left
 from collections.abc import Iterable
 
 from aoc import main
-from aoc.coords import Point, neighbors
+from aoc.coords import Dir, Point
 from aoc.graph_dyn import DiGraph, shortest_path_length
 from aoc.parse import all_numbers, line_parser
 
@@ -25,7 +25,7 @@ class Memory(DiGraph):
         return False
 
     def __getitem__(self, node: Point) -> set[Point]:
-        return {n for n in neighbors(node) if n in self and n not in self.boxes}
+        return {n for n in Dir.neighbors(node) if n in self and n not in self.boxes}
 
 
 def minimum_steps(s: str, size: int, first: int) -> int:

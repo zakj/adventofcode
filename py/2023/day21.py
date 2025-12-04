@@ -2,7 +2,7 @@ from collections import defaultdict
 from itertools import count
 
 from aoc import main
-from aoc.coords import Grid, Point, neighbors
+from aoc.coords import Dir, Grid, Point
 from aoc.graph_dyn import DiGraph
 
 
@@ -13,7 +13,7 @@ class Farm(DiGraph):
         self.walkable = set(self.grid.findall(".")) | {self.start}
 
     def __getitem__(self, node: Point) -> set[Point]:
-        return {n for n in neighbors(node) if n in self.walkable}
+        return {n for n in Dir.neighbors(node) if n in self.walkable}
 
 
 def reachable(s: str, steps: int) -> int:

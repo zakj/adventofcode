@@ -1,11 +1,11 @@
 from aoc import main
-from aoc.coords import Grid, Point, neighbors8
+from aoc.coords import Dir8, Grid, Point
 
 
 def accessible_rolls(grid: Grid) -> list[Point]:
     rolls = []
     for p in grid.findall("@"):
-        neighbor_rolls = sum(1 for n in neighbors8(p) if n in grid and grid[n] == "@")
+        neighbor_rolls = sum(1 for n in Dir8.neighbors(p) if grid.get(n) == "@")
         if neighbor_rolls < 4:
             rolls.append(p)
     return rolls

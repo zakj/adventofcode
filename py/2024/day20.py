@@ -1,5 +1,5 @@
 from aoc import main, progress
-from aoc.coords import Grid, Point, mdist, neighbors
+from aoc.coords import Dir, Grid, Point, mdist
 from aoc.graph_dyn import DiGraph, shortest_path_length
 
 
@@ -14,7 +14,7 @@ class Racetrack(DiGraph):
         return iter(self.grid.data)
 
     def __getitem__(self, node: Point) -> set[Point]:
-        return {n for n in neighbors(node) if n in self.track}
+        return {n for n in Dir.neighbors(node) if n in self.track}
 
 
 def cheat_neighbors(p: Point, max: int) -> set[Point]:

@@ -1,5 +1,6 @@
 import math
 from collections.abc import Callable, Iterable, Iterator
+from functools import cache
 
 from aoc.util import IterableClass
 
@@ -22,6 +23,12 @@ class Dir(metaclass=IterableClass[Vector]):
         return iter([cls.N, cls.E, cls.S, cls.W])
 
     @classmethod
+    @cache
+    def neighbors(cls, p: Point) -> Iterable[Point]:
+        x, y = p
+        return [(x + dx, y + dy) for dx, dy in cls]
+
+    @classmethod
     def parse(cls, s: str) -> Vector:
         return cls._parse_map[s]
 
@@ -40,6 +47,12 @@ class Dir8(metaclass=IterableClass[Vector]):
     # TODO this is slow
     def classiter(cls) -> Iterator[Vector]:
         return iter([cls.N, cls.NE, cls.E, cls.SE, cls.S, cls.SW, cls.W, cls.NW])
+
+    @classmethod
+    @cache
+    def neighbors(cls, p: Point) -> Iterable[Point]:
+        x, y = p
+        return [(x + dx, y + dy) for dx, dy in cls]
 
 
 class Grid[T]:
@@ -79,30 +92,6 @@ class Grid[T]:
     def display(self) -> None:
         for y in range(self.height):
             print("".join(str(self[x, y]) for x in range(self.width)))
-
-
-def neighbors(p: Point) -> Iterable[Point]:
-    x, y = p
-    return [
-        (x, y - 1),
-        (x + 1, y),
-        (x, y + 1),
-        (x - 1, y),
-    ]
-
-
-def neighbors8(p: Point) -> Iterable[Point]:
-    x, y = p
-    return [
-        (x, y - 1),
-        (x + 1, y),
-        (x, y + 1),
-        (x - 1, y),
-        (x - 1, y - 1),
-        (x + 1, y - 1),
-        (x - 1, y + 1),
-        (x + 1, y + 1),
-    ]
 
 
 def mdist(a: Point, b: Point):

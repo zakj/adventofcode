@@ -1,5 +1,5 @@
 from aoc import main
-from aoc.coords import Dir, Dir8, Grid, Point, addp, neighbors
+from aoc.coords import Dir, Dir8, Grid, Point, addp
 from aoc.graph_dyn import DiGraph, shortest_path_length
 
 
@@ -11,7 +11,7 @@ class Farm(DiGraph):
         return iter(self.grid.data)
 
     def __getitem__(self, point: Point) -> set[Point]:
-        return {n for n in neighbors(point) if self.grid[point] == self.grid.get(n)}
+        return {n for n in Dir.neighbors(point) if self.grid[point] == self.grid.get(n)}
 
 
 def find_regions(G: DiGraph[Point]) -> list[set[Point]]:

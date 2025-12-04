@@ -2,7 +2,7 @@ from functools import cache
 from itertools import pairwise
 
 from aoc import main
-from aoc.coords import Grid, Point, neighbors, subp
+from aoc.coords import Dir, Grid, Point, subp
 from aoc.graph_dyn import DiGraph, all_shortest_paths
 
 NUMERIC = Grid("""
@@ -26,7 +26,7 @@ class Keypad(DiGraph):
         self.cur = grid.find("A")
 
     def __getitem__(self, p: Point) -> set[Point]:
-        return {n for n in neighbors(p) if self.grid.get(n, " ") != " "}
+        return {n for n in Dir.neighbors(p) if self.grid.get(n, " ") != " "}
 
 
 dir_to_key = {

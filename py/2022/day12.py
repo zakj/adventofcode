@@ -1,5 +1,5 @@
 from aoc import main
-from aoc.coords import Grid, Point, neighbors
+from aoc.coords import Dir, Grid, Point
 from aoc.graph_dyn import DiGraph, Goal, shortest_path_length
 
 
@@ -13,7 +13,7 @@ class ReversedHeightMap(DiGraph):
     def __getitem__(self, node: Point) -> set[Point]:
         h = self.height(node)
         return {
-            n for n in neighbors(node) if n in self.grid and h - 1 <= self.height(n)
+            n for n in Dir.neighbors(node) if n in self.grid and h - 1 <= self.height(n)
         }
 
     def height(self, point: Point) -> int:

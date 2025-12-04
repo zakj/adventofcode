@@ -1,5 +1,5 @@
 from aoc import main
-from aoc.coords import Grid, Point, neighbors
+from aoc.coords import Dir, Grid, Point
 from aoc.graph_dyn import DiGraph, shortest_path_length
 
 
@@ -10,7 +10,7 @@ class Map(DiGraph):
         self.trailends = set(self.grid.findall(9))
 
     def __getitem__(self, p: Point) -> set[Point]:
-        return {n for n in neighbors(p) if self.grid[p] + 1 == self.grid.get(n)}
+        return {n for n in Dir.neighbors(p) if self.grid[p] + 1 == self.grid.get(n)}
 
 
 def trail_score(s: str) -> int:
