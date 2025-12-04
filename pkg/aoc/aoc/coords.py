@@ -91,6 +91,20 @@ def neighbors(p: Point) -> Iterable[Point]:
     ]
 
 
+def neighbors8(p: Point) -> Iterable[Point]:
+    x, y = p
+    return [
+        (x, y - 1),
+        (x + 1, y),
+        (x, y + 1),
+        (x - 1, y),
+        (x - 1, y - 1),
+        (x + 1, y - 1),
+        (x - 1, y + 1),
+        (x + 1, y + 1),
+    ]
+
+
 def mdist(a: Point, b: Point):
     (ax, ay), (bx, by) = a, b
     return abs(ax - bx) + abs(ay - by)

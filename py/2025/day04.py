@@ -1,62 +1,28 @@
-from typing import Iterable
-
 from aoc import main
-from aoc.coords import Grid, Point
+from aoc.coords import Grid, Point, neighbors8
 
 
-def neighbors8(p: Point) -> Iterable[Point]:
-    x, y = p
-    return [
-        (x, y - 1),
-        (x + 1, y),
-        (x, y + 1),
-        (x - 1, y),
-        (x - 1, y - 1),
-        (x + 1, y - 1),
-        (x - 1, y + 1),
-        (x + 1, y + 1),
-    ]
+def accessible_rolls(grid: Grid) -> list[Point]:
+    rolls = []
+    for p in grid.findall("@"):
+        neighbor_rolls = sum(1 for n in neighbors8(p) if n in grid and grid[n] == "@")
+        if neighbor_rolls < 4:
+            rolls.append(p)
+    return rolls
 
 
-def part1(input: str):
-    grid = Grid(input)
-    accessible = 0
-    for x in range(grid.width):
-        for y in range(grid.height):
-            if grid[x, y] != "@":
-                continue
-            rolls = 0
-            for n in neighbors8((x, y)):
-                if n in grid and grid[n] in ["x", "@"]:
-                    rolls += 1
-            if rolls < 4:
-                grid[x, y] = "x"
-                accessible += 1
-    return accessible
-
-
-def part2(input: str):
-    grid = Grid(input)
+def removable_rolls(grid: Grid):
     while True:
-        found = False
-        for x in range(grid.width):
-            for y in range(grid.height):
-                if grid[x, y] != "@":
-                    continue
-                rolls = 0
-                for n in neighbors8((x, y)):
-                    if n in grid and grid[n] in ["@"]:
-                        rolls += 1
-                if rolls < 4:
-                    found = True
-                    grid[x, y] = "x"
-        if not found:
+        to_remove = accessible_rolls(grid)
+        if not to_remove:
             break
-    return len(grid.findall("x"))
+        for p in to_remove:
+            grid[p] = "x"
+    return grid.findall("x")
 
 
 if __name__ == "__main__":
     main(
-        part1,
-        part2,
+        lambda s: len(accessible_rolls(Grid(s))),
+        lambda s: len(removable_rolls(Grid(s))),
     )
