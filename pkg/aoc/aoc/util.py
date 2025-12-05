@@ -66,14 +66,15 @@ class Range:
 
     @staticmethod
     def union(*ranges: "Range") -> "list[Range]":
-        union = []
-        last = None
-        for x in sorted(ranges):
-            if last and last.end >= x.start - 1:
-                last.end = max(last.end, x.end)
-            else:
-                last = Range(x.start, x.end)
-                union.append(last)
+        if not ranges:
+            return []
+        first, *sorted_ranges = sorted(ranges)
+        union = [Range(first.start, first.end)]
+        for cur in sorted_ranges:
+            try:
+                union[-1] |= cur
+            except ValueError:
+                union.append(Range(cur.start, cur.end))
         return union
 
     def __lt__(self, other: "Range") -> bool:
@@ -84,6 +85,11 @@ class Range:
 
     def __contains__(self, other: int) -> bool:
         return self.start <= other <= self.end
+
+    def __or__(self, other: "Range") -> "Range":
+        if not (self.start <= other.end + 1 and other.start <= self.end + 1):
+            raise ValueError("ranges must overlap or be adjacent")
+        return Range(min(self.start, other.start), max(self.end, other.end))
 
     def overlaps(self, other: "Range") -> bool:
         return self.start <= other.end and other.start <= self.end
