@@ -1,5 +1,6 @@
 import collections
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from itertools import islice
 from pathlib import Path
 from typing import Iterable, Iterator, Literal
@@ -56,6 +57,36 @@ class IterableClass[T](type):
 
     def __iter__(self) -> Iterator[T]:
         return self.classiter()
+
+
+@dataclass(eq=True)
+class Range:
+    start: int
+    end: int
+
+    @staticmethod
+    def union(*ranges: "Range") -> "list[Range]":
+        union = []
+        last = None
+        for x in sorted(ranges):
+            if last and last.end >= x.start - 1:
+                last.end = max(last.end, x.end)
+            else:
+                last = Range(x.start, x.end)
+                union.append(last)
+        return union
+
+    def __lt__(self, other: "Range") -> bool:
+        return self.start < other.start
+
+    def __len__(self) -> int:
+        return self.end - self.start + 1
+
+    def __contains__(self, other: int) -> bool:
+        return self.start <= other <= self.end
+
+    def overlaps(self, other: "Range") -> bool:
+        return self.start <= other.end and other.start <= self.end
 
 
 def ocr(lines: list[str], font: Literal["4x6"] | Literal["6x10"]) -> str:

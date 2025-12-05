@@ -1,10 +1,10 @@
-from dataclasses import dataclass
 from itertools import product
 from typing import Final
 
 from aoc import main
 from aoc.coords import Point, mdist
 from aoc.parse import all_numbers
+from aoc.util import Range
 
 FREQUENCY_MULTIPLIER: Final[int] = 4000000
 
@@ -19,36 +19,6 @@ def parse(s: str) -> tuple[dict[Point, int], list[Point]]:
         sensors[sensor] = mdist(sensor, beacon)
         beacons.append(beacon)
     return sensors, beacons
-
-
-@dataclass(eq=True)
-class Range:
-    start: int
-    end: int
-
-    @staticmethod
-    def union(*ranges: "Range") -> "list[Range]":
-        union = []
-        last = None
-        for x in sorted(ranges):
-            if last and last.end >= x.start - 1:
-                last.end = max(last.end, x.end)
-            else:
-                last = x
-                union.append(last)
-        return union
-
-    def __lt__(self, other: "Range") -> bool:
-        return self.start < other.start
-
-    def __len__(self) -> int:
-        return self.end - self.start + 1
-
-    def __contains__(self, other: int) -> bool:
-        return self.start <= other <= self.end
-
-    def overlaps(self, other: "Range") -> bool:
-        return self.start <= other.end and other.start <= self.end
 
 
 def no_beacon_count(sensors, beacons, target_y: int) -> int:
