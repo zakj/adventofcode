@@ -2,27 +2,27 @@ from aoc import main
 from aoc.coords import Dir8, Grid, Point
 
 
-def accessible_rolls(grid: Grid) -> list[Point]:
-    rolls = []
-    for p in grid.findall("@"):
-        neighbor_rolls = sum(1 for n in Dir8.neighbors(p) if grid.get(n) == "@")
-        if neighbor_rolls < 4:
-            rolls.append(p)
-    return rolls
+def accessible_rolls(rolls: set[Point]) -> set[Point]:
+    def neighbor_rolls(p: Point) -> list[Point]:
+        return [n for n in Dir8.neighbors(p) if n in rolls]
+
+    return {p for p in rolls if len(neighbor_rolls(p)) < 4}
 
 
-def removable_rolls(grid: Grid):
+def removable_rolls(rolls: set[Point]) -> set[Point]:
+    to_remove = None
+    removed = set()
     while True:
-        to_remove = accessible_rolls(grid)
+        to_remove = accessible_rolls(rolls)
         if not to_remove:
             break
-        for p in to_remove:
-            grid[p] = "x"
-    return grid.findall("x")
+        rolls -= to_remove
+        removed |= to_remove
+    return removed
 
 
 if __name__ == "__main__":
     main(
-        lambda s: len(accessible_rolls(Grid(s))),
-        lambda s: len(removable_rolls(Grid(s))),
+        lambda s: len(accessible_rolls(set(Grid(s).findall("@")))),
+        lambda s: len(removable_rolls(set(Grid(s).findall("@")))),
     )
