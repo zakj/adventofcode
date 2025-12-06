@@ -64,6 +64,11 @@ class Range:
     start: int
     end: int
 
+    @classmethod
+    def from_str(cls, s: str) -> "Range":
+        start, end = s.split("-")
+        return Range(int(start), int(end))
+
     @staticmethod
     def union(*ranges: "Range") -> "list[Range]":
         if not ranges:

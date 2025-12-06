@@ -5,11 +5,7 @@ from aoc.util import Range
 
 def parse(input: str) -> tuple[list[Range], list[int]]:
     ranges_str, ids_str = paras(input)
-    ranges = []
-    for range_str in ranges_str:
-        start, end = range_str.split("-")
-        ranges.append(Range(int(start), int(end)))
-    ranges = Range.union(*ranges)
+    ranges = Range.union(*[Range.from_str(r) for r in ranges_str])
     ids = [int(n) for n in ids_str]
     return ranges, ids
 
