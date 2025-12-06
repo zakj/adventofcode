@@ -1,9 +1,11 @@
+from functools import partial
 from itertools import pairwise
 from math import prod
+from typing import Callable
 
 from aoc import main
 
-type Problem = tuple[str, list[str]]  # operator, list of padded columns
+type Problem = tuple[str, list[str]]  # operator, list of padded cells in the column
 OPERATORS = {"+": sum, "*": prod}
 
 
@@ -16,23 +18,21 @@ def parse_problems(input: str) -> list[Problem]:
     ]
 
 
-def cephalopod_math(input: str) -> int:
+def transpose_columns(nums: list[str]) -> list[str]:
+    return ["".join(n) for n in zip(*(reversed(n) for n in nums))]
+
+
+def cephalopod_math(
+    input: str, mapper: Callable[[list[str]], list[str]] | None = None
+) -> int:
     return sum(
-        OPERATORS[op](int(n) for n in nums) for op, nums in parse_problems(input)
+        OPERATORS[op](int(n) for n in (mapper(nums) if mapper else nums))
+        for op, nums in parse_problems(input)
     )
-
-
-def transpose_columns(nums: list[str]) -> list[int]:
-    return [int("".join(n)) for n in zip(*(reversed(n) for n in nums))]
-
-
-def cephalopod_math_rtl(input: str) -> int:
-    problems = parse_problems(input)
-    return sum(OPERATORS[op](transpose_columns(nums)) for op, nums in problems)
 
 
 if __name__ == "__main__":
     main(
         cephalopod_math,
-        cephalopod_math_rtl,
+        partial(cephalopod_math, mapper=transpose_columns),
     )
