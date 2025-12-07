@@ -10,23 +10,23 @@ def parse(input: str) -> tuple[Grid, Point]:
 
 
 def count_splits(grid: Grid, start: Point) -> int:
-    seen_beams = {start}
-    beams = {start}
+    visited = {start}
+    queue = [start]
     splits = 0
-    while beams:
-        beam = beams.pop()
+    while queue:
+        beam = queue.pop()
         beam = addp(beam, Dir.S)
-        if beam in seen_beams:
+        if beam in visited:
             continue
-        seen_beams.add(beam)
+        visited.add(beam)
         if beam not in grid:
-            continue
-        elif grid[beam] == ".":
-            beams.add(beam)
+            pass
         elif grid[beam] == "^":
             splits += 1
-            beams.add(addp(beam, Dir.W))
-            beams.add(addp(beam, Dir.E))
+            queue.append(addp(beam, Dir.W))
+            queue.append(addp(beam, Dir.E))
+        else:
+            queue.append(beam)
     return splits
 
 
