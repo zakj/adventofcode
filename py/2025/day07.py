@@ -4,9 +4,12 @@ from aoc import main
 from aoc.coords import Dir, Grid, Point, addp
 
 
-def part1(input: str):
+def parse(input: str) -> tuple[Grid, Point]:
     grid = Grid(input)
-    start = grid.find("S")
+    return grid, grid.find("S")
+
+
+def count_splits(grid: Grid, start: Point) -> int:
     seen_beams = {start}
     beams = {start}
     splits = 0
@@ -28,24 +31,17 @@ def part1(input: str):
 
 
 @cache
-def paths_to_end(grid: Grid, p: Point) -> int:
+def count_timelines(grid: Grid, p: Point) -> int:
     if p not in grid:
         return 1
-    if grid[p] in ["S", "."]:
-        return paths_to_end(grid, addp(p, Dir.S))
     if grid[p] == "^":
-        return paths_to_end(grid, addp(p, Dir.W)) + paths_to_end(grid, addp(p, Dir.E))
-    raise ValueError
-
-
-def part2(input: str):
-    grid = Grid(input)
-    start = grid.find("S")
-    return paths_to_end(grid, start)
+        left, right = addp(p, Dir.W), addp(p, Dir.E)
+        return count_timelines(grid, left) + count_timelines(grid, right)
+    return count_timelines(grid, addp(p, Dir.S))
 
 
 if __name__ == "__main__":
     main(
-        part1,
-        part2,
+        lambda s: count_splits(*parse(s)),
+        lambda s: count_timelines(*parse(s)),
     )
