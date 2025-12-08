@@ -1,6 +1,6 @@
 from aoc import main
+from aoc.collections import Range
 from aoc.parse import paras
-from aoc.util import Range
 
 
 def parse(input: str) -> tuple[list[Range], list[int]]:

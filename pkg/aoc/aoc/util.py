@@ -1,6 +1,5 @@
 import collections
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
 from itertools import islice
 from pathlib import Path
 from typing import Iterable, Iterator, Literal
@@ -57,47 +56,6 @@ class IterableClass[T](type):
 
     def __iter__(self) -> Iterator[T]:
         return self.classiter()
-
-
-@dataclass(eq=True)
-class Range:
-    start: int
-    end: int
-
-    @classmethod
-    def from_str(cls, s: str) -> "Range":
-        start, end = s.split("-")
-        return Range(int(start), int(end))
-
-    @staticmethod
-    def union(*ranges: "Range") -> "list[Range]":
-        if not ranges:
-            return []
-        first, *sorted_ranges = sorted(ranges)
-        union = [Range(first.start, first.end)]
-        for cur in sorted_ranges:
-            try:
-                union[-1] |= cur
-            except ValueError:
-                union.append(Range(cur.start, cur.end))
-        return union
-
-    def __lt__(self, other: "Range") -> bool:
-        return self.start < other.start
-
-    def __len__(self) -> int:
-        return self.end - self.start + 1
-
-    def __contains__(self, other: int) -> bool:
-        return self.start <= other <= self.end
-
-    def __or__(self, other: "Range") -> "Range":
-        if not (self.start <= other.end + 1 and other.start <= self.end + 1):
-            raise ValueError("ranges must overlap or be adjacent")
-        return Range(min(self.start, other.start), max(self.end, other.end))
-
-    def overlaps(self, other: "Range") -> bool:
-        return self.start <= other.end and other.start <= self.end
 
 
 def ocr(lines: list[str], font: Literal["4x6"] | Literal["6x10"]) -> str:
