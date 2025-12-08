@@ -6,7 +6,18 @@ from operator import add, mul, sub
 from typing import cast
 
 from aoc import main
-from aoc.coords import Dir, Point, Point3, mdist
+from aoc.coords import (
+    Dir,
+    Grid,
+    Point,
+    Point3,
+    Vector,
+    addp,
+    mdist,
+    subp,
+    turn_left,
+    turn_right,
+)
 
 DIR_VALUES = {
     Dir.E: 0,
@@ -16,7 +27,42 @@ DIR_VALUES = {
 }
 
 
-# TODO: move these helpers into coords?
+def parse(s: str) -> tuple[list[str], list[str]]:
+    *grid, _, path_str = s.splitlines()
+    path = re.findall(r"\d+|[RL]", path_str)
+    return grid, path
+
+
+def wrap2d(full_map: set[Point], p: Point, dir: Vector) -> Point | None:
+    while (check := subp(p, dir)) in full_map:
+        p = check
+    return p
+
+
+def map_walk(map_rows: list[str], path: list[str]) -> int:
+    grid = Grid("\n".join(map_rows))
+    walls = set(grid.findall("#"))
+    floors = set(grid.findall("."))
+    all_tiles = walls | floors
+
+    pos = map_rows[0].index("."), 0
+    facing = Dir.E
+    for step in path:
+        if step == "L":
+            facing = turn_left(facing)
+        elif step == "R":
+            facing = turn_right(facing)
+        else:
+            for _ in range(int(step)):
+                next_pos = addp(pos, facing)
+                if next_pos not in all_tiles:
+                    next_pos = wrap2d(all_tiles, next_pos, facing)
+                if next_pos in floors:
+                    pos = next_pos
+                else:
+                    break
+
+    return (pos[1] + 1) * 1000 + (pos[0] + 1) * 4 + DIR_VALUES[facing]
 
 
 def cross3(a: Point3, b: Point3) -> Point3:
@@ -53,12 +99,6 @@ def turn_right_around(dir: Point3, axis: Point3) -> Point3:
 
 def turn_left_around(dir: Point3, axis: Point3) -> Point3:
     return cross3(axis, dir)
-
-
-def parse(s: str):
-    *grid, _, path_str = s.splitlines()
-    path = re.findall(r"\d+|[RL]", path_str)
-    return grid, path
 
 
 @dataclass
@@ -231,6 +271,6 @@ def cube_walk(grid: list[str], path: list[str]) -> int:
 
 if __name__ == "__main__":
     main(
-        lambda s: "skipped",  # XXX solved in ts, need to get back to it here
+        lambda s: map_walk(*parse(s)),
         lambda s: cube_walk(*parse(s)),
     )
