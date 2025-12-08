@@ -59,24 +59,12 @@ def part2(input: str):
             if found_a == found_b:
                 continue
             found_a |= found_b
-            found_b.clear()
+            circuits.remove(found_b)
         else:
             disconnected.remove(a)
             disconnected.remove(b)
             circuits.append({a, b})
-        if len(disconnected) == 0:
-            fc = []
-            for c in circuits:
-                if len(c):
-                    fc.append(c)
-            if len(fc) == 1:
-                return a[0] * b[0]
-            pairs = []
-            for a in fc[0]:
-                for b in fc[1]:
-                    pairs.append((dist(a, b), a, b))
-            pairs.sort()
-            _, a, b = pairs[0]
+        if len(circuits) == 1 and len(disconnected) == 0:
             return a[0] * b[0]
 
 
