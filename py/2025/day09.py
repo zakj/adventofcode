@@ -1,15 +1,14 @@
+from collections import defaultdict
 from itertools import combinations, pairwise
-from math import copysign
+from typing import Callable
 
 from aoc import main
 from aoc.coords import (
     Dir,
-    Dir8,
     Point,
-    addp,
+    Rect,
     find_bounds,
-    mdist,
-    subp,
+    line_between,
 )
 from aoc.parse import all_numbers, line_parser
 
@@ -20,11 +19,45 @@ def parse(line: str) -> Point:
     return x, y
 
 
+# TODO move to coords
+def area(a: Point, b: Point) -> int:
+    return (abs(a[0] - b[0]) + 1) * (abs(a[1] - b[1]) + 1)
+
+
 def largest_rectangle(input: str) -> int:
     red_tiles = parse(input)
-    distances = [(mdist(a, b), a, b) for a, b in combinations(red_tiles, 2)]
-    _, a, b = max(*distances)
-    return (abs(a[0] - b[0]) + 1) * abs(a[1] - b[1] + 1)
+    return max(area(a, b) for a, b in combinations(red_tiles, 2))
+
+
+# TODO move to collections
+# <https://en.wikipedia.org/wiki/Summed-area_table>
+class SummedAreaTable:
+    def __init__(
+        self, width: int, height: int, valuefn: Callable[[Point], int]
+    ) -> None:
+        self.width = width
+        self.height = height
+        self.table: dict[Point, int] = defaultdict(int)
+        for x in range(width):
+            for y in range(height):
+                value = valuefn((x, y))
+                self.table[x, y] = (
+                    value
+                    + self.table[x, y - 1]
+                    + self.table[x - 1, y]
+                    - self.table[x - 1, y - 1]
+                )
+
+    def __getitem__(self, rect: Rect, /) -> int:
+        a, b = rect
+        min_x, max_x = sorted([a[0], b[0]])
+        min_y, max_y = sorted([a[1], b[1]])
+        return (
+            self.table[max_x, max_y]
+            + self.table[min_x - 1, min_y - 1]
+            - self.table[max_x, min_y - 1]
+            - self.table[min_x - 1, max_y]
+        )
 
 
 def compress(points: list[Point]) -> dict[Point, Point]:
@@ -32,81 +65,50 @@ def compress(points: list[Point]) -> dict[Point, Point]:
     uniq_y = list(sorted({p[1] for p in points}))
     x_map = {x: i for i, x in enumerate(uniq_x)}
     y_map = {y: i for i, y in enumerate(uniq_y)}
-    return {(x_map[x], y_map[y]): (x, y) for x, y in points}
+    return {(x, y): (x_map[x], y_map[y]) for x, y in points}
 
 
 def largest_contained_rectangle(input: str):
-    red_tiles: list[Point] = []
-    for line in input.splitlines():
-        x, y = all_numbers(line)
-        red_tiles.append((x, y))
-    compressed_dict = compress(red_tiles)
-    compressed = list(compressed_dict.keys())
+    red_tiles = parse(input)
+    to_compressed = compress(red_tiles)
+    compressed_tiles = list(to_compressed.values())
+    is_outside: dict[Point, bool] = {p: False for p in compressed_tiles}
 
-    # point -> is inside shape
-    grid: dict[Point, bool] = {p: True for p in compressed}
+    # mark the border as known-inside for flood fill
+    for a, b in pairwise([compressed_tiles[-1]] + compressed_tiles):
+        for p in line_between(a, b):
+            is_outside[p] = False
 
-    # mark the border as inside
-    for a, b in pairwise([compressed[-1]] + compressed):
-        x, y = subp(b, a)
-        x = int(copysign(1, x)) if x else x
-        y = int(copysign(1, y)) if y else y
-        dir = (x, y)
-        cur = addp(a, dir)
-        while cur != b:
-            grid[cur] = True
-            cur = addp(cur, dir)
+    # flood fill the outside; centroid to fill inside doesn't work due to the concave shape
+    # include a guaranteed-empty border so flood doesn't get stuck
+    (minx, miny), (maxx, maxy) = find_bounds(compressed_tiles)
+    minx, miny = minx - 1, miny - 1
+    maxx, maxy = maxx + 1, maxy + 1
 
-    # flood fill the outside as outside; centroid doesn't work due to the concave shape
-    (minx, miny), (maxx, maxy) = find_bounds(compressed)
-    minx -= 1
-    miny -= 1
-    maxx += 1
-    maxy += 1
-
+    # TODO is there a cleaner way?
     def in_grid(p: Point) -> bool:
         return minx <= p[0] <= maxx and miny <= p[1] <= maxy
 
     queue = {(minx, miny)}
     while queue:
         cur = queue.pop()
-        if cur in grid:
+        if cur in is_outside:
             continue
-        grid[cur] = False
+        is_outside[cur] = True
         queue |= {n for n in Dir.neighbors(cur) if in_grid(n)}
 
-    # now grid is true for border, false for outside, empty for inside
+    inside_area = SummedAreaTable(
+        maxx,
+        maxy,
+        lambda p: 0 if is_outside.get(p) else 1,
+    )
 
-    # summed area table of the whole grid
-    summed_area: dict[Point, int] = {}
-    for x in range(minx, maxx + 1):
-        for y in range(miny, maxy + 1):
-            p = x, y
-            value = 0 if p in grid and not grid[p] else 1
-            summed_area[p] = (
-                value
-                + summed_area.get(addp(p, Dir.N), 0)
-                + summed_area.get(addp(p, Dir.W), 0)
-                - summed_area.get(addp(p, Dir8.NW), 0)
-            )
-
-    maxarea = 0
-    for a, b in combinations(compressed, 2):
-        area = (abs(a[0] - b[0]) + 1) * (abs(a[1] - b[1]) + 1)
-        (min_x, min_y), (max_x, max_y) = find_bounds([a, b])
-        sum_area = (
-            summed_area[max_x, max_y]
-            + summed_area.get((min_x - 1, min_y - 1), 0)
-            - summed_area.get((max_x, min_y - 1), 0)
-            - summed_area.get((min_x - 1, max_y), 0)
-        )
-        if area == sum_area:
-            orig_a, orig_b = compressed_dict[a], compressed_dict[b]
-            maxarea = max(
-                maxarea,
-                (abs(orig_a[0] - orig_b[0]) + 1) * (abs(orig_a[1] - orig_b[1]) + 1),
-            )
-    return maxarea
+    max_area = 0
+    for a, b in combinations(red_tiles, 2):
+        ca, cb = to_compressed[a], to_compressed[b]
+        if area(ca, cb) == inside_area[ca, cb]:
+            max_area = max(max_area, area(a, b))
+    return max_area
 
 
 if __name__ == "__main__":
