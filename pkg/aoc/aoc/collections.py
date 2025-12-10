@@ -1,5 +1,8 @@
 from collections import defaultdict
 from dataclasses import dataclass
+from typing import Callable
+
+from aoc.coords import Point, Rect
 
 
 # <https://en.wikipedia.org/wiki/Disjoint-set_data_structure>
@@ -79,3 +82,33 @@ class Range:
 
     def overlaps(self, other: "Range") -> bool:
         return self.start <= other.end and other.start <= self.end
+
+
+# <https://en.wikipedia.org/wiki/Summed-area_table>
+class SummedAreaTable:
+    def __init__(
+        self, width: int, height: int, valuefn: Callable[[Point], int]
+    ) -> None:
+        self.width = width
+        self.height = height
+        self.table: dict[Point, int] = defaultdict(int)
+        for x in range(width):
+            for y in range(height):
+                value = valuefn((x, y))
+                self.table[x, y] = (
+                    value
+                    + self.table[x, y - 1]
+                    + self.table[x - 1, y]
+                    - self.table[x - 1, y - 1]
+                )
+
+    def __getitem__(self, rect: Rect, /) -> int:
+        a, b = rect
+        min_x, max_x = sorted([a[0], b[0]])
+        min_y, max_y = sorted([a[1], b[1]])
+        return (
+            self.table[max_x, max_y]
+            + self.table[min_x - 1, min_y - 1]
+            - self.table[max_x, min_y - 1]
+            - self.table[min_x - 1, max_y]
+        )

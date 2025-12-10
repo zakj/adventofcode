@@ -122,6 +122,10 @@ def turn_left(d: Vector) -> Point:
     return y, -x
 
 
+def area(a: Point, b: Point) -> int:
+    return (abs(a[0] - b[0]) + 1) * (abs(a[1] - b[1]) + 1)
+
+
 def find_bounds(points: Iterable[Point]) -> Rect:
     if not points:
         raise ValueError

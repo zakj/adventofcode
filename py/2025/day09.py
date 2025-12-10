@@ -1,12 +1,11 @@
-from collections import defaultdict
 from itertools import combinations, pairwise
-from typing import Callable
 
 from aoc import main
+from aoc.collections import SummedAreaTable
 from aoc.coords import (
     Dir,
     Point,
-    Rect,
+    area,
     find_bounds,
     line_between,
 )
@@ -19,45 +18,9 @@ def parse(line: str) -> Point:
     return x, y
 
 
-# TODO move to coords
-def area(a: Point, b: Point) -> int:
-    return (abs(a[0] - b[0]) + 1) * (abs(a[1] - b[1]) + 1)
-
-
 def largest_rectangle(input: str) -> int:
     red_tiles = parse(input)
     return max(area(a, b) for a, b in combinations(red_tiles, 2))
-
-
-# TODO move to collections
-# <https://en.wikipedia.org/wiki/Summed-area_table>
-class SummedAreaTable:
-    def __init__(
-        self, width: int, height: int, valuefn: Callable[[Point], int]
-    ) -> None:
-        self.width = width
-        self.height = height
-        self.table: dict[Point, int] = defaultdict(int)
-        for x in range(width):
-            for y in range(height):
-                value = valuefn((x, y))
-                self.table[x, y] = (
-                    value
-                    + self.table[x, y - 1]
-                    + self.table[x - 1, y]
-                    - self.table[x - 1, y - 1]
-                )
-
-    def __getitem__(self, rect: Rect, /) -> int:
-        a, b = rect
-        min_x, max_x = sorted([a[0], b[0]])
-        min_y, max_y = sorted([a[1], b[1]])
-        return (
-            self.table[max_x, max_y]
-            + self.table[min_x - 1, min_y - 1]
-            - self.table[max_x, min_y - 1]
-            - self.table[min_x - 1, max_y]
-        )
 
 
 def compress(points: list[Point]) -> dict[Point, Point]:
