@@ -1,5 +1,7 @@
-from itertools import combinations_with_replacement
+from collections.abc import Iterable
 import re
+from itertools import combinations_with_replacement
+from typing import Self
 
 from aoc import main, progress
 from aoc.graph import DiGraph, shortest_path_length
@@ -21,14 +23,68 @@ def parse(line: str):
     return lights, buttons, joltages
 
 
+class BitMask(int):
+    @classmethod
+    def from_list(cls, indexes: Iterable[int]) -> Self:
+        return cls(sum(1 << i for i in indexes))
+
+    def toggle(self, i: int, /) -> Self:
+        return self.__class__(self ^ (1 << i))
+
+    def on(self, i: int, /) -> Self:
+        return self.__class__(self | (1 << i))
+
+    def off(self, i: int, /) -> Self:
+        return self.__class__(self & ~(1 << i))
+
+    def __contains__(self, i: int, /) -> bool:
+        return bool(self & (1 << i))
+
+    def __and__(self, value: "int | BitMask", /) -> Self:
+        return self.__class__(super().__and__(value))
+
+    def __invert__(self) -> Self:
+        return self.__class__(super().__invert__())
+
+    def __or__(self, value: "int | BitMask", /) -> Self:
+        return self.__class__(super().__or__(value))
+
+    def __xor__(self, value: "int | BitMask", /) -> Self:
+        return self.__class__(super().__xor__(value))
+
+    __rand__ = __and__
+    __ror__ = __or__
+    __rxor__ = __xor__
+
+
+class OfflineMachine2[Node: BitMask](DiGraph):
+    def __init__(self, buttons: list[BitMask]) -> None:
+        self.buttons = buttons
+
+    def __getitem__(self, state: Node) -> set[Node]:
+        return {state ^ button for button in self.buttons}
+
+
+def part1_bitmask(input: str):
+    machines = parse(input)
+    total = 0
+    for lights, buttons, _joltages in machines:
+        lbm = BitMask.from_list(lights)
+        bbm = [BitMask.from_list(b) for b in buttons]
+        machine = OfflineMachine2(bbm)
+        presses = shortest_path_length(machine, 0, lbm)
+        total += presses
+    return total
+
+
 class OfflineMachine[Node: set[int]](DiGraph):
     def __init__(self, buttons: list[list[int]]) -> None:
         self.buttons = buttons
 
-    def __getitem__(self, on: Node) -> set[Node]:
+    def __getitem__(self, state: Node) -> set[Node]:
         neighbors = set()
         for button in self.buttons:
-            neighbor = on
+            neighbor = state
             for idx in button:
                 neighbor ^= {idx}
             neighbors.add(neighbor)
@@ -107,6 +163,9 @@ def part2(input: str):
         # for each combination of presses to get the first index
         # reduce the target joltages as needed
         # then recompute what's left
+        # first eliminate joltages that are affected by the fewest buttons
+        # iterate over all integer partitions of this value and press the buttons accordingly
+        # then recurse with the reduced joltage values and remaining other buttons until all joltage values are 0
 
         # index_with_lowest_presses = joltages.index(min(joltages))
         # print(list(combinations_with_replacement(cur_buttons, lowest_presses))[100])
@@ -120,6 +179,7 @@ def part2(input: str):
 if __name__ == "__main__":
     main(
         part1,
+        part1_bitmask,
         part2,
         # isolate=0,
     )
