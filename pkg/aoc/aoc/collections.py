@@ -1,8 +1,43 @@
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Self
 
 from aoc.coords import Point, Rect
+
+
+class Bitmask(int):
+    @classmethod
+    def from_list(cls, indexes: Iterable[int]) -> Self:
+        return cls(sum(1 << i for i in indexes))
+
+    def on(self, i: int, /) -> Self:
+        return self.__class__(self | (1 << i))
+
+    def off(self, i: int, /) -> Self:
+        return self.__class__(self & ~(1 << i))
+
+    def toggle(self, i: int, /) -> Self:
+        return self.__class__(self ^ (1 << i))
+
+    def __contains__(self, i: int, /) -> bool:
+        return bool(self & (1 << i))
+
+    def __and__(self, value: int | Self, /) -> Self:
+        return self.__class__(super().__and__(value))
+
+    def __invert__(self) -> Self:
+        return self.__class__(super().__invert__())
+
+    def __or__(self, value: int | Self, /) -> Self:
+        return self.__class__(super().__or__(value))
+
+    def __xor__(self, value: int | Self, /) -> Self:
+        return self.__class__(super().__xor__(value))
+
+    __rand__ = __and__
+    __ror__ = __or__
+    __rxor__ = __xor__
 
 
 # <https://en.wikipedia.org/wiki/Disjoint-set_data_structure>

@@ -1,9 +1,8 @@
 import re
-from collections.abc import Iterable
 from itertools import combinations_with_replacement
-from typing import Self
 
 from aoc import main, progress
+from aoc.collections import Bitmask
 from aoc.graph import DiGraph, shortest_path_length
 from aoc.parse import all_numbers, line_parser
 
@@ -21,40 +20,6 @@ def parse(line: str):
     buttons = [all_numbers(b) for b in BUTTONS_RE.findall(buttons_str)]
     joltages = all_numbers(joltages_str)
     return lights, buttons, joltages
-
-
-class Bitmask(int):
-    @classmethod
-    def from_list(cls, indexes: Iterable[int]) -> Self:
-        return cls(sum(1 << i for i in indexes))
-
-    def on(self, i: int, /) -> Self:
-        return self.__class__(self | (1 << i))
-
-    def off(self, i: int, /) -> Self:
-        return self.__class__(self & ~(1 << i))
-
-    def toggle(self, i: int, /) -> Self:
-        return self.__class__(self ^ (1 << i))
-
-    def __contains__(self, i: int, /) -> bool:
-        return bool(self & (1 << i))
-
-    def __and__(self, value: int | Self, /) -> Self:
-        return self.__class__(super().__and__(value))
-
-    def __invert__(self) -> Self:
-        return self.__class__(super().__invert__())
-
-    def __or__(self, value: int | Self, /) -> Self:
-        return self.__class__(super().__or__(value))
-
-    def __xor__(self, value: int | Self, /) -> Self:
-        return self.__class__(super().__xor__(value))
-
-    __rand__ = __and__
-    __ror__ = __or__
-    __rxor__ = __xor__
 
 
 class OfflineMachine2[Node: Bitmask](DiGraph):
