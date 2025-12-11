@@ -14,36 +14,27 @@ def parse(input: str) -> Edges[str]:
     return edges
 
 
-def you_to_out(input: str):
+def count_paths(input: str, src: str, dst: str, via: list[str] | None = None) -> int:
     edges = parse(input)
 
-    @cache
-    def count_paths(cur: str) -> int:
-        if cur == "out":
-            return 1
-        return sum(count_paths(n) for n in edges[cur])
-
-    return count_paths("you")
-
-
-def svr_to_out_via_dac_fft(input: str):
-    edges = parse(input)
-    via = {"dac": 0, "fft": 1}
-    goal = Bitmask.from_list(via.values())
+    if via is None:
+        via = []
+    via_mask = {k: i for i, k in enumerate(via)}
+    goal = Bitmask.from_list(via_mask.values())
 
     @cache
-    def count_paths(cur: str, seen: Bitmask) -> int:
-        if cur == "out":
+    def count(cur: str, seen: Bitmask) -> int:
+        if cur == dst:
             return 1 if seen == goal else 0
-        if cur in via:
-            seen = seen.on(via[cur])
-        return sum(count_paths(n, seen) for n in edges[cur])
+        if cur in via_mask:
+            seen = seen.on(via_mask[cur])
+        return sum(count(n, seen) for n in edges[cur])
 
-    return count_paths("svr", Bitmask())
+    return count(src, Bitmask())
 
 
 if __name__ == "__main__":
     main(
-        you_to_out,
-        svr_to_out_via_dac_fft,
+        partial(count_paths, src="you", dst="out"),
+        partial(count_paths, src="svr", dst="out", via=["dac", "fft"]),
     )
