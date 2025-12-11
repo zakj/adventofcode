@@ -1,8 +1,7 @@
 import re
-from functools import cache, partial
+from functools import cache
 
 from aoc import main
-from aoc.collections import Bitmask
 from aoc.graph_dyn import Edges
 
 
@@ -14,27 +13,24 @@ def parse(input: str) -> Edges[str]:
     return edges
 
 
-def count_paths(input: str, src: str, dst: str, via: list[str] | None = None) -> int:
-    edges = parse(input)
-
-    if via is None:
-        via = []
-    via_mask = {k: i for i, k in enumerate(via)}
-    goal = Bitmask.from_list(via_mask.values())
+def count_paths(
+    edges: Edges, src: str, dst: str, *, via: set[str] | None = None
+) -> int:
+    via = via or set()
 
     @cache
-    def count(cur: str, seen: Bitmask) -> int:
+    def count(cur: str, seen: frozenset[str]) -> int:
         if cur == dst:
-            return 1 if seen == goal else 0
-        if cur in via_mask:
-            seen = seen.on(via_mask[cur])
+            return 1 if seen == via else 0
+        if cur in via:
+            seen = seen | {cur}
         return sum(count(n, seen) for n in edges[cur])
 
-    return count(src, Bitmask())
+    return count(src, frozenset())
 
 
 if __name__ == "__main__":
     main(
-        partial(count_paths, src="you", dst="out"),
-        partial(count_paths, src="svr", dst="out", via=["dac", "fft"]),
+        lambda s: count_paths(parse(s), "you", "out"),
+        lambda s: count_paths(parse(s), "svr", "out", via={"dac", "fft"}),
     )
