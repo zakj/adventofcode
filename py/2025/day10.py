@@ -59,6 +59,9 @@ def fewest_presses_joltages(input: str):
             if 1 in row:
                 pivot_rows[row.index(1)] = i  # pyright: ignore[reportArgumentType]
         free_cols = [col for col in range(coeff_count) if col not in pivot_rows]
+        max_presses_for = {
+            i: min(joltages[b] for b in buttons[i]) for i in range(len(buttons))
+        }
 
         def compute_solution(free_values: tuple[int, ...]) -> list[int] | None:
             solution = [0] * (coeff_count)
@@ -69,23 +72,24 @@ def fewest_presses_joltages(input: str):
                     rref[row][free_cols[i]] * free_values[i]
                     for i in range(len(free_cols))
                 )
-                if not val.is_integer() or not 0 <= val <= max_presses:
+                if not val.is_integer() or not 0 <= val <= max_presses_for[col]:
                     return None
                 solution[col] = int(val)
+                if min_sum and sum(solution) >= min_sum:
+                    return None
             return solution
 
-        def bounded_tuples(n, max_sum):
-            if n == 0:
+        def bounded_tuples(bounds: list[int]):
+            if not bounds:
                 yield ()
                 return
-            for first in range(max_sum + 1):
-                for rest in bounded_tuples(n - 1, max_sum - first):
+            for first in range(bounds[0] + 1):
+                for rest in bounded_tuples(bounds[1:]):
                     yield (first,) + rest
 
-        # TODO optimize; index 189 is the slowest one
-        max_presses = max(joltages)
+        bounds = [max_presses_for[i] for i in free_cols]
         min_sum = None
-        for free_vals in bounded_tuples(len(free_cols), max_presses):
+        for free_vals in bounded_tuples(bounds):
             solution = compute_solution(free_vals)
             if solution is None:
                 continue
