@@ -87,6 +87,7 @@ class Year(BaseUI):
     def __init__(self, year: str):
         super().__init__()
         self.stars = 0
+        self.max_stars = 24 if int(year) >= 2025 else 50
         self.title = year
         self.days = []
 
@@ -99,8 +100,11 @@ class Year(BaseUI):
         for day, parts in self.days:
             table.add_row(f"Day {day}", *parts)
         table.add_section()
+        done = "[green]✓" if self.stars == self.max_stars else ""
         table.add_row(
-            f"[bright_white italic]{self.title}", "", f"[bright_yellow]{self.stars}*"
+            f"[bright_white italic]{self.title} {done}",
+            "",
+            f"[bright_yellow]{self.stars}*",
         )
         return table
 
@@ -113,9 +117,9 @@ class Year(BaseUI):
         parts.append(" ".join([format_duration(duration), success]))
         if result == expected:
             self.stars += 1
-            # Day 25 only has one part, the last star is free.
-            if self.stars == 49:
-                self.stars = 50
+            # The last day each year only has one part; the last star is free.
+            if self.stars >= self.max_stars - 1:
+                self.stars = self.max_stars
 
     def error(self):
         _, parts = self.days[-1]
