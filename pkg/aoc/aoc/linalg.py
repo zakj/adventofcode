@@ -26,7 +26,7 @@ def to_reduced_row_echelon_form(matrix: Matrix) -> Matrix[Fraction]:
     # the only non-zero entry in its column.
     #
     # Safe operations on the matrix:
-    # - swap two rows
+    # - rearrange rows
     # - multiply a row by a non-zero scalar
     # - add a scalar multiple of one row to another
 
