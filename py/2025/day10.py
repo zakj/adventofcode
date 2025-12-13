@@ -1,3 +1,5 @@
+import math
+from itertools import product
 import re
 
 from aoc import main, progress
@@ -52,12 +54,13 @@ def fewest_presses_joltages(input: str):
                     row[button_index] = 1
             matrix.append(row)
         rref = to_reduced_row_echelon_form(matrix)
+        rref = [[float(x) for x in row] for row in rref]
 
         coeff_count = len(buttons)
         pivot_rows: dict[int, int] = {}
         for i, row in enumerate(rref):
             if 1 in row:
-                pivot_rows[row.index(1)] = i  # pyright: ignore[reportArgumentType]
+                pivot_rows[row.index(1)] = i
         free_cols = [col for col in range(coeff_count) if col not in pivot_rows]
         max_presses_for = {
             i: min(joltages[b] for b in buttons[i]) for i in range(len(buttons))
@@ -72,24 +75,15 @@ def fewest_presses_joltages(input: str):
                     rref[row][free_cols[i]] * free_values[i]
                     for i in range(len(free_cols))
                 )
-                if not val.is_integer() or not 0 <= val <= max_presses_for[col]:
+                if abs(val - round(val)) > 1e-9 or not 0 <= val <= max_presses_for[col]:
                     return None
                 solution[col] = int(val)
                 if min_sum and sum(solution) >= min_sum:
                     return None
             return solution
 
-        def bounded_tuples(bounds: list[int]):
-            if not bounds:
-                yield ()
-                return
-            for first in range(bounds[0] + 1):
-                for rest in bounded_tuples(bounds[1:]):
-                    yield (first,) + rest
-
-        bounds = [max_presses_for[i] for i in free_cols]
         min_sum = None
-        for free_vals in bounded_tuples(bounds):
+        for free_vals in product(*(range(max_presses_for[i] + 1) for i in free_cols)):
             solution = compute_solution(free_vals)
             if solution is None:
                 continue
