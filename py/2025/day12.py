@@ -44,7 +44,10 @@ class Present:
         return uniq
 
 
-def parse(input: str) -> tuple[list[Present], list[tuple[tuple[int, int], tuple[int]]]]:
+type Region = tuple[tuple[int, int], tuple[int]]
+
+
+def parse(input: str) -> tuple[list[Present], list[Region]]:
     *presents_str, regions_str = paras(input)
     presents = []
     for lines in presents_str:
@@ -58,11 +61,8 @@ def parse(input: str) -> tuple[list[Present], list[tuple[tuple[int, int], tuple[
     return presents, regions
 
 
-# unused
-def attempt_fit_presents(input: str) -> int:
-    presents, regions = parse(input)
-    total = 0
-
+# broken
+def attempt_fit(region: Region, presents: list[Present]) -> int:
     @cache
     def fits(
         grid: tuple[str, ...],
@@ -107,15 +107,13 @@ def attempt_fit_presents(input: str) -> int:
             return any(fits(g, tuple(tmp)) for g in fit_grids)
         return False
 
-    for (width, height), requested in regions[:2]:
-        grid = ["." * width for _ in range(height)]
-        total += fits(tuple(grid), requested)
-
-    return total
+    (width, height), requested = region
+    grid = ["." * width for _ in range(height)]
+    return fits(tuple(grid), requested)
 
 
 # This fails on the example input.
-def part1(input: str):
+def fittable_regions(input: str):
     presents, regions = parse(input)
     total = 0
     for (w, h), requested in regions:
@@ -124,13 +122,11 @@ def part1(input: str):
         elif (w * h) < sum(len(presents[i]) * c for i, c in enumerate(requested)):
             continue
         else:
-            raise ValueError
+            total += attempt_fit(((w, h), requested), presents)
     return total
 
 
 if __name__ == "__main__":
     main(
-        # attempt_fit_presents,
-        part1,
-        isolate=1,
+        fittable_regions,
     )
