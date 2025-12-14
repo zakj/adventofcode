@@ -1,4 +1,5 @@
 import collections
+import math
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from itertools import islice
 from pathlib import Path
@@ -31,6 +32,10 @@ def takeuntil[T](predicate: Callable[[T], bool], iterable: Iterable[T]) -> Itera
         yield x
         if predicate(x):
             return
+
+
+def ndigits(n: int) -> int:
+    return math.floor(math.log10(n)) + 1
 
 
 def mod(x: int, mod: int, shift: int = 0) -> int:
