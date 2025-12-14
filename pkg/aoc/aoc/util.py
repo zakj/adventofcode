@@ -3,10 +3,12 @@ from collections.abc import Callable, Sequence
 from itertools import islice
 from pathlib import Path
 from typing import Iterable, Iterator, Literal
+from warnings import deprecated
 
 from aoc.parse import paras
 
 
+@deprecated("Use itertools.batched instead")
 def chunks[T](xs: list[T], n: int) -> list[list[T]]:
     """Split xs into sublists of length n."""
     return [xs[i : i + n] for i in range(0, len(xs), n)]
