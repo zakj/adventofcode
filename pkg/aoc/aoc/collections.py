@@ -84,24 +84,24 @@ class Range:
     end: int
 
     @classmethod
-    def from_str(cls, s: str) -> "Range":
+    def from_str(cls, s: str) -> Self:
         start, end = s.split("-")
-        return Range(int(start), int(end))
+        return cls(int(start), int(end))
 
-    @staticmethod
-    def union(*ranges: "Range") -> "list[Range]":
+    @classmethod
+    def union(cls, *ranges: Self) -> list[Self]:
         if not ranges:
             return []
         first, *sorted_ranges = sorted(ranges)
-        union = [Range(first.start, first.end)]
+        union = [cls(first.start, first.end)]
         for cur in sorted_ranges:
             try:
                 union[-1] |= cur
             except ValueError:
-                union.append(Range(cur.start, cur.end))
+                union.append(cls(cur.start, cur.end))
         return union
 
-    def __lt__(self, other: "Range") -> bool:
+    def __lt__(self, other: Self) -> bool:
         return self.start < other.start
 
     def __len__(self) -> int:
@@ -110,13 +110,14 @@ class Range:
     def __contains__(self, other: int) -> bool:
         return self.start <= other <= self.end
 
-    def __or__(self, other: "Range") -> "Range":
-        if not (self.start <= other.end + 1 and other.start <= self.end + 1):
+    def __or__(self, other: Self) -> Self:
+        if not self.overlaps(other, include_adjacent=True):
             raise ValueError("ranges must overlap or be adjacent")
-        return Range(min(self.start, other.start), max(self.end, other.end))
+        return self.__class__(min(self.start, other.start), max(self.end, other.end))
 
-    def overlaps(self, other: "Range") -> bool:
-        return self.start <= other.end and other.start <= self.end
+    def overlaps(self, other: Self, *, include_adjacent=False) -> bool:
+        adj = 1 if include_adjacent else 0
+        return self.start <= other.end + adj and other.start <= self.end + adj
 
 
 # <https://en.wikipedia.org/wiki/Summed-area_table>
