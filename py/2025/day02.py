@@ -1,9 +1,9 @@
 import re
 from collections.abc import Iterable
+from itertools import batched
 
 from aoc import main
 from aoc.parse import all_numbers
-from aoc.util import chunks
 
 repeated_twice_re = re.compile(r"^(\d+)\1$")
 repeated_re = re.compile(r"^(\d+)\1+$")
@@ -11,7 +11,7 @@ repeated_re = re.compile(r"^(\d+)\1+$")
 
 def parse(input: str) -> Iterable[int]:
     values = []
-    for start, end in chunks(all_numbers(input.replace("-", " ")), 2):
+    for start, end in batched(all_numbers(input.replace("-", " ")), 2):
         values.extend(range(start, end + 1))
     return values
 

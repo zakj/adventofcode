@@ -1,6 +1,7 @@
 import math
 from collections.abc import Callable, Iterable, Iterator
 from functools import cache
+from typing import ClassVar
 
 from aoc.util import IterableClass
 
@@ -15,8 +16,8 @@ class Dir(metaclass=IterableClass[Vector]):
     E: Vector = (1, 0)
     S: Vector = (0, 1)
     W: Vector = (-1, 0)
-    _strings = {N: "NU^", E: "ER>", S: "SDv", W: "WL<"}
-    _parse_map = {k: dir for dir, s in _strings.items() for k in s}
+    _strings: ClassVar = {N: "NU^", E: "ER>", S: "SDv", W: "WL<"}
+    _parse_map: ClassVar = {k: dir for dir, s in _strings.items() for k in s}
 
     @classmethod
     def classiter(cls) -> Iterator[Vector]:

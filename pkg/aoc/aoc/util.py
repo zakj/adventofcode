@@ -1,8 +1,8 @@
 import collections
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from itertools import islice
 from pathlib import Path
-from typing import Iterable, Iterator, Literal
+from typing import Literal
 from warnings import deprecated
 
 from aoc.parse import paras
@@ -33,10 +33,10 @@ def takeuntil[T](predicate: Callable[[T], bool], iterable: Iterable[T]) -> Itera
             return
 
 
-def mod(x: int, mod: int, min: int = 0) -> int:
+def mod(x: int, mod: int, shift: int = 0) -> int:
     """x % mod, but shifted to account for a min value. Handles negatives."""
-    n = mod - min
-    return (x + n - min) % n + min
+    n = mod - shift
+    return (x + n - shift) % n + shift
 
 
 def rotate_cw(lines: Sequence[str]) -> list[str]:

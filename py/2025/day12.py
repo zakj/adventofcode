@@ -35,7 +35,7 @@ class Present:
     def flipped(self) -> Self:
         return self.__class__(self._normalize({(-x, y) for x, y in self.cells}))
 
-    @cache
+    @cache  # noqa: B019
     def orientations(self) -> set[Self]:
         uniq = set[Self]()
         for flip in self, self.flipped():

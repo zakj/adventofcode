@@ -125,13 +125,13 @@ def all_shortest_paths[T](
     while stack:
         cur, path = stack.pop()
         if cur in previous:
-            stack.extend((p, [p] + path) for p in previous[cur])
+            stack.extend((p, [p, *path]) for p in previous[cur])
         else:
             paths.append(path)
     return paths
 
 
-# https://en.wikipedia.org/wiki/Floyd–Warshall_algorithm
+# https://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
 def all_shortest_path_lengths[T](G: Edges[T]) -> dict[tuple[T, T], int]:
     distance = defaultdict[tuple[T, T], int](lambda: sys.maxsize)
     for src in G:
@@ -202,7 +202,6 @@ def _dijkstra[T](
                     paths[neighbor] = paths[cur] + [neighbor]
                 if with_all_paths:
                     previous[neighbor] = [cur]
-            elif nd == seen[neighbor]:
-                if with_all_paths:
-                    previous[neighbor].append(cur)
+            elif nd == seen[neighbor] and with_all_paths:
+                previous[neighbor].append(cur)
     return end, distance, paths, previous

@@ -1,6 +1,5 @@
-import math
-from itertools import product
 import re
+from itertools import product
 
 from aoc import main, progress
 from aoc.collections import Bitmask
