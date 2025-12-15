@@ -11,6 +11,7 @@ dependencies = ["aoc", "aocli", "mypy>=1.7.0", "ruff>=0.1.13"]
 dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
+    "pytest-watcher>=0.4.3",
 ]
 
 [tool.uv.sources]
@@ -31,6 +32,11 @@ omit = ["*/tests/*", "*/__pycache__/*"]
 [tool.pyright]
 typeCheckingMode = "standard"
 extraPaths = ['py/lib']
+
+[tool.pytest-watcher]
+clear = true
+delay = 0.1
+runner_args = []
 
 [tool.ruff.lint]
 isort.known-first-party = ["aoc"]
