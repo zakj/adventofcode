@@ -7,12 +7,12 @@ _.python.venv = { path = ".venv" }
 
 [tasks.check]
 description = "Validate cookie from .session"
-run = "uv run python -m aocli --check"
+run = "uv run aocli --check"
 
 [tasks.solve]
 description = "Run solutions for a given year or day."
-run = "uv run python -m aocli"
+run = "uv run aocli"
 
 [tasks.watch]
 description = "Watch for changes to solution files and re-run them."
-run = "uv run python -m aocli --watch"
+run = "uv run aocli --watch"

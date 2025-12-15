@@ -1,12 +1,17 @@
 [project]
-name = "aoc"
+name = "aocli"
 version = "1.0.0"
 authors = [{ name = "Zak Johnson", email = "me@zakj.net" }]
+license = { text = "MIT" }
+
 dependencies = [
+    "rich>=13.6.0",
+    "watchdog>=3.0.0",
     "websockets>=12.0",
 ]
-requires-python = ">=3.12,<3.13"
-license = { text = "MIT" }
 
 [tool.uv]
 package = true
+
+[project.scripts]
+aocli = "aocli.__main__:main"
