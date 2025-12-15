@@ -22,7 +22,7 @@ members = ["aocli", "py/lib"]
 
 [tool.pytest.ini_options]
 testpaths = ["py/lib/tests"]
-addopts = ["--cov-report=term-missing"]
+addopts = ["--cov-report=term-missing:skip-covered"]
 
 [tool.coverage.run]
 source = ["py/lib/aoc"]

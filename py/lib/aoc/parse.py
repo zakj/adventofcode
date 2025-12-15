@@ -2,6 +2,7 @@ import functools
 import re
 from typing import Callable, TypeVar, overload
 
+unsigned_num_re = re.compile(r"\d+")
 num_re = re.compile(r"[-+]?\d+")
 T = TypeVar("T")
 
@@ -14,12 +15,12 @@ def line_parser[T](fn: Callable[[str], T]) -> Callable[[str], list[T]]:
     return wrapper
 
 
-def all_numbers(s: str) -> list[int]:
-    return [int(x) for x in num_re.findall(s)]
+def all_numbers(s: str, unsigned=False) -> list[int]:
+    return [int(x) for x in (unsigned_num_re if unsigned else num_re).findall(s)]
 
 
-def first_number(s: str) -> int:
-    match = num_re.search(s)
+def first_number(s: str, unsigned=False) -> int:
+    match = (unsigned_num_re if unsigned else num_re).search(s)
     if not match:
         raise ValueError("no numbers found")
     return int(match[0])
@@ -42,7 +43,7 @@ def paras(
     Each paragraph is a list of (single-line) strings, or the result of running
     `mapper` on each line.
     """
-    if mapper is None:
-        return [[x for x in para.splitlines()] for para in s.split("\n\n")]
-    else:
-        return [[mapper(x) for x in para.splitlines()] for para in s.split("\n\n")]
+    rv = [[x for x in para.splitlines()] for para in re.split(r"\n\n+", s)]
+    if mapper:
+        rv = [[mapper(line) for line in lines] for lines in rv]
+    return rv

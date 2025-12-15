@@ -11,7 +11,7 @@ from aoc.util import ndigits
 
 
 def parse(input: str) -> Iterable[tuple[int, ...]]:
-    yield from batched(all_numbers(input.replace("-", " ")), 2)
+    yield from batched(all_numbers(input, unsigned=True), 2)
 
 
 # A d-digit number composed entirely of a repeated n-digit pattern will be
