@@ -5,7 +5,7 @@ from aoc import main
 from aoc.graph_dyn import Edges
 
 
-def parse(s: str) -> Edges:
+def parse(s: str) -> dict[str, set[str]]:
     edges = defaultdict(set)
     for line in s.splitlines():
         a, b = line.split("-")

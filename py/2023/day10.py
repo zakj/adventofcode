@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from aoc import main
 from aoc.coords import Dir, Grid, Point, Vector, addp, opposite
-from aoc.graph_dyn import DiGraph, shortest_path_length
+from aoc.graph_dyn import shortest_path_length
 
 PIPES: dict[str, set[Vector]] = {
     "|": set([Dir.N, Dir.S]),
@@ -16,7 +16,7 @@ PIPES: dict[str, set[Vector]] = {
 }
 
 
-class Pipes(DiGraph):
+class Pipes:
     def __init__(self, s: str):
         self.grid = Grid(s)
         self.start = self.grid.find("S")

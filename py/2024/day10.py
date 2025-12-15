@@ -1,9 +1,9 @@
 from aoc import main
 from aoc.coords import Dir, Grid, Point
-from aoc.graph_dyn import DiGraph, shortest_path_length
+from aoc.graph_dyn import Edges, shortest_path_length
 
 
-class Map(DiGraph):
+class Map:
     def __init__(self, s: str):
         self.grid = Grid(s, int)
         self.trailheads = set(self.grid.findall(0))
@@ -22,7 +22,7 @@ def trail_score(s: str) -> int:
 
 
 # TODO: factor into graph lib?
-def all_paths(G: DiGraph, starts, ends):
+def all_paths(G: Edges, starts, ends):
     queue = [(start, [start]) for start in starts]
     while queue:
         cur, path = queue.pop()
@@ -30,7 +30,7 @@ def all_paths(G: DiGraph, starts, ends):
             yield path
         for neighbor in G[cur]:
             if neighbor not in path:
-                queue.append((neighbor, path + [neighbor]))
+                queue.append((neighbor, [*path, neighbor]))
 
 
 def trail_rating(s: str) -> int:

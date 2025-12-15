@@ -3,7 +3,7 @@ from collections.abc import Iterable
 
 from aoc import main
 from aoc.coords import Dir, Point
-from aoc.graph_dyn import DiGraph, shortest_path_length
+from aoc.graph_dyn import shortest_path_length
 from aoc.parse import all_numbers, line_parser
 
 
@@ -13,7 +13,7 @@ def parse(line: str) -> Point:
     return x, y
 
 
-class Memory(DiGraph):
+class Memory:
     def __init__(self, size, boxes: Iterable[Point]):
         self.size = size
         self.boxes = set(boxes)

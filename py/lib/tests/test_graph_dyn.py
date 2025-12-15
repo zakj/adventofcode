@@ -1,7 +1,6 @@
 from typing import ClassVar
 
 from aoc.graph_dyn import (
-    DiGraph,
     Goal,
     all_shortest_path_lengths,
     all_shortest_paths,
@@ -25,7 +24,7 @@ def disconnected_graph():
     return {1: {2}, 2: set(), 3: {4}, 4: set()}
 
 
-class WeightedGraph(DiGraph[str]):
+class WeightedGraph:
     weights: ClassVar[dict[tuple[str, str], int]] = {
         ("A", "B"): 1,
         ("A", "C"): 5,

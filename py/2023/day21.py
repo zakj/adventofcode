@@ -3,10 +3,9 @@ from itertools import count
 
 from aoc import main
 from aoc.coords import Dir, Grid, Point
-from aoc.graph_dyn import DiGraph
 
 
-class Farm(DiGraph):
+class Farm:
     def __init__(self, s: str):
         self.grid = Grid(s)
         self.start = self.grid.find("S")

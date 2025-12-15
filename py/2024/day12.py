@@ -1,9 +1,9 @@
 from aoc import main
 from aoc.coords import Dir, Dir8, Grid, Point, addp
-from aoc.graph_dyn import DiGraph, shortest_path_length
+from aoc.graph_dyn import IterableEdges, shortest_path_length
 
 
-class Farm(DiGraph):
+class Farm:
     def __init__(self, s: str):
         self.grid = Grid(s)
 
@@ -14,7 +14,7 @@ class Farm(DiGraph):
         return {n for n in Dir.neighbors(point) if self.grid[point] == self.grid.get(n)}
 
 
-def find_regions(G: DiGraph[Point]) -> list[set[Point]]:
+def find_regions(G: IterableEdges[Point]) -> list[set[Point]]:
     seen = set()
     regions = []
     for point in G:

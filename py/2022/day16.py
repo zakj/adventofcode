@@ -3,11 +3,11 @@ from collections import defaultdict
 from itertools import combinations
 
 from aoc import main
-from aoc.graph_dyn import Edges, all_shortest_path_lengths
+from aoc.graph_dyn import IterableEdges, all_shortest_path_lengths
 from aoc.parse import all_numbers
 
 
-def parse(s: str) -> tuple[Edges, dict[str, int]]:
+def parse(s: str) -> tuple[IterableEdges, dict[str, int]]:
     name_pat = re.compile(r"[A-Z]{2}")
     edges = {}
     flow = {}

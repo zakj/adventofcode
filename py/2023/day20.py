@@ -1,11 +1,12 @@
 from collections import deque
+from collections.abc import Collection
 from dataclasses import dataclass, field
 from enum import IntEnum, auto
 from itertools import count
 from math import lcm
 
 from aoc import main
-from aoc.graph_dyn import DiGraph, shortest_path
+from aoc.graph_dyn import shortest_path
 
 Pulse = int
 HIGH: Pulse = 1
@@ -101,7 +102,9 @@ def total_pulses(s: str) -> int:
     return (1000 // presses * low) * (1000 // presses * high)
 
 
-def find_cycles_in(modules: dict[str, Module], search: list[str]) -> dict[str, int]:
+def find_cycles_in(
+    modules: dict[str, Module], search: Collection[str]
+) -> dict[str, int]:
     cycles = {}
     for i in count(1):
         queue: deque[tuple[int, str]] = deque([(LOW, "broadcaster")])
@@ -127,7 +130,7 @@ def find_cycles_in(modules: dict[str, Module], search: list[str]) -> dict[str, i
     raise ValueError
 
 
-class Modules(DiGraph):
+class Modules:
     def __init__(self, modules: dict[str, Module]):
         self.modules = modules
 

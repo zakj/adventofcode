@@ -1,11 +1,11 @@
-import aoc.graph_dyn as graph_dyn
 from aoc import main
 from aoc.coords import Dir, Grid, Point, Vector, addp, turn_left, turn_right
+from aoc.graph_dyn import Goal, all_shortest_paths, shortest_path_length
 
 type Node = tuple[Point, Vector]
 
 
-class Maze(graph_dyn.DiGraph):
+class Maze:
     def __init__(self, s: str):
         grid = Grid(s)
         self.start = grid.find("S")
@@ -29,19 +29,17 @@ class Maze(graph_dyn.DiGraph):
 
 def lowest_reindeer_score(s: str) -> int:
     G = Maze(s)
-    goal = graph_dyn.Goal[Node](lambda node: node[0] == G.end)
-    return graph_dyn.shortest_path_length(G, (G.start, Dir.E), goal, weight=G.weight)
+    goal = Goal[Node](lambda node: node[0] == G.end)
+    return shortest_path_length(G, (G.start, Dir.E), goal, weight=G.weight)
 
 
 def count_best_seats(s: str) -> int:
     G = Maze(s)
-    goal = graph_dyn.Goal[Node](lambda node: node[0] == G.end)
+    goal = Goal[Node](lambda node: node[0] == G.end)
     seats = set()
     # TODO: would A* be faster? maybe not, because of dead ends
-    for path in graph_dyn.all_shortest_paths(
-        G, (G.start, Dir.E), goal, weight=G.weight
-    ):
-        seats |= {p for p, d in path}
+    for path in all_shortest_paths(G, (G.start, Dir.E), goal, weight=G.weight):
+        seats |= {p for p, _ in path}
     return len(seats)
 
 

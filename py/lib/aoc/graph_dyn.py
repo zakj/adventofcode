@@ -1,36 +1,28 @@
 import sys
-from abc import abstractmethod
 from collections import defaultdict
-from collections.abc import Callable, Hashable, Iterator, Mapping
+from collections.abc import Callable, Hashable, Iterator
 from heapq import heappop, heappush
 from itertools import product
 from typing import Protocol, overload
 
 
-class NoPath(Exception): ...
-
-
-type Edges[T: Hashable] = Mapping[T, set[T]]
-type WeightFn[T] = Callable[[T, T], int]
-
-
-class DiGraph[T: Hashable](Mapping[T, set[T]]):
-    @abstractmethod
+class Edges[T: Hashable](Protocol):
     def __getitem__(self, key: T, /) -> set[T]:
         """Set of edges for the given node."""
-        raise NotImplementedError
+        ...
+
+
+class IterableEdges[T: Hashable](Protocol):
+    def __getitem__(self, key: T, /) -> set[T]:
+        """Set of edges for the given node."""
+        ...
 
     def __iter__(self) -> Iterator[T]:
-        """Iterate through all nodes."""
-        raise NotImplementedError
+        """All nodes."""
+        ...
 
-    def __len__(self) -> int:
-        """Count of nodes."""
-        raise NotImplementedError
 
-    def weight(self, _a: T, _b: T) -> int:
-        """Weight of the edge from a to b."""
-        return 1
+type WeightFn[T] = Callable[[T, T], int]
 
 
 class Comparable(Protocol):
@@ -56,19 +48,19 @@ class Goal[T]:
         return self.check(other)  # type: ignore
 
 
-def _simple_weight_fn[T](_a: T, _b: T) -> int:
+def _weight_fn[T](_a: T, _b: T) -> int:
     return 1
 
 
 @overload
 def shortest_path_length[T](
-    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] = _simple_weight_fn
+    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] = _weight_fn
 ) -> int: ...
 
 
 @overload
 def shortest_path_length[T](
-    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] = _simple_weight_fn
+    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] = _weight_fn
 ) -> dict[T, int]: ...
 
 
@@ -76,7 +68,7 @@ def shortest_path_length[T](
     G: Edges[T],
     source: T,
     target: Comparable | None = None,
-    weight: WeightFn[T] = _simple_weight_fn,
+    weight: WeightFn[T] = _weight_fn,
 ) -> int | dict[T, int]:
     # TODO: bfs may be faster if we don't need to track weight
     end, distance, *_ = _dijkstra(G, source, target, weight)
@@ -88,13 +80,13 @@ def shortest_path_length[T](
 
 @overload
 def shortest_path[T](
-    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] = _simple_weight_fn
+    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] = _weight_fn
 ) -> list[T]: ...
 
 
 @overload
 def shortest_path[T](
-    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] = _simple_weight_fn
+    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] = _weight_fn
 ) -> dict[T, list[T]]: ...
 
 
@@ -102,7 +94,7 @@ def shortest_path[T](
     G: Edges[T],
     source: T,
     target: Comparable | None = None,
-    weight: Callable[[T, T], int] = _simple_weight_fn,
+    weight: WeightFn[T] = _weight_fn,
 ) -> list[T] | dict[T, list[T]]:
     # TODO: bfs may be faster if we don't need to track weight
     end, _distance, paths, _ = _dijkstra(G, source, target, weight, with_path=True)
@@ -113,7 +105,7 @@ def all_shortest_paths[T](
     G: Edges[T],
     source: T,
     target: Comparable,
-    weight: Callable[[T, T], int] = _simple_weight_fn,
+    weight: WeightFn[T] = _weight_fn,
 ) -> list[list[T]]:
     # TODO: bfs may be faster if we don't need to track weight
     end, _distance, _, previous = _dijkstra(
@@ -132,7 +124,7 @@ def all_shortest_paths[T](
 
 
 # https://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
-def all_shortest_path_lengths[T](G: Edges[T]) -> dict[tuple[T, T], int]:
+def all_shortest_path_lengths[T](G: IterableEdges[T]) -> dict[tuple[T, T], int]:
     distance = defaultdict[tuple[T, T], int](lambda: sys.maxsize)
     for src in G:
         distance[src, src] = 0
@@ -148,7 +140,7 @@ def _dijkstra[T](
     G: Edges[T],
     source: T,
     target: Comparable,
-    weight: Callable[[T, T], int],
+    weight: WeightFn[T],
     *,
     with_path=False,
     with_all_paths=False,
@@ -160,7 +152,7 @@ def _dijkstra[T](
     G: Edges[T],
     source: T,
     target: None,
-    weight: Callable[[T, T], int],
+    weight: WeightFn[T],
     *,
     with_path=False,
     with_all_paths=False,
@@ -171,7 +163,7 @@ def _dijkstra[T](
     G: Edges[T],
     source: T,
     target: Comparable | None,
-    weight: Callable[[T, T], int],
+    weight: WeightFn[T],
     *,
     with_path=False,
     with_all_paths=False,

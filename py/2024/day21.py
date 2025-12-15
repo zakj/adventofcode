@@ -3,7 +3,7 @@ from itertools import pairwise
 
 from aoc import main
 from aoc.coords import Dir, Grid, Point, subp
-from aoc.graph_dyn import DiGraph, all_shortest_paths
+from aoc.graph_dyn import all_shortest_paths
 
 NUMERIC = Grid("""
 789
@@ -18,7 +18,7 @@ DIRECTIONAL = Grid("""
 """)
 
 
-class Keypad(DiGraph):
+class Keypad:
     cur: Point
 
     def __init__(self, grid: Grid):

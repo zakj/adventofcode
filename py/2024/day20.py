@@ -1,17 +1,14 @@
 from aoc import main, progress
 from aoc.coords import Dir, Grid, Point, mdist
-from aoc.graph_dyn import DiGraph, shortest_path_length
+from aoc.graph_dyn import shortest_path_length
 
 
-class Racetrack(DiGraph):
+class Racetrack:
     def __init__(self, s: str):
         self.grid = Grid(s)
         self.start = self.grid.find("S")
         self.end = self.grid.find("E")
         self.track = set(self.grid.findall(".")) | {self.start, self.end}
-
-    def __iter__(self):
-        return iter(self.grid.data)
 
     def __getitem__(self, node: Point) -> set[Point]:
         return {n for n in Dir.neighbors(node) if n in self.track}

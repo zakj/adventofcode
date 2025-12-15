@@ -1,11 +1,11 @@
 from aoc import main
 from aoc.coords import Dir, Grid, Point
-from aoc.graph_dyn import DiGraph, Goal, shortest_path_length
+from aoc.graph_dyn import Goal, shortest_path_length
 
 
 # TODO consider supporting multiple starts in _dijkstra so I don't have to do
 # this inverted hack.
-class ReversedHeightMap(DiGraph):
+class ReversedHeightMap:
     def __init__(self, s: str):
         self.grid = Grid(s)
         self.start = self.grid.find("E")
