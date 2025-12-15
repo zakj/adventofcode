@@ -135,11 +135,12 @@ def all_shortest_paths[T](
 def all_shortest_path_lengths[T](G: Edges[T]) -> dict[tuple[T, T], int]:
     distance = defaultdict[tuple[T, T], int](lambda: sys.maxsize)
     for src in G:
+        distance[src, src] = 0
         for dst in G[src]:
             distance[src, dst] = 1
     for k, i, j in product(G, G, G):
         distance[i, j] = min(distance[i, j], distance[i, k] + distance[k, j])
-    return dict(distance)
+    return {k: v for k, v in distance.items() if v < sys.maxsize}
 
 
 @overload
