@@ -90,7 +90,7 @@ class Grid[T]:
     def get(self, item: Point, default: T | None = None) -> T | None:
         return self.data.get(item, default)
 
-    def display(self) -> None:
+    def display(self) -> None:  # pragma: no cover
         for y in range(self.height):
             print("".join(str(self[x, y]) for x in range(self.width)))
 
@@ -137,6 +137,8 @@ def find_bounds(points: Iterable[Point]) -> Rect:
 
 
 def line_between(a: Point, b: Point) -> list[Point]:
+    if a == b:
+        return [a]
     xa, ya = a
     xb, yb = b
     dx = xb - xa
@@ -147,7 +149,7 @@ def line_between(a: Point, b: Point) -> list[Point]:
     return [(xa + i * step_x, ya + i * step_y) for i in range(gcd + 1)]
 
 
-def print_sparse_grid(points: dict[Point, str]) -> None:
+def print_sparse_grid(points: dict[Point, str]) -> None:  # pragma: no cover
     (min_x, min_y), (max_x, max_y) = find_bounds(points)
     width = max_x - min_x + 1
     height = max_y - min_y + 1
