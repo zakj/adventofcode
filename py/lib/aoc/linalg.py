@@ -3,7 +3,7 @@ from fractions import Fraction
 type Matrix[T: int | Fraction] = list[list[T]]
 
 
-def mprint(matrix: Matrix) -> None:
+def mprint(matrix: Matrix) -> None:  # pragma: no cover
     n = len(matrix[0])
     widths = [
         max(len(str(matrix[row][col])) for row in range(len(matrix)))
