@@ -3,7 +3,7 @@ from typing import Callable
 
 from aoc import main
 from aoc.coords import Dir, Point, Vector, find_bounds
-from aoc.util import mod
+from aoc.util import mod_range
 
 Blizzard = tuple[Point, Vector]
 
@@ -48,8 +48,8 @@ def expedition(
     (min_x, min_y), (max_x, max_y) = find_bounds(walkable)
     start = next((x, y) for x, y in walkable if y == min_y)
     goal = next((x, y) for x, y in walkable if y == max_y)
-    modx = cache(partial(mod, mod=max_x + 1, shift=min_x))
-    mody = cache(partial(mod, mod=max_y, shift=min_y + 1))
+    modx = cache(partial(mod_range, lower=min_x, upper=max_x + 1))
+    mody = cache(partial(mod_range, lower=min_y + 1, upper=max_y))
 
     def blizzards_at(t: int) -> set[Point]:
         return {(modx(x + t * dx), mody(y + t * dy)) for (x, y), (dx, dy) in blizzards}

@@ -36,10 +36,10 @@ def ndigits(n: int) -> int:
     return math.floor(math.log10(n)) + 1
 
 
-def mod(x: int, mod: int, shift: int = 0) -> int:
-    """x % mod, but shifted to account for a min value. Handles negatives."""
-    n = mod - shift
-    return (x + n - shift) % n + shift
+def mod_range(x: int, lower: int, upper: int) -> int:
+    """x % mod, but to be within [lower, upper). Handles negatives."""
+    n = upper - lower
+    return (x + n - lower) % n + lower
 
 
 def rotate_cw(lines: Sequence[str]) -> list[str]:

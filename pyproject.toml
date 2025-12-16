@@ -33,6 +33,12 @@ omit = [
     "py/lib/aoc/__init__.py",
 ]
 
+[tool.coverage.report]
+exclude_also = [
+    "^\\s*\\.\\.\\.",
+    "raise NotImplementedError",
+]
+
 [tool.pyright]
 typeCheckingMode = "standard"
 extraPaths = ['py/lib']

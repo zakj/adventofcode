@@ -1,5 +1,5 @@
 from aoc import main
-from aoc.util import mod
+from aoc.util import mod_range
 
 Game = tuple[int, int]
 
@@ -15,7 +15,7 @@ def score(a: int, b: int) -> int:
     score = b
     if a == b:
         score += 3
-    elif mod(a + 1, 4, 1) == b:
+    elif mod_range(a + 1, 1, 4) == b:
         score += 6
     return score
 
@@ -23,7 +23,7 @@ def score(a: int, b: int) -> int:
 def strategize(game: Game) -> Game:
     opp, strategy = game
     DELTAS = {1: -1, 2: 0, 3: 1}
-    return opp, mod(opp + DELTAS[strategy], 4, 1)
+    return opp, mod_range(opp + DELTAS[strategy], 1, 4)
 
 
 if __name__ == "__main__":
