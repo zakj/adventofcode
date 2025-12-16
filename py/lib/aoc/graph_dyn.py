@@ -103,8 +103,9 @@ def all_shortest_paths[T](
 ) -> list[list[T]]:
     # TODO: bfs may be faster if we don't need to track weight
     end, _distance, previous = _dijkstra(G, source, target, weight, with_all_paths=True)
-
     paths = []
+    if end is None:
+        return paths
     stack = [(end, [end])]
     while stack:
         cur, path = stack.pop()
@@ -171,9 +172,12 @@ def _dijkstra[T](
         if cur in distance:
             continue
         distance[cur] = d
+        if with_all_paths and end is not None and d > distance[end]:
+            break
         if cur == target:
             end = cur
-            break
+            if not with_all_paths:
+                break
         for neighbor in G[cur]:
             nd = d + weight(cur, neighbor)
             if neighbor in distance:

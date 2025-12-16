@@ -10,21 +10,25 @@ from aoc.graph_dyn import (
 
 
 def simple_graph():
-    """Linear graph: 1 -> 2 -> 3"""
+    # 1 -> 2 -> 3
     return {1: {2}, 2: {3}, 3: set()}
 
 
 def diamond_graph():
-    """Diamond shape with multiple paths: 1 -> {2, 3} -> 4"""
+    # 1 -> 2 -> 4
+    #  \-> 3 ->/
     return {1: {2, 3}, 2: {4}, 3: {4}, 4: set()}
 
 
 def disconnected_graph():
-    """Graph with disconnected nodes: 1 -> 2 // 3 -> 4"""
+    # 1 -> 2
+    # 3 -> 4
     return {1: {2}, 2: set(), 3: {4}, 4: set()}
 
 
 class WeightedGraph:
+    # A [1]-> B [1]-> D
+    #  \[5]-> C [1]->/
     weights: ClassVar[dict[tuple[str, str], int]] = {
         ("A", "B"): 1,
         ("A", "C"): 5,
@@ -164,6 +168,32 @@ class TestAllShortestPaths:
         assert len(paths) == 2
         assert [1, 2, 4] in paths
         assert [1, 3, 4] in paths
+
+    def test_no_path(self):
+        G = {1: {2}, 2: set(), 3: set()}
+        assert all_shortest_paths(G, 1, 3) == []
+
+    def test_node_added_to_heap_multiple_times(self):
+        # 1 [1]-> 2 [1]-> 3
+        #  \[10]---------/
+        G = {1: {2, 3}, 2: {3}, 3: set()}
+        weights = {(1, 3): 10}
+
+        distances = shortest_path_length(
+            G, 1, weight=lambda a, b: weights.get((a, b), 1)
+        )
+        assert distances[3] == 2
+
+    def test_early_break(self):
+        # 1 [1]-> 3 [0]-> 2
+        #  \[1]-> 4 [0]->/
+        # Both paths cost 1; this test ensure we catch both paths
+        G = {1: {3, 4}, 3: {2}, 4: {2}, 2: set()}
+
+        paths = all_shortest_paths(G, 1, 2, lambda a, _: 1 if a == 1 else 0)
+        assert len(paths) == 2
+        assert [1, 3, 2] in paths
+        assert [1, 4, 2] in paths
 
     def test_with_goal(self):
         G = diamond_graph()

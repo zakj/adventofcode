@@ -27,7 +27,11 @@ addopts = ["--cov-report=term-missing:skip-covered"]
 
 [tool.coverage.run]
 source = ["py/lib/aoc"]
-omit = ["*/tests/*", "*/__pycache__/*"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "py/lib/aoc/__init__.py",
+]
 
 [tool.pyright]
 typeCheckingMode = "standard"
