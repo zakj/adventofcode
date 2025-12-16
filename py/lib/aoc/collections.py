@@ -26,9 +26,6 @@ class Bitmask(int):
     def __and__(self, value: int | Self, /) -> Self:
         return self.__class__(super().__and__(value))
 
-    def __invert__(self) -> Self:
-        return self.__class__(super().__invert__())
-
     def __or__(self, value: int | Self, /) -> Self:
         return self.__class__(super().__or__(value))
 
