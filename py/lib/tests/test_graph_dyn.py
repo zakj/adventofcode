@@ -204,6 +204,46 @@ class TestAllShortestPaths:
         assert [1, 3, 4] in paths
 
 
+class TestBFS:
+    """Tests to verify BFS optimization works correctly for unweighted graphs."""
+
+    def test_bfs_matches_dijkstra_single_target(self):
+        # Verify BFS gives same result as Dijkstra with uniform weights
+        G = diamond_graph()
+        bfs_result = shortest_path_length(G, 1, 4)  # Uses BFS (weight=None)
+        dijkstra_result = shortest_path_length(G, 1, 4, weight=lambda a, b: 1)
+        assert bfs_result == dijkstra_result == 2
+
+    def test_bfs_matches_dijkstra_all_distances(self):
+        G = simple_graph()
+        bfs_result = shortest_path_length(G, 1)
+        dijkstra_result = shortest_path_length(G, 1, weight=lambda a, b: 1)
+        assert bfs_result == dijkstra_result
+
+    def test_bfs_shortest_path_matches_dijkstra(self):
+        G = diamond_graph()
+        bfs_path = shortest_path(G, 1, 4)
+        dijkstra_path = shortest_path(G, 1, 4, weight=lambda a, b: 1)
+        # Both should find a valid shortest path of length 3
+        assert len(bfs_path) == len(dijkstra_path) == 3
+        assert bfs_path[0] == dijkstra_path[0] == 1
+        assert bfs_path[-1] == dijkstra_path[-1] == 4
+
+    def test_bfs_all_shortest_paths_matches_dijkstra(self):
+        G = diamond_graph()
+        bfs_paths = all_shortest_paths(G, 1, 4)
+        dijkstra_paths = all_shortest_paths(G, 1, 4, weight=lambda a, b: 1)
+        # Both should find the same 2 paths
+        assert len(bfs_paths) == len(dijkstra_paths) == 2
+        assert set(map(tuple, bfs_paths)) == set(map(tuple, dijkstra_paths))
+
+    def test_bfs_with_goal(self):
+        G = diamond_graph()
+        goal = Goal(lambda x: x == 4)
+        result = shortest_path_length(G, 1, goal)
+        assert result == 2
+
+
 class TestAllShortestPathLengths:
     def test_simple_graph(self):
         G = simple_graph()

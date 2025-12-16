@@ -1,5 +1,5 @@
 import sys
-from collections import defaultdict
+from collections import defaultdict, deque
 from collections.abc import Callable, Hashable, Iterator
 from heapq import heappop, heappush
 from itertools import product
@@ -47,19 +47,15 @@ class Goal[T]:
         return self.check(other)  # type: ignore
 
 
-def _weight_fn[T](_a: T, _b: T) -> int:
-    return 1
-
-
 @overload
 def shortest_path_length[T](
-    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] = _weight_fn
+    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
 ) -> int: ...
 
 
 @overload
 def shortest_path_length[T](
-    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] = _weight_fn
+    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] | None = None
 ) -> dict[T, int]: ...
 
 
@@ -67,10 +63,12 @@ def shortest_path_length[T](
     G: Edges[T],
     source: T,
     target: Comparable | None = None,
-    weight: WeightFn[T] = _weight_fn,
+    weight: WeightFn[T] | None = None,
 ) -> int | dict[T, int]:
-    # TODO: bfs may be faster if we don't need to track weight
-    end, distance, _previous = _dijkstra(G, source, target, weight)
+    if weight is None:
+        end, distance, _previous = _bfs(G, source, target)
+    else:
+        end, distance, _previous = _dijkstra(G, source, target, weight)
     if target is not None:
         return distance[end] if end is not None else -1
     else:
@@ -81,10 +79,12 @@ def shortest_path[T](
     G: Edges[T],
     source: T,
     target: Comparable,
-    weight: WeightFn[T] = _weight_fn,
+    weight: WeightFn[T] | None = None,
 ) -> list[T]:
-    # TODO: bfs may be faster if we don't need to track weight
-    end, _distance, previous = _dijkstra(G, source, target, weight, with_path=True)
+    if weight is None:
+        end, _distance, previous = _bfs(G, source, target, with_path=True)
+    else:
+        end, _distance, previous = _dijkstra(G, source, target, weight, with_path=True)
     if end is None:
         return []
     path = [end]
@@ -99,10 +99,14 @@ def all_shortest_paths[T](
     G: Edges[T],
     source: T,
     target: Comparable,
-    weight: WeightFn[T] = _weight_fn,
+    weight: WeightFn[T] | None = None,
 ) -> list[list[T]]:
-    # TODO: bfs may be faster if we don't need to track weight
-    end, _distance, previous = _dijkstra(G, source, target, weight, with_all_paths=True)
+    if weight is None:
+        end, _distance, previous = _bfs(G, source, target, with_all_paths=True)
+    else:
+        end, _distance, previous = _dijkstra(
+            G, source, target, weight, with_all_paths=True
+        )
     paths = []
     if end is None:
         return paths
@@ -129,15 +133,61 @@ def all_shortest_path_lengths[T](G: IterableEdges[T]) -> dict[tuple[T, T], int]:
 
 
 @overload
-def _dijkstra[T](
+def _bfs[T](
+    G: Edges[T],
+    source: T,
+    target: None,
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[None, dict[T, int], dict[T, list[T]]]: ...
+
+
+@overload
+def _bfs[T](
     G: Edges[T],
     source: T,
     target: Comparable,
-    weight: WeightFn[T],
     *,
     with_path=False,
     with_all_paths=False,
 ) -> tuple[T, dict[T, int], dict[T, list[T]]]: ...
+
+
+def _bfs[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable | None,
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[T | None, dict[T, int], dict[T, list[T]]]:
+    distance: dict[T, int] = {source: 0}
+    previous: dict[T, list[T]] = {}
+
+    end = None
+    queue = deque([source])
+    while queue:
+        cur = queue.popleft()
+        cur_dist = distance[cur]
+
+        if with_all_paths and end is not None and cur_dist > distance[end]:
+            break
+        if cur == target:
+            end = cur
+            if not with_all_paths:
+                break
+
+        for neighbor in G[cur]:
+            if neighbor not in distance:
+                distance[neighbor] = cur_dist + 1
+                queue.append(neighbor)
+                if with_path or with_all_paths:
+                    previous[neighbor] = [cur]
+            elif with_all_paths and distance[neighbor] == cur_dist + 1:
+                previous[neighbor].append(cur)
+
+    return end, distance, previous
 
 
 @overload
@@ -150,6 +200,18 @@ def _dijkstra[T](
     with_path=False,
     with_all_paths=False,
 ) -> tuple[None, dict[T, int], dict[T, list[T]]]: ...
+
+
+@overload
+def _dijkstra[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable,
+    weight: WeightFn[T],
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[T, dict[T, int], dict[T, list[T]]]: ...
 
 
 def _dijkstra[T](
@@ -169,6 +231,7 @@ def _dijkstra[T](
     heap = [(0, source)]
     while heap:
         d, cur = heappop(heap)
+
         if cur in distance:
             continue
         distance[cur] = d
@@ -178,6 +241,7 @@ def _dijkstra[T](
             end = cur
             if not with_all_paths:
                 break
+
         for neighbor in G[cur]:
             nd = d + weight(cur, neighbor)
             if neighbor in distance:
@@ -190,4 +254,5 @@ def _dijkstra[T](
                     previous[neighbor] = [cur]
             elif with_all_paths and nd == seen[neighbor]:
                 previous[neighbor].append(cur)
+
     return end, distance, previous
