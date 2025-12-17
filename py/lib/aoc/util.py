@@ -1,8 +1,11 @@
 import collections
 import math
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
+from contextlib import contextmanager
+from datetime import timedelta
 from itertools import islice
 from pathlib import Path
+from time import perf_counter
 from typing import Literal
 
 from aoc.parse import paras
@@ -52,6 +55,13 @@ def rotate_ccw(lines: Sequence[str]) -> list[str]:
 
 def flip_rows_cols(lines: Sequence[str]) -> list[str]:
     return ["".join(x).strip() for x in zip(*lines)]
+
+
+@contextmanager
+def perf(label: str = "") -> Generator[None]:
+    start = perf_counter()
+    yield
+    print(timedelta(seconds=perf_counter() - start), label)
 
 
 # To make a class (vs its instance) iterable, used by coords.Dir.
