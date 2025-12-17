@@ -1,37 +1,23 @@
 import random
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from itertools import pairwise
 
 from aoc import main
-from aoc.graph import DiGraph, shortest_path
-
-
-def reachable_nodes_count(G: DiGraph, node) -> int:
-    queue = [node]
-    seen = set()
-    while queue:
-        current = set(queue)
-        queue = []
-        for node in current:
-            if node in seen:
-                continue
-            seen.add(node)
-            queue.extend(G[node])
-    return len(seen)
+from aoc.graph_dyn import shortest_path, shortest_path_length
 
 
 def cut_wires(s: str) -> int:
-    G = DiGraph()
+    G = defaultdict[str, set[str]](set)
     for line in s.splitlines():
         src, *dsts = re.split(r":? ", line)
         for dst in dsts:
-            G.add_edge(src, dst)
-            G.add_edge(dst, src)
+            G[src].add(dst)
+            G[dst].add(src)
 
     counts = Counter()
     # TODO: got to be a cleaner way than this
-    for _ in range(100):
+    for _ in range(150):
         a, b = random.sample(list(G), 2)
         path = shortest_path(G, a, b)
         for l, r in pairwise(path):
@@ -39,11 +25,12 @@ def cut_wires(s: str) -> int:
             counts.update([key])
 
     for (a, b), _ in counts.most_common(3):
-        G.remove_edge(a, b)
-        G.remove_edge(b, a)
+        G[a].remove(b)
+        G[b].remove(a)
 
     [((a, b), _)] = counts.most_common(1)
-    return reachable_nodes_count(G, a) * reachable_nodes_count(G, b)
+
+    return len(shortest_path_length(G, a)) * len(shortest_path_length(G, b))
 
 
 if __name__ == "__main__":
