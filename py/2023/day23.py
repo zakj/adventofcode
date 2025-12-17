@@ -1,6 +1,8 @@
+from collections import defaultdict
+
 from aoc import main
-from aoc.coords import Dir, Point, Vector, addp
-from aoc.graph import DiGraph, GridGraph
+from aoc.coords import Dir, Grid, Point, Vector, addp
+from aoc.graph_dyn import Edges
 
 SLOPES = {
     "^": Dir.N,
@@ -10,7 +12,7 @@ SLOPES = {
 }
 
 
-def dfs(G: DiGraph, start: Point, end: Point):
+def dfs(G: Edges, start: Point, end: Point, weights: dict[tuple[Point, Point], int]):
     seen = set()
     queue: list[tuple[Point, int]] = [(start, 0)]
     best = 0
@@ -28,11 +30,13 @@ def dfs(G: DiGraph, start: Point, end: Point):
         # Mark the node as visitable again after processing its children.
         queue.append((cur, -1))
         for neighbor in G[cur]:
-            queue.append((neighbor, distance + G.edges[cur, neighbor]))
+            queue.append((neighbor, distance + weights[cur, neighbor]))
     return best
 
 
-def compress(G: DiGraph[Point], start: Point) -> DiGraph[Point]:
+def compress(
+    G: Edges[Point], start: Point
+) -> tuple[Edges[Point], dict[tuple[Point, Point], int]]:
     def next_branch(start, seen) -> tuple[Point, int]:
         cur = start
         distance = 0
@@ -44,7 +48,8 @@ def compress(G: DiGraph[Point], start: Point) -> DiGraph[Point]:
                 return cur, distance
             cur = neighbors.pop()
 
-    H = DiGraph()
+    H = defaultdict(set)
+    weights = {}
     queue: list[Point] = [start]
     seen = set()
     while queue:
@@ -54,26 +59,34 @@ def compress(G: DiGraph[Point], start: Point) -> DiGraph[Point]:
         seen.add(cur)
         for neighbor in G[cur]:
             branch, weight = next_branch(neighbor, {cur})
-            H.add_edge(cur, branch, weight)
-            H.add_edge(branch, cur, weight)
+            H[cur].add(branch)
+            H[branch].add(cur)
+            weights[cur, branch] = weight
+            weights[branch, cur] = weight
             queue.append(branch)
-    return H
+    return H, weights
 
 
-def longest_path(s: str, slopes: dict[str, Vector] = {}) -> int:
-    def edgeweight(src: Point, stype: str, dst: Point, dtype: str) -> bool:
-        if stype in slopes:
-            return addp(src, slopes[stype]) == dst
-        return stype != "#" and dtype != "#"
+def longest_path(s: str, slopes: dict[str, Vector] | None = None) -> int:
+    if slopes is None:
+        slopes = {}
 
-    G = GridGraph(s, edgeweight)
+    grid = Grid(s)
+    G = {}
+    for p in grid.data:
+        if grid[p] in slopes:
+            G[p] = {addp(p, slopes[grid[p]])}
+        else:
+            G[p] = {n for n in Dir.neighbors(p) if n in grid and grid[n] != "#"}
+
     lines = s.splitlines()
     start = (lines[0].index("."), 0)
     end = (lines[-1].index("."), len(lines) - 1)
 
+    weights = defaultdict(lambda: 1)
     if not slopes:
-        G = compress(G, start)
-    return dfs(G, start, end)
+        G, weights = compress(G, start)
+    return dfs(G, start, end, weights)
 
 
 if __name__ == "__main__":
