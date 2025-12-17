@@ -3,7 +3,7 @@ from itertools import product
 
 from aoc import main, progress
 from aoc.collections import Bitmask
-from aoc.graph import DiGraph, shortest_path_length
+from aoc.graph_dyn import shortest_path_length
 from aoc.linalg import to_reduced_row_echelon_form
 from aoc.parse import all_numbers, line_parser
 
@@ -23,11 +23,11 @@ def parse(line: str):
     return lights, buttons, joltages
 
 
-class OfflineMachine[Node: Bitmask](DiGraph):
+class OfflineMachine:
     def __init__(self, buttons: list[Bitmask]) -> None:
         self.buttons = buttons
 
-    def __getitem__(self, state: Node) -> set[Node]:
+    def __getitem__(self, state: Bitmask) -> set[Bitmask]:
         return {state ^ button for button in self.buttons}
 
 
@@ -36,7 +36,7 @@ def fewest_presses_lights(input: str):
     total = 0
     for lights, buttons, _joltages in machines:
         machine = OfflineMachine([Bitmask.from_list(b) for b in buttons])
-        total += shortest_path_length(machine, 0, Bitmask.from_list(lights))
+        total += shortest_path_length(machine, Bitmask(0), Bitmask.from_list(lights))
     return total
 
 
