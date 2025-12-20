@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from itertools import pairwise
 
 from aoc import main
-from aoc.graph_dyn import shortest_path, shortest_path_length
+from aoc.graph import shortest_path, shortest_path_length
 
 
 def cut_wires(s: str) -> int:

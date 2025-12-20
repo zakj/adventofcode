@@ -1,6 +1,6 @@
 from aoc import main
 from aoc.coords import Dir, Grid, Point
-from aoc.graph_dyn import Goal, shortest_path_length
+from aoc.graph import Goal, shortest_path_length
 
 
 # TODO consider supporting multiple starts in _dijkstra so I don't have to do

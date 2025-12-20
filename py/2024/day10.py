@@ -1,6 +1,6 @@
 from aoc import main
 from aoc.coords import Dir, Grid, Point
-from aoc.graph_dyn import Edges, shortest_path_length
+from aoc.graph import Edges, shortest_path_length
 
 
 class Map:

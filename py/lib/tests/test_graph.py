@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from aoc.graph_dyn import (
+from aoc.graph import (
     Goal,
     all_shortest_path_lengths,
     all_shortest_paths,

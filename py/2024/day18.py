@@ -3,7 +3,7 @@ from collections.abc import Iterable
 
 from aoc import main
 from aoc.coords import Dir, Point
-from aoc.graph_dyn import shortest_path_length
+from aoc.graph import shortest_path_length
 from aoc.parse import all_numbers, line_parser
 
 

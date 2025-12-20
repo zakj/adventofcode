@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from aoc import main
 from aoc.coords import Dir, Grid, Point, Vector, addp
-from aoc.graph_dyn import Edges
+from aoc.graph import Edges
 
 SLOPES = {
     "^": Dir.N,

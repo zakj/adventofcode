@@ -1,6 +1,6 @@
 from aoc import main
 from aoc.coords import Dir, Grid, Point, Vector, addp, turn_left, turn_right
-from aoc.graph_dyn import Goal, all_shortest_paths, shortest_path_length
+from aoc.graph import Goal, all_shortest_paths, shortest_path_length
 
 type Node = tuple[Point, Vector]
 

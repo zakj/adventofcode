@@ -1,202 +1,258 @@
 import sys
 from collections import defaultdict, deque
-from collections.abc import Callable, Generator, Hashable, Iterator
-from itertools import pairwise, product
+from collections.abc import Callable, Hashable, Iterator
+from heapq import heappop, heappush
+from itertools import product
+from typing import Protocol, overload
 
-from aoc.coords import Point
+type WeightFn[T] = Callable[[T, T], int]
 
 
-class DiGraph[Node: Hashable]:
-    """A representation of a directed graph.
+class Edges[T: Hashable](Protocol):
+    def __getitem__(self, key: T, /) -> set[T]:
+        """Set of edges for the given node."""
+        ...
 
-    Instances work like a dictionary of node -> set of adjacent nodes.
+
+class IterableEdges[T: Hashable](Protocol):
+    def __getitem__(self, key: T, /) -> set[T]:
+        """Set of edges for the given node."""
+        ...
+
+    def __iter__(self) -> Iterator[T]:
+        """All nodes."""
+        ...
+
+
+class Comparable(Protocol):
+    def __eq__(self, other: object, /) -> bool: ...
+
+
+class Goal[T]:
+    """Used for handling cases where multiple nodes can be a target.
+
+    For example, some puzzles ask for the shortest path to a given point on a
+    grid, but direction is part of a node's state. In that case, we might do
+    something like:
+
+    type Node = tuple[Point, Vector]
+    goal = Goal(lambda node: node[0] == (goal_x, goal_y))
+    shortest_path(G, start, goal)
     """
 
-    _adj: dict[Node, set[Node]]  # node -> set of adjacent nodes
-    edges: dict[tuple[Node, Node], int]  # (u, v) -> int weight
+    def __init__(self, check: Callable[[T], bool]):
+        self.check = check
 
-    def __init__(self) -> None:
-        self._adj = defaultdict(set)
-        self.edges = {}
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__} with {len(self)} nodes, {len(list(self.edges))} edges"
-
-    def __contains__(self, node: Node) -> bool:
-        return node in self._adj
-
-    def __getitem__(self, node: Node) -> set[Node]:
-        return self._adj[node]
-
-    def __iter__(self) -> Iterator[Node]:
-        return iter(self._adj)
-
-    def __len__(self):
-        return len(self._adj)
-
-    def items(self):
-        return self._adj.items()
-
-    def add_node(self, node: Node, **kwargs) -> None:
-        self._adj[node]
-
-    def add_edge(self, a: Node, b: Node, weight: int = 1) -> None:
-        self.add_node(a)
-        self.add_node(b)
-        self._adj[a].add(b)
-        self.edges[a, b] = weight
-
-    def remove_node(self, node: Node) -> None:
-        edges = [(u, v) for (u, v) in self.edges if node in (u, v)]
-        for u, v in edges:
-            self.remove_edge(u, v)
-        del self._adj[node]
-
-    def remove_edge(self, a: Node, b: Node) -> None:
-        self._adj[a].remove(b)
-        del self.edges[a, b]
+    def __eq__(self, other: object, /) -> bool:
+        return self.check(other)  # type: ignore
 
 
-# TODO: del self.type[node] in remove_node; does it matter?
-class GridGraph(DiGraph[Point]):
-    type: dict[Point, str]  # node -> character
-
-    def __init__(
-        self, s: str, edgeweightfn: Callable[[Point, str, Point, str], bool | int]
-    ) -> None:
-        super().__init__()
-        self.type = {}
-
-        lines = s.splitlines()
-        cols = range(len(lines[0]))
-        rows = range(len(lines))
-
-        for y in rows:
-            for x in cols:
-                self.add_node((x, y))
-                self.type[x, y] = lines[y][x]
-
-        adjacents = [((x, y), (px, y)) for y in rows for px, x in pairwise(cols)]
-        adjacents += [((x, y), (x, py)) for py, y in pairwise(rows) for x in cols]
-        adjacents += [(b, a) for a, b in adjacents]
-
-        for a, b in adjacents:
-            r = edgeweightfn(a, self.type[a], b, self.type[b])
-            match r:
-                case True:
-                    self.add_edge(a, b, weight=1)
-                case False:
-                    pass
-                case int(weight):
-                    self.add_edge(a, b, weight=weight)
+@overload
+def shortest_path_length[T](
+    G: Edges[T], source: T, target: Comparable, weight: WeightFn[T] | None = None
+) -> int: ...
 
 
-def compress(G: DiGraph) -> None:
-    """Remove nodes between exactly two other nodes. Slow, but generic."""
-    for node in list(G):
-        if len(G[node]) != 2:
-            continue
-        a, b = G[node]
-        # a and b must not already be connected, and a<->node<->b must be two-way.
-        assert b not in G[a] and a not in G[b]
-        assert node in G[a] and node in G[b]
-        weight = G.edges[a, node] + G.edges[node, b]
-        G.add_edge(a, b, weight)
-        G.add_edge(b, a, weight)
-        G.remove_node(node)
+@overload
+def shortest_path_length[T](
+    G: Edges[T], source: T, target: None = None, weight: WeightFn[T] | None = None
+) -> dict[T, int]: ...
 
 
-# https://en.wikipedia.org/wiki/Floyd–Warshall_algorithm
-def all_shortest_path_lengths[Node](G: DiGraph[Node]) -> dict[tuple[Node, Node], int]:
-    distance = defaultdict[tuple[Node, Node], int](lambda: sys.maxsize)
-    for src, dsts in G.items():
-        for dst in dsts:
+def shortest_path_length[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable | None = None,
+    weight: WeightFn[T] | None = None,
+) -> int | dict[T, int]:
+    if weight is None:
+        end, distance, _previous = _bfs(G, source, target)
+    else:
+        end, distance, _previous = _dijkstra(G, source, target, weight)
+    if target is not None:
+        return distance[end] if end is not None else -1
+    else:
+        return distance
+
+
+def shortest_path[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable,
+    weight: WeightFn[T] | None = None,
+) -> list[T]:
+    if weight is None:
+        end, _distance, previous = _bfs(G, source, target, with_path=True)
+    else:
+        end, _distance, previous = _dijkstra(G, source, target, weight, with_path=True)
+    if end is None:
+        return []
+    path = [end]
+    cur = end
+    while cur != source:
+        cur = previous[cur][0]
+        path.append(cur)
+    return path[::-1]
+
+
+def all_shortest_paths[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable,
+    weight: WeightFn[T] | None = None,
+) -> list[list[T]]:
+    if weight is None:
+        end, _distance, previous = _bfs(G, source, target, with_all_paths=True)
+    else:
+        end, _distance, previous = _dijkstra(
+            G, source, target, weight, with_all_paths=True
+        )
+    paths = []
+    if end is None:
+        return paths
+    stack = [(end, [end])]
+    while stack:
+        cur, path = stack.pop()
+        if cur in previous:
+            stack.extend((p, [p, *path]) for p in previous[cur])
+        else:
+            paths.append(path)
+    return paths
+
+
+# https://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
+def all_shortest_path_lengths[T](G: IterableEdges[T]) -> dict[tuple[T, T], int]:
+    distance = defaultdict[tuple[T, T], int](lambda: sys.maxsize)
+    for src in G:
+        distance[src, src] = 0
+        for dst in G[src]:
             distance[src, dst] = 1
     for k, i, j in product(G, G, G):
         distance[i, j] = min(distance[i, j], distance[i, k] + distance[k, j])
-    return dict(distance)
+    return {k: v for k, v in distance.items() if v < sys.maxsize}
 
 
-def shortest_path[Node](G: DiGraph[Node], start: Node, end: Node) -> list[Node]:
-    visited = {start}
-    queue = deque([(start, [start])])
+@overload
+def _bfs[T](
+    G: Edges[T],
+    source: T,
+    target: None,
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[None, dict[T, int], dict[T, list[T]]]: ...
+
+
+@overload
+def _bfs[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable,
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[T, dict[T, int], dict[T, list[T]]]: ...
+
+
+def _bfs[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable | None,
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[T | None, dict[T, int], dict[T, list[T]]]:
+    distance: dict[T, int] = {source: 0}
+    previous: dict[T, list[T]] = {}
+
+    end = None
+    queue = deque([source])
     while queue:
-        cur, path = queue.popleft()
-        for neighbor in G[cur] - visited:
-            npath = path + [neighbor]
-            if neighbor == end:
-                return npath
-            visited.add(neighbor)
-            queue.append((neighbor, npath))
-    return []
+        cur = queue.popleft()
+        cur_dist = distance[cur]
 
+        if with_all_paths and end is not None and cur_dist > distance[end]:
+            break
+        if cur == target:
+            end = cur
+            if not with_all_paths:
+                break
 
-def shortest_path_length[Node](G: DiGraph[Node], start: Node, end: Node) -> int:
-    distance = 0
-    visited = {start}
-    queue = [start]
-    while queue:
-        distance += 1
-        current = queue
-        queue = []
-        for node in current:
-            for neighbor in G[node] - visited:
-                if neighbor == end:
-                    return distance
-                visited.add(neighbor)
-                queue.append(neighbor)
-    return -1
-
-
-def shortest_path_lengths_from[Node](
-    G: DiGraph[Node], start: Node
-) -> Iterator[tuple[Node, int]]:
-    distance = 0
-    visited = {start}
-    yield start, distance
-    queue = [start]
-    while queue:
-        distance += 1
-        current = queue
-        queue = []
-        for node in current:
-            for neighbor in G[node] - visited:
-                visited.add(neighbor)
-                queue.append(neighbor)
-                yield neighbor, distance
-
-
-def all_paths[Node](G: DiGraph[Node], start: Node, end: Node) -> Generator[list[Node]]:
-    queue = [(start, [start])]
-    while queue:
-        cur, path = queue.pop()
-        if cur == end:
-            yield path
         for neighbor in G[cur]:
-            if neighbor not in path:
-                queue.append((neighbor, path + [neighbor]))
+            if neighbor not in distance:
+                distance[neighbor] = cur_dist + 1
+                queue.append(neighbor)
+                if with_path or with_all_paths:
+                    previous[neighbor] = [cur]
+            elif with_all_paths and distance[neighbor] == cur_dist + 1:
+                previous[neighbor].append(cur)
+
+    return end, distance, previous
 
 
-def all_paths_by[Node](
-    G: DiGraph[Node], start: Node, predicate: Callable[[Node], bool]
-) -> Generator[list[Node]]:
-    queue = [(start, [start])]
-    while queue:
-        cur, path = queue.pop()
-        if predicate(cur):
-            yield path
-        for neighbor in G[cur]:
-            if neighbor not in path:
-                queue.append((neighbor, path + [neighbor]))
+@overload
+def _dijkstra[T](
+    G: Edges[T],
+    source: T,
+    target: None,
+    weight: WeightFn[T],
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[None, dict[T, int], dict[T, list[T]]]: ...
 
 
-def all_reachable_points_from[Node](G: DiGraph[Node], start: Node) -> set[Node]:
-    visited = set()
-    queue = [start]
-    while queue:
-        cur = queue.pop()
-        if cur in visited:
+@overload
+def _dijkstra[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable,
+    weight: WeightFn[T],
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[T, dict[T, int], dict[T, list[T]]]: ...
+
+
+def _dijkstra[T](
+    G: Edges[T],
+    source: T,
+    target: Comparable | None,
+    weight: WeightFn[T],
+    *,
+    with_path=False,
+    with_all_paths=False,
+) -> tuple[T | None, dict[T, int], dict[T, list[T]]]:
+    distance: dict[T, int] = {}
+    seen: dict[T, int] = {}
+    previous: dict[T, list[T]] = {}
+
+    end = None
+    heap = [(0, source)]
+    while heap:
+        d, cur = heappop(heap)
+
+        if cur in distance:
             continue
-        visited.add(cur)
-        queue.extend(G[cur])
-    return visited
+        distance[cur] = d
+        if with_all_paths and end is not None and d > distance[end]:
+            break
+        if cur == target:
+            end = cur
+            if not with_all_paths:
+                break
+
+        for neighbor in G[cur]:
+            nd = d + weight(cur, neighbor)
+            if neighbor in distance:
+                if with_all_paths and nd == distance[neighbor]:
+                    previous[neighbor].append(cur)
+            elif neighbor not in seen or nd < seen[neighbor]:
+                seen[neighbor] = nd
+                heappush(heap, (nd, neighbor))
+                if with_path or with_all_paths:
+                    previous[neighbor] = [cur]
+            elif with_all_paths and nd == seen[neighbor]:
+                previous[neighbor].append(cur)
+
+    return end, distance, previous

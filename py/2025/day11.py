@@ -2,7 +2,7 @@ import re
 from functools import cache
 
 from aoc import main
-from aoc.graph_dyn import Edges
+from aoc.graph import Edges
 
 
 def parse(input: str) -> Edges[str]:

@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from aoc import main
 from aoc.coords import Dir, Grid, Point, Vector, addp, opposite
-from aoc.graph_dyn import shortest_path_length
+from aoc.graph import shortest_path_length
 
 PIPES: dict[str, set[Vector]] = {
     "|": set([Dir.N, Dir.S]),

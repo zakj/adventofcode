@@ -3,7 +3,7 @@ from itertools import product
 
 from aoc import main, progress
 from aoc.collections import Bitmask
-from aoc.graph_dyn import shortest_path_length
+from aoc.graph import shortest_path_length
 from aoc.linalg import to_reduced_row_echelon_form
 from aoc.parse import all_numbers, line_parser
 

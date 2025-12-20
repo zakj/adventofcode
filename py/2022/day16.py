@@ -3,7 +3,7 @@ from collections import defaultdict
 from itertools import combinations
 
 from aoc import main
-from aoc.graph_dyn import IterableEdges, all_shortest_path_lengths
+from aoc.graph import IterableEdges, all_shortest_path_lengths
 from aoc.parse import all_numbers
 
 

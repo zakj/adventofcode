@@ -1,6 +1,6 @@
 from aoc import main, progress
 from aoc.coords import Dir, Grid, Point, mdist
-from aoc.graph_dyn import shortest_path_length
+from aoc.graph import shortest_path_length
 
 
 class Racetrack:

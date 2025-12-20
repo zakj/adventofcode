@@ -3,7 +3,7 @@ from itertools import pairwise
 
 from aoc import main
 from aoc.coords import Dir, Grid, Point, subp
-from aoc.graph_dyn import all_shortest_paths
+from aoc.graph import all_shortest_paths
 
 NUMERIC = Grid("""
 789

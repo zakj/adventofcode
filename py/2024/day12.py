@@ -1,6 +1,6 @@
 from aoc import main
 from aoc.coords import Dir, Dir8, Grid, Point, addp
-from aoc.graph_dyn import IterableEdges, shortest_path_length
+from aoc.graph import IterableEdges, shortest_path_length
 
 
 class Farm:
