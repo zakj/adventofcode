@@ -32,9 +32,7 @@ def parse(s: str) -> tuple[list[Vector], list[Rock]]:
     )
 
 
-def move_rock(
-    rock: list[Point], dir: Vector, filled: set[Point]
-) -> tuple[list[Point], bool]:
+def move_rock(rock: list[Point], dir: Vector, filled: set[Point]) -> tuple[list[Point], bool]:
     newpos = [addp(p, dir) for p in rock]
     if not all(0 <= p[0] <= 6 and p not in filled for p in newpos):
         return rock, False

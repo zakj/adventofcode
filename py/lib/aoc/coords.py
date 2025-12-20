@@ -62,9 +62,7 @@ class Grid[T]:
 
     def __init__(self, s: str, mapfn: Callable[[str], T] = str) -> None:
         lines = s.splitlines()
-        self.data = {
-            (x, y): mapfn(c) for y, line in enumerate(lines) for x, c in enumerate(line)
-        }
+        self.data = {(x, y): mapfn(c) for y, line in enumerate(lines) for x, c in enumerate(line)}
         self.height = len(lines)
         self.width = len(lines[0])
 

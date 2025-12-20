@@ -1,4 +1,5 @@
 import pytest
+
 from aoc.parse import all_numbers, first_number, line_parser, paras
 
 

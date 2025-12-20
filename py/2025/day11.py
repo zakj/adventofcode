@@ -13,9 +13,7 @@ def parse(input: str) -> Edges[str]:
     return edges
 
 
-def count_paths(
-    edges: Edges, src: str, dst: str, *, via: set[str] | None = None
-) -> int:
+def count_paths(edges: Edges, src: str, dst: str, *, via: set[str] | None = None) -> int:
     via = via or set()
 
     @cache

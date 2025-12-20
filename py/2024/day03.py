@@ -32,9 +32,7 @@ def multiply_with_enables(s: str) -> int:
         for m in re.finditer(mul_pattern, s)
     ]
     statements.extend([Statement(m.start(), Op.Do) for m in re.finditer(r"do\(\)", s)])
-    statements.extend(
-        [Statement(m.start(), Op.Dont) for m in re.finditer(r"don't\(\)", s)]
-    )
+    statements.extend([Statement(m.start(), Op.Dont) for m in re.finditer(r"don't\(\)", s)])
     statements.sort(key=lambda m: m.start)
 
     total = 0

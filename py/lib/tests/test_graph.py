@@ -179,9 +179,7 @@ class TestAllShortestPaths:
         G = {1: {2, 3}, 2: {3}, 3: set()}
         weights = {(1, 3): 10}
 
-        distances = shortest_path_length(
-            G, 1, weight=lambda a, b: weights.get((a, b), 1)
-        )
+        distances = shortest_path_length(G, 1, weight=lambda a, b: weights.get((a, b), 1))
         assert distances[3] == 2
 
     def test_early_break(self):

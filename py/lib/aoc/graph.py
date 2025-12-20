@@ -104,9 +104,7 @@ def all_shortest_paths[T](
     if weight is None:
         end, _distance, previous = _bfs(G, source, target, with_all_paths=True)
     else:
-        end, _distance, previous = _dijkstra(
-            G, source, target, weight, with_all_paths=True
-        )
+        end, _distance, previous = _dijkstra(G, source, target, weight, with_all_paths=True)
     paths = []
     if end is None:
         return paths

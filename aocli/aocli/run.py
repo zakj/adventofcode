@@ -85,9 +85,7 @@ class Runner:
                         self.process_input(input, ui, send, messages)
                     send(json.dumps({"done": True}))
             elif path.is_dir():
-                files = sorted(
-                    f for suffix in RUNNERS.keys() for f in path.rglob(f"day??{suffix}")
-                )
+                files = sorted(f for suffix in RUNNERS.keys() for f in path.rglob(f"day??{suffix}"))
                 for year, days in groupby(files, lambda f: f.parent.name):
                     with Year(year) as ui:
                         for path in days:

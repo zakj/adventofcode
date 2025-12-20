@@ -65,9 +65,7 @@ def count_looping_obstacles(s: str) -> int:
 
 # Optimization: rather than walking through the grid step by step, quickly find
 # the next obstacle in the current direction and hop to it.
-def has_loop(
-    grid: Grid, start: State, obs_by_x: Obstacles, obs_by_y: Obstacles
-) -> bool:
+def has_loop(grid: Grid, start: State, obs_by_x: Obstacles, obs_by_y: Obstacles) -> bool:
     visits: Visits = defaultdict(list)
     (x, y), dir = start
     while (x, y) in grid:

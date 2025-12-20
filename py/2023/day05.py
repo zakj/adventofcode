@@ -52,9 +52,7 @@ def next_category(src_ranges, maps: list[Map]):
     return dst_ranges
 
 
-def lowest_location(
-    seeds: list[int], almanac: list[list[Map]], seed_fn: Callable
-) -> int:
+def lowest_location(seeds: list[int], almanac: list[list[Map]], seed_fn: Callable) -> int:
     return min(reduce(next_category, almanac, seed_fn(seeds)))[0]
 
 

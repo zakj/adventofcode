@@ -12,9 +12,7 @@ class ReversedHeightMap:
 
     def __getitem__(self, node: Point) -> set[Point]:
         h = self.height(node)
-        return {
-            n for n in Dir.neighbors(node) if n in self.grid and h - 1 <= self.height(n)
-        }
+        return {n for n in Dir.neighbors(node) if n in self.grid and h - 1 <= self.height(n)}
 
     def height(self, point: Point) -> int:
         c = self.grid[point]

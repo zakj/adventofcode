@@ -62,9 +62,9 @@ def count_corners(region: set[Point]) -> int:
     for p in region:
         for a, b, diag in defs:
             a, b, diag = addp(p, a), addp(p, b), addp(p, diag)
-            if a not in region and b not in region:
-                corners += 1
-            elif a in region and b in region and diag not in region:
+            if (a not in region and b not in region) or (
+                a in region and b in region and diag not in region
+            ):
                 corners += 1
     return corners
 

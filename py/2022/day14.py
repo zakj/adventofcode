@@ -19,11 +19,11 @@ def drop_sand(filled: set[Point], bottom: int, solid_bottom=False) -> Point:
     while True:
         if cur[1] == bottom - (1 if solid_bottom else 0):
             break
-        elif (p := addp(cur, Dir.S)) not in filled:
-            pass
-        elif (p := addp(cur, Dir8.SW)) not in filled:
-            pass
-        elif (p := addp(cur, Dir8.SE)) not in filled:
+        elif (
+            (p := addp(cur, Dir.S)) not in filled
+            or (p := addp(cur, Dir8.SW)) not in filled
+            or (p := addp(cur, Dir8.SE)) not in filled
+        ):
             pass
         else:
             break

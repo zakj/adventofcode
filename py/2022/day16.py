@@ -33,9 +33,7 @@ def max_pressure(s: str, minutes: int, elephant=False):
             nt = t + distance[name, next] + 1
             if nt >= minutes:
                 continue
-            queue.append(
-                (next, nt, opened | {next}, pressure + flow[next] * (minutes - nt))
-            )
+            queue.append((next, nt, opened | {next}, pressure + flow[next] * (minutes - nt)))
 
     if not elephant:
         return max(best.values())

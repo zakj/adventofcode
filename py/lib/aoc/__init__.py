@@ -50,9 +50,7 @@ def create_profile_table(profile: cProfile.Profile, src_path: Path):
     base_dir = Path(__file__).parent.parent
     profile.create_stats()
     profiles = pstats.Stats(profile).get_stats_profile().func_profiles
-    items = sorted(
-        profiles.items(), key=lambda np: (np[1].tottime, np[1].ncalls), reverse=True
-    )
+    items = sorted(profiles.items(), key=lambda np: (np[1].tottime, np[1].ncalls), reverse=True)
 
     return {
         "header": ["line", "function", "total time", "calls"],
@@ -94,9 +92,7 @@ def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None
                         if part and i + 1 != part:
                             continue
                         if isolate is not None and isolate != msg_index:
-                            websocket.send(
-                                json.dumps({"answer": "skipped", "duration": 0})
-                            )
+                            websocket.send(json.dumps({"answer": "skipped", "duration": 0}))
                             continue
                         sig = inspect.signature(fn)
                         kwargs: dict[str, Any] = {
@@ -107,9 +103,7 @@ def main(*fns: Callable[..., Any], profile: int = -1, isolate: int | None = None
                             prof.enable()
                             response = run_solver(fn, input, **kwargs)
                             prof.disable()
-                            response["aside"] = create_profile_table(
-                                prof, _find_day_file()
-                            )
+                            response["aside"] = create_profile_table(prof, _find_day_file())
                         else:
                             response = run_solver(fn, input, **kwargs)
                         websocket.send(json.dumps(response, cls=ResultsEncoder))

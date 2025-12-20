@@ -62,7 +62,7 @@ def safe_to_remove(s: str) -> int:
     unsafe_bricks = set()
     for bricks in parents.values():
         if len(bricks) == 1:
-            unsafe_bricks.add(list(bricks)[0])
+            unsafe_bricks.add(next(iter(bricks)))
     return len(parents) - len(unsafe_bricks)
 
 

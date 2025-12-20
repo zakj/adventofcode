@@ -22,9 +22,7 @@ def transpose_columns(nums: list[str]) -> list[str]:
     return ["".join(n) for n in zip(*(reversed(n) for n in nums))]
 
 
-def cephalopod_math(
-    input: str, mapper: Callable[[list[str]], list[str]] | None = None
-) -> int:
+def cephalopod_math(input: str, mapper: Callable[[list[str]], list[str]] | None = None) -> int:
     return sum(
         OPERATORS[op](int(n) for n in (mapper(nums) if mapper else nums))
         for op, nums in parse_problems(input)

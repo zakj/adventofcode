@@ -1,6 +1,6 @@
 import math
+from collections.abc import Iterator
 from itertools import islice
-from typing import Iterator
 
 from aoc import main
 from aoc.util import chunks, ocr
@@ -19,9 +19,7 @@ def parse(s: str) -> Iterator[int]:
 
 
 def signal_strengths(X: Iterator[int], start=19, step=40):
-    return sum(
-        x * (i * step + start + 1) for i, x in enumerate(islice(X, start, 240, step))
-    )
+    return sum(x * (i * step + start + 1) for i, x in enumerate(islice(X, start, 240, step)))
 
 
 def crt(X: Iterator[int]):

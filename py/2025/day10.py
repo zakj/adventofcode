@@ -61,9 +61,7 @@ def fewest_presses_joltages(input: str):
             if 1 in row:
                 pivot_rows[row.index(1)] = i
         free_cols = [col for col in range(coeff_count) if col not in pivot_rows]
-        max_presses_for = {
-            i: min(joltages[b] for b in buttons[i]) for i in range(len(buttons))
-        }
+        max_presses_for = {i: min(joltages[b] for b in buttons[i]) for i in range(len(buttons))}
 
         def compute_solution(free_values: tuple[int, ...]) -> list[int] | None:
             solution = [0] * (coeff_count)
@@ -71,8 +69,7 @@ def fewest_presses_joltages(input: str):
                 solution[col] = free_values[i]
             for col, row in pivot_rows.items():
                 val = rref[row][-1] - sum(
-                    rref[row][free_cols[i]] * free_values[i]
-                    for i in range(len(free_cols))
+                    rref[row][free_cols[i]] * free_values[i] for i in range(len(free_cols))
                 )
                 if abs(val - round(val)) > 1e-9 or not 0 <= val <= max_presses_for[col]:
                     return None

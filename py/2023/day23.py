@@ -34,9 +34,7 @@ def dfs(G: Edges, start: Point, end: Point, weights: dict[tuple[Point, Point], i
     return best
 
 
-def compress(
-    G: Edges[Point], start: Point
-) -> tuple[Edges[Point], dict[tuple[Point, Point], int]]:
+def compress(G: Edges[Point], start: Point) -> tuple[Edges[Point], dict[tuple[Point, Point], int]]:
     def next_branch(start, seen) -> tuple[Point, int]:
         cur = start
         distance = 0

@@ -16,9 +16,7 @@ def parse(line: str) -> Robot:
     return (px, py), (vx, vy)
 
 
-def positions_at(
-    robots: list[Robot], width: int, height: int, seconds=1
-) -> list[Point]:
+def positions_at(robots: list[Robot], width: int, height: int, seconds=1) -> list[Point]:
     pos = [addp(p, (dx * seconds, dy * seconds)) for p, (dx, dy) in robots]
     return [(x % width, y % height) for x, y in pos]
 

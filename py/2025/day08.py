@@ -21,17 +21,13 @@ def parse(input: str) -> tuple[list[Distance], Circuits]:
     return distances, circuits
 
 
-def three_largest_circuits(
-    distances: list[Distance], circuits: Circuits, connections: int
-) -> int:
+def three_largest_circuits(distances: list[Distance], circuits: Circuits, connections: int) -> int:
     for _, a, b in nsmallest(connections, distances):
         circuits.union(a, b)
     return prod(nlargest(3, circuits.sizes()))
 
 
-def connect_all_circuits(
-    distances: list[Distance], circuits: DisjointSet[Point3]
-) -> int:
+def connect_all_circuits(distances: list[Distance], circuits: DisjointSet[Point3]) -> int:
     heapify(distances)
     while True:
         _, a, b = heappop(distances)

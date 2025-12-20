@@ -22,10 +22,7 @@ def count_wins(time: int, distance: int) -> int:
 
 
 def score(s: str) -> int:
-    return prod(
-        count_wins(t, d)
-        for t, d in zip(*[all_numbers(line) for line in s.splitlines()])
-    )
+    return prod(count_wins(t, d) for t, d in zip(*[all_numbers(line) for line in s.splitlines()]))
 
 
 if __name__ == "__main__":

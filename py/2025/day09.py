@@ -38,11 +38,11 @@ def largest_contained_rectangle(input: str):
     is_outside: dict[Point, bool] = {p: False for p in compressed_tiles}
 
     # mark the border as known-inside for flood fill
-    for a, b in pairwise([compressed_tiles[-1]] + compressed_tiles):
+    for a, b in pairwise([compressed_tiles[-1], *compressed_tiles]):
         for p in line_between(a, b):
             is_outside[p] = False
 
-    # flood fill the outside; centroid to fill inside doesn't work due to the concave shape
+    # flood fill the outside; centroid to fill inside doesn't work due to the concave shape.
     # include a guaranteed-empty border so flood doesn't get stuck
     (minx, miny), (maxx, maxy) = find_bounds(compressed_tiles)
     minx, miny = minx - 1, miny - 1

@@ -2,9 +2,7 @@ from aoc import main
 from aoc.coords import Dir, Grid, Point, Vector, addp
 
 
-def parse(
-    s: str, cmap: dict[str, str] | None = None
-) -> tuple[Grid, list[Vector], Point]:
+def parse(s: str, cmap: dict[str, str] | None = None) -> tuple[Grid, list[Vector], Point]:
     map, moves = s.split("\n\n")
     if cmap is not None:
         map = "".join([cmap.get(c, c) for c in map])

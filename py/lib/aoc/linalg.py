@@ -5,10 +5,7 @@ type Matrix[T: int | Fraction] = list[list[T]]
 
 def mprint(matrix: Matrix) -> None:  # pragma: no cover
     n = len(matrix[0])
-    widths = [
-        max(len(str(matrix[row][col])) for row in range(len(matrix)))
-        for col in range(n)
-    ]
+    widths = [max(len(str(matrix[row][col])) for row in range(len(matrix))) for col in range(n)]
     for row in matrix:
         coeffs = "  ".join(f"{val!s:>{widths[i]}}" for i, val in enumerate(row[:-1]))
         result = f"{row[-1]!s:>{widths[-1]}}"

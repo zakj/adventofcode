@@ -33,7 +33,7 @@ def steps(dirs: str, nodes: dict[str, Node]) -> int:
 
 def ghost_steps(dirs: str, nodes: dict[str, Node]) -> int:
     ends = []
-    for start in (n for n in nodes.keys() if n.endswith("A")):
+    for start in (n for n in nodes if n.endswith("A")):
         cur = nodes[start]
         for i, dir in enumerate(cycle(dirs), start=1):
             cur = nodes[cur.left if dir == "L" else cur.right]

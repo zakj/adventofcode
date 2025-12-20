@@ -151,16 +151,14 @@ class Face:
         normal = vmul(self.normal, (n, n, n))
         projected = vadd(vadd(u_dir, v_dir), normal)
         offset = tuple(
-            self.size - 1 if self.u_dir[i] < 0 or self.v_dir[i] < 0 else 0
-            for i in range(3)
+            self.size - 1 if self.u_dir[i] < 0 or self.v_dir[i] < 0 else 0 for i in range(3)
         )
         return vadd(projected, cast(Point3, offset))
 
     def xyz_uv(self, x: int, y: int, z: int) -> Point:
         xyz = (x, y, z)
         offset = tuple(
-            self.size - 1 if self.u_dir[i] < 0 or self.v_dir[i] < 0 else 0
-            for i in range(3)
+            self.size - 1 if self.u_dir[i] < 0 or self.v_dir[i] < 0 else 0 for i in range(3)
         )
         xyz = vsub(xyz, cast(Point3, offset))
         return (dot3(self.u_dir, xyz), dot3(self.v_dir, xyz))

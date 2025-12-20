@@ -10,7 +10,6 @@ from aoc.coords import (
     line_between,
     mdist,
     opposite,
-    print_sparse_grid,
     subp,
     turn_left,
     turn_right,

@@ -15,7 +15,7 @@ def next_secret(n: int) -> int:
 def sum_of_secrets(s: str) -> int:
     total = 0
     for n in all_numbers(s):
-        for i in range(2000):
+        for _ in range(2000):
             n = next_secret(n)
         total += n
     return total
@@ -25,7 +25,7 @@ def best_sequence_of_changes(s: str) -> int:
     running_total = defaultdict(int)
     for n in progress(all_numbers(s)):
         values = [n % 10]
-        for i in range(2000):
+        for _ in range(2000):
             n = next_secret(n)
             values.append(n % 10)
         changes = [a - b for a, b in pairwise(values)]

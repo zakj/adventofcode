@@ -76,9 +76,7 @@ def is_broken(g: Gate) -> bool:
         return True
     if g.op == "XOR" and "x00" not in (g.a, g.b) and any(h.op == "OR" for h in g.deps):
         return True
-    if g.op != "XOR" and g.out[0] == "z" and g.out != "z45":
-        return True
-    return False
+    return bool(g.op != "XOR" and g.out[0] == "z" and g.out != "z45")
 
 
 def swap_wires_to_fix(s: str) -> str:

@@ -48,6 +48,9 @@ clear = true
 delay = 0.1
 runner_args = []
 
+[tool.ruff]
+line-length = 100
+
 [tool.ruff.lint]
 isort.known-first-party = ["aoc"]
 select = ["B", "E", "F", "FURB", "I", "RUF", "SIM", "UP", "W"]

@@ -12,9 +12,7 @@ def parse(s: str) -> tuple[Stacks, list[Instruction]]:
     drawing, instructions_str = paras(s)
     rotated = rotate_cw(drawing)
     stacks = {int(x[0]): list(x[1:]) for x in rotated if re.match(r"[0-9]", x)}
-    instructions = [
-        tuple(int(x) for x in re.findall(r"\d+", line)) for line in instructions_str
-    ]
+    instructions = [tuple(int(x) for x in re.findall(r"\d+", line)) for line in instructions_str]
     return stacks, instructions
 
 

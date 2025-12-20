@@ -62,12 +62,12 @@ def parse(
 
 
 def max_geodes(options: list[Option], time: int, max_q: int):
-    def score(qi: QueueItem) -> Resource:
+    def score(i: int, qi: QueueItem) -> Resource:
         return qi[0] + qi[1].multiply(time - i)
 
     q: list[QueueItem] = [(Resource(0, 0, 0, 0), Resource(0, 0, 0, 1))]
     for i in range(time):
-        uniq_q = {score(x): x for x in q}.items()
+        uniq_q = {score(i, x): x for x in q}.items()
         # hack: drop all but the highest-scored items
         q = [item for _, item in sorted(uniq_q, reverse=True)][:max_q]
         next = []

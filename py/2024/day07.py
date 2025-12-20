@@ -31,9 +31,7 @@ def is_valid(target: int, values: list[int], with_concat=False) -> bool:
 
 
 def sum_valid_targets(s: str, with_concat=False) -> int:
-    return sum(
-        target for target, values in parse(s) if is_valid(target, values, with_concat)
-    )
+    return sum(target for target, values in parse(s) if is_valid(target, values, with_concat))
 
 
 if __name__ == "__main__":

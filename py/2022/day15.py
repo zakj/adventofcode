@@ -31,9 +31,7 @@ def no_beacon_count(sensors, beacons, target_y: int) -> int:
         ranges.append(Range(x - y_dist, x + y_dist))
     range = Range.union(*ranges)[0]
     object_xs = {
-        x
-        for x, y in [*sensors, *beacons]
-        if y == target_y and range.overlaps(Range(x, x))
+        x for x, y in [*sensors, *beacons] if y == target_y and range.overlaps(Range(x, x))
     }
     return len(range) - len(object_xs)
 
@@ -48,9 +46,8 @@ def tuning_frequency(sensors, beacons, space: int) -> int:
         bcoeffs.add(x + y - d - 1)
     for a, b in product(acoeffs, bcoeffs):
         x, y = (b - a) // 2, (b + a) // 2
-        if 0 < x < space and 0 < y < space:
-            if all(mdist((x, y), t) > sensors[t] for t in sensors):
-                return FREQUENCY_MULTIPLIER * x + y
+        if 0 < x < space and 0 < y < space and all(mdist((x, y), t) > sensors[t] for t in sensors):
+            return FREQUENCY_MULTIPLIER * x + y
     return -1
 
 

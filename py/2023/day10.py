@@ -26,11 +26,7 @@ class Pipes:
 
     def __getitem__(self, point: Point) -> set[Point]:
         candidates = {(dir, addp(point, dir)) for dir in PIPES[self.grid[point]]}
-        return {
-            n
-            for d, n in candidates
-            if n in self.grid and opposite(d) in PIPES[self.grid[n]]
-        }
+        return {n for d, n in candidates if n in self.grid and opposite(d) in PIPES[self.grid[n]]}
 
 
 def farthest_from_start(s: str) -> int:

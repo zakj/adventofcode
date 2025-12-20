@@ -119,9 +119,7 @@ class Range:
 
 # <https://en.wikipedia.org/wiki/Summed-area_table>
 class SummedAreaTable:
-    def __init__(
-        self, width: int, height: int, valuefn: Callable[[Point], int]
-    ) -> None:
+    def __init__(self, width: int, height: int, valuefn: Callable[[Point], int]) -> None:
         self.width = width
         self.height = height
         self.table: dict[Point, int] = defaultdict(int)
@@ -129,10 +127,7 @@ class SummedAreaTable:
             for y in range(height):
                 value = valuefn((x, y))
                 self.table[x, y] = (
-                    value
-                    + self.table[x, y - 1]
-                    + self.table[x - 1, y]
-                    - self.table[x - 1, y - 1]
+                    value + self.table[x, y - 1] + self.table[x - 1, y] - self.table[x - 1, y - 1]
                 )
 
     def __getitem__(self, rect: Rect, /) -> int:

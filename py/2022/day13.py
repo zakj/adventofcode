@@ -25,9 +25,7 @@ def cmp(a, b):
 
 
 def ordered_indexes(pairs):
-    return sum(
-        i + 1 for i, valid in enumerate(cmp(a, b) < 1 for a, b in pairs) if valid
-    )
+    return sum(i + 1 for i, valid in enumerate(cmp(a, b) < 1 for a, b in pairs) if valid)
 
 
 def decoder_key(pairs):

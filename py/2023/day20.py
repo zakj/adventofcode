@@ -102,9 +102,7 @@ def total_pulses(s: str) -> int:
     return (1000 // presses * low) * (1000 // presses * high)
 
 
-def find_cycles_in(
-    modules: dict[str, Module], search: Collection[str]
-) -> dict[str, int]:
+def find_cycles_in(modules: dict[str, Module], search: Collection[str]) -> dict[str, int]:
     cycles = {}
     for i in count(1):
         queue: deque[tuple[int, str]] = deque([(LOW, "broadcaster")])

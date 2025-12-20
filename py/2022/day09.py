@@ -1,4 +1,5 @@
 import itertools
+from math import copysign
 
 from aoc import main
 from aoc.coords import Dir, Point, Vector, addp, subp
@@ -13,8 +14,7 @@ def parse(s: str) -> list[Vector]:
 
 
 def sign(v: Vector) -> Vector:
-    _sign = lambda n: -1 if n < 0 else 1 if n > 0 else 0
-    return (_sign(v[0]), _sign(v[1]))
+    return int(copysign(1 if v[0] else 0, v[0])), int(copysign(1 if v[1] else 0, v[1]))
 
 
 def follow(t: Point, h: Point) -> Point:

@@ -32,7 +32,7 @@ def walk(
     t: int = 0,
 ):
     q: set[Point] = {start}
-    options = [(0, 0)] + list(Dir)
+    options = [(0, 0), *list(Dir)]
     while goal not in q:
         t += 1
         q = {(px + dx, py + dy) for dx, dy in options for px, py in q}
