@@ -57,3 +57,4 @@ select = ["B", "E", "F", "FURB", "I", "RUF", "SIM", "UP", "W"]
 ignore = [
     "E741", # ambiguous variable name
 ]
+allowed-confusables = ["×"]

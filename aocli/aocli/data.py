@@ -1,10 +1,11 @@
 import os
 import re
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 from urllib.request import Request, urlopen
+
+import tomllib
 
 from . import BASE_DIR
 

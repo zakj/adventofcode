@@ -56,7 +56,7 @@ def main():
 
     if args.watch:
         print(f"Listening on {websocket_thread.url}...\n")
-        patterns = [f"*{ext}" for ext in RUNNERS.keys()]
+        patterns = [f"*{ext}" for ext in RUNNERS]
         handler = Handler(runner=runner, patterns=patterns)
         observer = Observer()
         observer.schedule(handler, path, recursive=True)
