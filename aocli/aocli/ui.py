@@ -6,6 +6,7 @@ from rich import box
 from rich.columns import Columns
 from rich.console import Group
 from rich.live import Live
+from rich.measure import Measurement
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.spinner import Spinner
@@ -48,7 +49,7 @@ class BaseUI:
     run_started_at: float
 
     def __init__(self) -> None:
-        self.live = Live(self, refresh_per_second=8)
+        self.live = Live(self, refresh_per_second=8, vertical_overflow="visible")
         self.done = False
         self.run_started_at = time.time()
 
@@ -124,6 +125,48 @@ class Year(BaseUI):
     def error(self):
         _, parts = self.days[-1]
         parts.append("[red]Error ×")
+
+
+class MultiYear(BaseUI):
+    years: dict[str, Year]
+
+    def __init__(self):
+        super().__init__()
+        self.years = {}
+
+    def __rich__(self):
+        if not self.years:
+            return ""
+
+        console = self.live.console
+        terminal_width = console.width
+        rows = []
+        current_row = []
+        current_width = 0
+        padding = 2
+
+        for year_ui in self.years.values():
+            measurement = Measurement.get(console, console.options, year_ui)
+            item_width = measurement.maximum
+            needed_width = item_width + (padding if current_row else 0)
+
+            if current_row and current_width + needed_width > terminal_width:
+                rows.append(Columns(current_row, padding=padding))
+                current_row = [year_ui]
+                current_width = item_width
+            else:
+                current_row.append(year_ui)
+                current_width += needed_width
+
+        if current_row:
+            rows.append(Columns(current_row, padding=padding))
+
+        return Group(*rows)
+
+    def get_or_create_year(self, year: str) -> Year:
+        if year not in self.years:
+            self.years[year] = Year(year)
+        return self.years[year]
 
 
 class Day(BaseUI):

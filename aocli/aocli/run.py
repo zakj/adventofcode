@@ -14,7 +14,7 @@ from websockets import ConnectionClosedError
 
 from . import BASE_DIR, RUNNERS
 from .data import Input, load_data
-from .ui import BaseUI, Day, Year
+from .ui import BaseUI, Day, MultiYear, Year
 from .websocket import Message, WebsocketThread
 
 
@@ -86,13 +86,14 @@ class Runner:
                     send(json.dumps({"done": True}))
             elif path.is_dir():
                 files = sorted(f for suffix in RUNNERS for f in path.rglob(f"day??{suffix}"))
-                for year, days in groupby(files, lambda f: f.parent.name):
-                    with Year(year) as ui:
+                with MultiYear() as multi_ui:
+                    for year, days in groupby(files, lambda f: f.parent.name):
+                        year_ui = multi_ui.get_or_create_year(year)
                         for path in days:
-                            with self.spawn(path, ui) as (send, messages):
-                                ui.start_day(path.stem.removeprefix("day"))
+                            with self.spawn(path, year_ui) as (send, messages):
+                                year_ui.start_day(path.stem.removeprefix("day"))
                                 input = load_data(path)[-1]
-                                self.process_input(input, ui, send, messages)
+                                self.process_input(input, year_ui, send, messages)
                                 send(json.dumps({"done": True}))
         except (ConnectionClosedError, KeyboardInterrupt):
             pass
